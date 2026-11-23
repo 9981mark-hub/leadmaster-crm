@@ -1559,33 +1559,33 @@ export default function TrainingCenterPage() {
                     : `${myTeam} 팀원들이 수행한 실전 모의 통화 녹취록과 채점표를 열람하고 팀장 피드백 및 평가 등급(S/A/B/C/F)을 부여합니다.`}
                 </p>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2.5 shrink-0">
                 {(isOwner || trainingPerms.canManageConfig) && (
                   <button
                     onClick={() => setShowConfigModal(true)}
-                    className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all hover:scale-[1.02]"
+                    className="px-3.5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                   >
                     <Settings className="w-4 h-4" />
-                    ⚙️ 훈련 정책 & 첫인사 스크립트 설정
+                    <span>훈련 정책 & 첫인사 설정</span>
                   </button>
                 )}
-                <span className="text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-xl">
+                <span className="text-xs font-semibold text-muted-foreground bg-muted border border-border px-3 py-2 rounded-xl">
                   총 {adminSessions.length}건 기록
                 </span>
               </div>
             </div>
 
             {/* 필터 툴바 */}
-            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-900/60 rounded-xl border border-gray-100 dark:border-gray-800">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-muted/30 rounded-xl border border-border">
               <div className="flex items-center gap-3">
                 {canViewAll ? (
                   <div className="flex items-center gap-1.5">
-                    <SlidersHorizontal size={14} className="text-gray-500" />
-                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">팀 필터:</span>
+                    <SlidersHorizontal size={14} className="text-muted-foreground" />
+                    <span className="text-xs font-semibold text-foreground">팀 필터:</span>
                     <select
                       value={selectedTeamFilter}
                       onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                      className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                      className="text-xs px-2.5 py-1.5 rounded-lg border border-input bg-background text-foreground outline-none focus:ring-1 focus:ring-primary"
                     >
                       <option value="all">전체 팀 (전사)</option>
                       <option value="1팀">1팀</option>
@@ -1595,7 +1595,7 @@ export default function TrainingCenterPage() {
                     </select>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-900/50">
+                  <div className="flex items-center gap-1.5 text-xs text-primary font-semibold bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20">
                     <Users size={14} />
                     <span>👥 {myTeam} 소속 훈련 데이터만 표시됩니다.</span>
                   </div>
@@ -1603,28 +1603,28 @@ export default function TrainingCenterPage() {
               </div>
 
               <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="상담원명 또는 고객명 검색..."
                   value={searchAgentName}
                   onChange={(e) => setSearchAgentName(e.target.value)}
-                  className="text-xs pl-8 pr-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="text-xs pl-8 pr-3 py-1.5 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
 
             {adminSessions.length === 0 ? (
-              <div className="py-16 text-center text-gray-500 dark:text-gray-400 space-y-2">
-                <UserCheck className="w-12 h-12 mx-auto stroke-1 text-gray-600 dark:text-gray-300 dark:text-gray-600" />
-                <p className="text-sm font-semibold">조건에 맞는 모의 훈련 세션이 없습니다.</p>
-                <p className="text-xs text-gray-500">상담원이 모의 통화를 완료하면 자동으로 이곳에 시험 결과가 축적됩니다.</p>
+              <div className="py-16 text-center text-muted-foreground space-y-2">
+                <UserCheck className="w-12 h-12 mx-auto stroke-1 text-muted-foreground" />
+                <p className="text-sm font-semibold text-foreground">조건에 맞는 모의 훈련 세션이 없습니다.</p>
+                <p className="text-xs text-muted-foreground">상담원이 모의 통화를 완료하면 자동으로 이곳에 시험 결과가 축적됩니다.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="bg-gray-50 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 text-gray-500 font-bold">
+                    <tr className="bg-muted/40 border-b border-border text-muted-foreground font-semibold">
                       <th className="py-3 px-4">훈련 일시</th>
                       <th className="py-3 px-4">소속 팀</th>
                       <th className="py-3 px-4">상담원</th>
@@ -1636,50 +1636,50 @@ export default function TrainingCenterPage() {
                       <th className="py-3 px-4 text-right">상세 평가 / 코칭</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tbody className="divide-y divide-border">
                     {adminSessions.map(record => (
-                      <tr key={record.sessionId} className="hover:bg-gray-50/80 dark:hover:bg-gray-900/40 transition-colors">
-                        <td className="py-3 px-4 text-gray-500 font-mono">
+                      <tr key={record.sessionId} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-3 px-4 text-muted-foreground font-mono">
                           {new Date(record.date).toLocaleDateString()} {new Date(record.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-muted text-foreground border border-border">
                             {record.teamName || '1팀'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-semibold text-gray-900 dark:text-white">
+                        <td className="py-3 px-4 font-semibold text-foreground">
                           {record.agentName || '신입 상담원'}
                         </td>
                         <td className="py-3 px-4">
-                          <span className="font-semibold text-gray-800 dark:text-gray-200">
+                          <span className="font-semibold text-foreground">
                             {record.personaName || '가상 고객'}
                           </span>
-                          <span className="ml-1.5 px-2 py-0.5 rounded text-xs bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+                          <span className="ml-1.5 px-2 py-0.5 rounded text-2xs bg-primary/10 text-primary border border-primary/20 font-semibold">
                             {record.categoryTitle || '모의'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                        <td className="py-3 px-4 text-muted-foreground font-mono tabular-nums">
                           {Math.floor(record.durationSeconds / 60)}분 {record.durationSeconds % 60}초 ({record.totalTurns}턴)
                         </td>
-                        <td className="py-3 px-4 font-extrabold text-blue-600 dark:text-blue-400">
+                        <td className="py-3 px-4 font-bold font-mono text-primary tabular-nums">
                           {record.report.totalScore}점
                         </td>
-                        <td className="py-3 px-4 font-bold text-indigo-600 dark:text-indigo-400">
+                        <td className="py-3 px-4 font-semibold font-mono text-primary tabular-nums">
                           {record.report.paralegalCard ? `${record.report.paralegalCard.handoffScore}점` : '-'}
                         </td>
                         <td className="py-3 px-4">
                           {record.adminFeedback ? (
                             <span className={`px-2 py-0.5 rounded font-black text-xs ${
-                              record.adminFeedback.grade === 'S' ? 'bg-amber-100 text-amber-800' :
-                              record.adminFeedback.grade === 'A' ? 'bg-emerald-100 text-emerald-800' :
-                              record.adminFeedback.grade === 'B' ? 'bg-blue-100 text-blue-800' :
-                              record.adminFeedback.grade === 'C' ? 'bg-orange-100 text-orange-800' :
-                              'bg-red-100 text-red-800'
+                              record.adminFeedback.grade === 'S' ? 'bg-primary/20 text-primary border border-primary/30' :
+                              record.adminFeedback.grade === 'A' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                              record.adminFeedback.grade === 'B' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                              record.adminFeedback.grade === 'C' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                              'bg-destructive/20 text-destructive border border-destructive/30'
                             }`}>
                               {record.adminFeedback.grade}등급
                             </span>
                           ) : (
-                            <span className="text-gray-500 dark:text-gray-400 text-xs">미평가</span>
+                            <span className="text-muted-foreground text-xs">미평가</span>
                           )}
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -1690,13 +1690,13 @@ export default function TrainingCenterPage() {
                               setCurrentSessionRecord(record);
                               setShowModal(true);
                             }}
-                            className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer shadow-2xs ${
                               record.adminFeedback
-                                ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200'
-                                : 'bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-xs'
+                                ? 'bg-muted hover:bg-muted/80 text-foreground border border-border'
+                                : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                             }`}
                           >
-                            {record.adminFeedback ? '코칭 리포트 열람' : '✍️ 피드백 작성'}
+                            {record.adminFeedback ? '코칭 리포트 열람' : '피드백 작성'}
                           </button>
                         </td>
                       </tr>

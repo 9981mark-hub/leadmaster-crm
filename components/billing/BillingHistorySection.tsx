@@ -169,14 +169,14 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
         <div className="p-5 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between shadow-2xs">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Building2 size={15} className="text-blue-600 dark:text-blue-400" />
+              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Building2 size={15} className="text-primary" />
                 전자세금계산서 발행 정보
               </span>
               <button
                 type="button"
                 onClick={onOpenTaxInfoModal}
-                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                className="text-xs font-semibold text-primary hover:underline cursor-pointer"
               >
                 정보 수정
               </button>
@@ -184,24 +184,24 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
 
             <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
               <div>
-                <span className="text-slate-400 dark:text-slate-500">상호(법인명):</span>
-                <div className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{taxInfo.companyName}</div>
+                <span className="text-muted-foreground">상호(법인명):</span>
+                <div className="font-semibold text-foreground mt-0.5">{taxInfo?.companyName || '미등록'}</div>
               </div>
               <div>
-                <span className="text-slate-400 dark:text-slate-500">사업자등록번호:</span>
-                <div className="font-semibold font-mono text-slate-800 dark:text-slate-200 mt-0.5">{taxInfo.businessNumber || '123-45-67890'}</div>
+                <span className="text-muted-foreground">사업자등록번호:</span>
+                <div className="font-semibold font-mono text-foreground mt-0.5">{taxInfo?.businessNumber || '123-45-67890'}</div>
               </div>
               <div>
-                <span className="text-slate-400 dark:text-slate-500">대표자명:</span>
-                <div className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{taxInfo.representativeName}</div>
+                <span className="text-muted-foreground">대표자명:</span>
+                <div className="font-semibold text-foreground mt-0.5">{taxInfo?.representativeName || '대표자'}</div>
               </div>
               <div>
-                <span className="text-slate-400 dark:text-slate-500">계산서 수신 이메일:</span>
-                <div className="font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">{taxInfo.taxInvoiceEmail}</div>
+                <span className="text-muted-foreground">계산서 수신 이메일:</span>
+                <div className="font-semibold text-foreground truncate mt-0.5">{taxInfo?.taxInvoiceEmail || 'tax@leadmaster.xyz'}</div>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <div className="mt-4 pt-3 border-t border-border text-[11px] text-primary flex items-center gap-1">
               <ShieldCheck size={13} />
               <span>결제 완료 즉시 국세청 홈택스 정식 영수(청구) 전자세금계산서가 자동 발행됩니다.</span>
             </div>

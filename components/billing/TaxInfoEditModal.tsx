@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { X, Building2, Save, Mail, User, MapPin, Hash, Check } from 'lucide-react';
 import { OrgTaxInfo } from '../../services/billingService';
 import { useToast } from '../../contexts/ToastContext';
@@ -23,24 +23,40 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
   const { showToast: ctxShowToast } = useToast();
   const triggerToast = propShowToast || ctxShowToast;
 
-  const initialInfo: OrgTaxInfo = currentInfo || taxInfo || {
-    businessNumber: '',
-    companyName: '',
-    representativeName: '',
-    businessAddress: '',
-    taxInvoiceEmail: '',
-    businessType: '서비스업',
-    businessItem: '콜영업 및 마케팅대행',
-  };
+  const initialInfo = useMemo<OrgTaxInfo>(() => {
+    const src = currentInfo || taxInfo;
+    return {
+      businessNumber: src?.businessNumber || '',
+      companyName: src?.companyName || '',
+      representativeName: src?.representativeName || '',
+      businessAddress: src?.businessAddress || '',
+      taxInvoiceEmail: src?.taxInvoiceEmail || '',
+      businessType: src?.businessType || '서비스업',
+      businessItem: src?.businessItem || '콜영업 및 마케팅대행',
+    };
+  }, [currentInfo, taxInfo]);
 
-  const [businessNumber, setBusinessNumber] = useState(initialInfo.businessNumber || '');
-  const [companyName, setCompanyName] = useState(initialInfo.companyName || '');
-  const [representativeName, setRepresentativeName] = useState(initialInfo.representativeName || '');
-  const [businessAddress, setBusinessAddress] = useState(initialInfo.businessAddress || '');
-  const [taxInvoiceEmail, setTaxInvoiceEmail] = useState(initialInfo.taxInvoiceEmail || '');
-  const [businessType, setBusinessType] = useState(initialInfo.businessType || '서비스업');
-  const [businessItem, setBusinessItem] = useState(initialInfo.businessItem || '콜영업 및 마케팅대행');
+  const [businessNumber, setBusinessNumber] = useState(initialInfo.businessNumber);
+  const [companyName, setCompanyName] = useState(initialInfo.companyName);
+  const [representativeName, setRepresentativeName] = useState(initialInfo.representativeName);
+  const [businessAddress, setBusinessAddress] = useState(initialInfo.businessAddress);
+  const [taxInvoiceEmail, setTaxInvoiceEmail] = useState(initialInfo.taxInvoiceEmail);
+  const [businessType, setBusinessType] = useState(initialInfo.businessType);
+  const [businessItem, setBusinessItem] = useState(initialInfo.businessItem);
   const [saving, setSaving] = useState(false);
+
+  // 모달이 열릴 때 최신 initialInfo 동기화
+  React.useEffect(() => {
+    if (isOpen) {
+      setBusinessNumber(initialInfo.businessNumber);
+      setCompanyName(initialInfo.companyName);
+      setRepresentativeName(initialInfo.representativeName);
+      setBusinessAddress(initialInfo.businessAddress);
+      setTaxInvoiceEmail(initialInfo.taxInvoiceEmail);
+      setBusinessType(initialInfo.businessType);
+      setBusinessItem(initialInfo.businessItem);
+    }
+  }, [isOpen, initialInfo]);
 
   if (!isOpen) return null;
 

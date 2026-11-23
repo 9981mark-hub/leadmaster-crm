@@ -145,26 +145,26 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
     : interpolateOpeningScript(config.outbound.openingScript, config, '홍길동', '김고객', 'cold_call');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-100 dark:border-gray-700 flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl bg-card text-card-foreground shadow-2xl border border-border flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 z-10 px-6 py-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <div className="sticky top-0 z-10 px-6 py-4 bg-card/95 backdrop-blur border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-              <Settings className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+              <Settings className="w-5 h-5" strokeWidth={1.75} />
             </div>
             <div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 회사 맞춤 훈련 정책 & 듀얼 브랜딩 스크립트 설정
               </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 변호사법 사칭 방지 아웃바운드 TM 화법과 공식 광고 리드 인바운드 화법을 회사별로 독립 구성합니다.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -173,13 +173,13 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
         {/* Content Body */}
         <div className="p-6 space-y-5 text-xs">
           {/* Quick Presets Bar */}
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-purple-50/70 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-purple-950/30 border border-blue-100 dark:border-blue-900/50 space-y-2">
+          <div className="p-3.5 rounded-2xl bg-muted/40 border border-border space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+              <span className="font-bold text-foreground flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
                 회사 운영 유형별 표준 프리셋 (원클릭 세팅)
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">클릭 시 자동 반영</span>
+              <span className="text-2xs text-muted-foreground">클릭 시 자동 반영</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
               {Object.entries(PRESETS_CONFIG).map(([key, item]) => (
@@ -187,24 +187,24 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                   key={key}
                   type="button"
                   onClick={() => handleApplyPreset(key)}
-                  className="p-2.5 rounded-xl bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-800/80 hover:border-blue-500 text-left transition-all shadow-2xs hover:scale-[1.01]"
+                  className="p-2.5 rounded-xl bg-card border border-border hover:border-primary/40 text-left transition-all shadow-2xs cursor-pointer"
                 >
-                  <div className="font-bold text-gray-900 dark:text-white text-xs">{item.label}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">{item.desc}</div>
+                  <div className="font-bold text-foreground text-xs">{item.label}</div>
+                  <div className="text-2xs text-muted-foreground line-clamp-2 mt-0.5">{item.desc}</div>
                 </button>
               ))}
             </div>
           </div>
 
           {/* 3대 메인 설정 탭 */}
-          <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200/80 dark:border-gray-700/80">
+          <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl border border-border">
             <button
               type="button"
               onClick={() => setActiveTab('outbound')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                 activeTab === 'outbound'
-                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-xs'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                  ? 'bg-card text-primary font-bold shadow-2xs border border-border/80'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <PhoneCall className="w-3.5 h-3.5" />
@@ -214,26 +214,26 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
             <button
               type="button"
               onClick={() => setActiveTab('inbound')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                 activeTab === 'inbound'
-                  ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-xs'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                  ? 'bg-card text-primary font-bold shadow-2xs border border-border/80'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Send className="w-3.5 h-3.5 text-purple-500" />
+              <Send className="w-3.5 h-3.5" />
               <span>📋 인바운드 광고리드 (법무법인/신청 접수건)</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab('compliance')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                 activeTab === 'compliance'
-                  ? 'bg-white dark:bg-gray-800 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                  ? 'bg-card text-primary font-bold shadow-2xs border border-border/80'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              <ShieldCheck className="w-3.5 h-3.5" />
               <span>🛡️ 공통 품질 & 금지어 관리</span>
             </button>
           </div>
@@ -677,7 +677,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 px-6 py-4 bg-gray-50 dark:bg-gray-900/90 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <div className="sticky bottom-0 px-6 py-4 bg-muted/40 backdrop-blur border-t border-border flex items-center justify-between">
           <button
             type="button"
             onClick={() => {
@@ -686,7 +686,7 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
                 setIsSaved(false);
               }
             }}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             기본값 복원
@@ -694,14 +694,14 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
 
           <div className="flex items-center gap-2">
             {isSaved && (
-              <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
+              <span className="text-xs text-primary font-bold flex items-center gap-1">
                 <Check className="w-4 h-4" /> 저장 완료!
               </span>
             )}
             <button
               type="button"
               onClick={handleSave}
-              className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02]"
+              className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 shadow-xs transition-colors cursor-pointer"
             >
               <Save className="w-4 h-4" />
               설정 저장 & 훈련 센터에 즉시 반영

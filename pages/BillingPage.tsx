@@ -68,7 +68,15 @@ export const BillingPage: React.FC = () => {
       // 활성 상담원 수 카운트 (기본 최소 1)
       const activeCount = members && members.length > 0 ? members.length : 1;
       setActiveSeats(activeCount);
-      setTaxInfo(tInfo);
+      setTaxInfo(tInfo || {
+        businessNumber: '',
+        companyName: orgName,
+        representativeName: '대표자',
+        businessAddress: '',
+        taxInvoiceEmail: ownerEmail || '',
+        businessType: '서비스업',
+        businessItem: '콜영업 및 마케팅대행',
+      });
     } catch (err: any) {
       console.error('[BillingPage] 데이터 로드 실패:', err);
       showToast('구독 및 라이선스 데이터를 불러오는 중 오류가 발생했습니다.', 'error');

@@ -518,13 +518,13 @@ export const NoticePage: React.FC = () => {
           onClick={() => setActiveTab('notices')}
           className={`flex items-center gap-2 py-3 px-5 text-sm font-semibold border-b-2 transition-colors ${
             activeTab === 'notices'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <Bell size={18} />
           공지사항
-          <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+          <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
             {roleFilteredNotices.length}
           </span>
         </button>
@@ -532,13 +532,13 @@ export const NoticePage: React.FC = () => {
           onClick={() => setActiveTab('directives')}
           className={`flex items-center gap-2 py-3 px-5 text-sm font-semibold border-b-2 transition-colors ${
             activeTab === 'directives'
-              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <Send size={18} />
           업무 지시사항
-          <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+          <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
             {roleFilteredDirectives.length}
           </span>
         </button>
@@ -729,15 +729,15 @@ export const NoticePage: React.FC = () => {
           {/* Top 4 KPI Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {/* KPI 1: Total */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-2xs">
-              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">
+            <div className="bg-card text-card-foreground p-4 rounded-xl border border-border shadow-2xs">
+              <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1">
                 <span>{canViewAll ? '전사 누적 지시' : isTeamScope ? `${myTeam} 하달 건수` : '내게 온 업무 지시'}</span>
-                <Send size={15} className="text-indigo-500" />
+                <Send size={15} className="text-primary" />
               </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {directiveMetrics.total}<span className="text-xs font-normal text-gray-500 ml-1">건</span>
+              <div className="text-2xl font-bold text-foreground font-mono tabular-nums">
+                {directiveMetrics.total}<span className="text-xs font-normal text-muted-foreground ml-1">건</span>
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <div className="text-xs text-muted-foreground mt-1">
                 {canViewAll ? '전사 하달 누적 건' : isTeamScope ? '소속 팀원 지시 총합' : '본인 할당 전체 지시'}
               </div>
             </div>
@@ -745,53 +745,53 @@ export const NoticePage: React.FC = () => {
             {/* KPI 2: Pending (Action Needed) */}
             <div className={`p-4 rounded-xl border shadow-2xs transition-all ${
               directiveMetrics.pending > 0
-                ? 'bg-red-50/60 dark:bg-red-950/20 border-red-200 dark:border-red-900/40'
-                : 'bg-white dark:bg-gray-800 border-gray-200/80 dark:border-gray-700'
+                ? 'bg-destructive/10 border-destructive/30 text-destructive'
+                : 'bg-card text-card-foreground border-border'
             }`}>
-              <div className="flex items-center justify-between text-xs text-red-600 dark:text-red-400 font-bold mb-1">
+              <div className="flex items-center justify-between text-xs font-bold mb-1">
                 <span>{isAgent ? '새 지시 (확인 필요)' : isTeamScope ? '팀원 미확인 대기' : '전사 확인 대기'}</span>
-                <Clock size={15} className={directiveMetrics.pending > 0 ? 'text-red-500 animate-pulse' : 'text-gray-500 dark:text-gray-400'} />
+                <Clock size={15} className={directiveMetrics.pending > 0 ? 'text-destructive animate-pulse' : 'text-muted-foreground'} />
               </div>
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                {directiveMetrics.pending}<span className="text-xs font-normal text-red-500 ml-1">건</span>
+              <div className="text-2xl font-bold font-mono tabular-nums">
+                {directiveMetrics.pending}<span className="text-xs font-normal ml-1">건</span>
               </div>
-              <div className="text-xs text-red-500/80 mt-1">
+              <div className="text-xs opacity-80 mt-1">
                 {isAgent ? '내용 확인 후 즉시 조치 착수' : '상담원이 아직 확인 안 한 건'}
               </div>
             </div>
 
             {/* KPI 3: In Progress */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-2xs">
-              <div className="flex items-center justify-between text-xs text-sky-600 dark:text-sky-400 font-bold mb-1">
+            <div className="bg-card text-card-foreground p-4 rounded-xl border border-border shadow-2xs">
+              <div className="flex items-center justify-between text-xs text-foreground font-bold mb-1">
                 <span>{isAgent ? '내가 조치 진행 중' : isTeamScope ? '팀원 조치 진행 중' : '전사 진행 중'}</span>
-                <Clock size={15} className="text-sky-500" />
+                <Clock size={15} className="text-primary" />
               </div>
-              <div className="text-2xl font-bold text-sky-600 dark:text-sky-400">
-                {directiveMetrics.inProgress}<span className="text-xs font-normal text-gray-500 ml-1">건</span>
+              <div className="text-2xl font-bold text-foreground font-mono tabular-nums">
+                {directiveMetrics.inProgress}<span className="text-xs font-normal text-muted-foreground ml-1">건</span>
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <div className="text-xs text-muted-foreground mt-1">
                 현재 현장 상담/통화 조치 중인 건
               </div>
             </div>
 
             {/* KPI 4: Completion Rate */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200/80 dark:border-gray-700 shadow-2xs">
-              <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-bold mb-1">
+            <div className="bg-card text-card-foreground p-4 rounded-xl border border-border shadow-2xs">
+              <div className="flex items-center justify-between text-xs text-primary font-bold mb-1">
                 <span>{isAgent ? '내 조치 완료 업무' : isTeamScope ? `${myTeam} 이행 완료율` : '전사 지시 완료율'}</span>
-                <CheckCircle2 size={15} className="text-emerald-500" />
+                <CheckCircle2 size={15} className="text-primary" />
               </div>
-              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="text-2xl font-bold text-primary font-mono tabular-nums">
                 {isAgent ? directiveMetrics.completed : `${directiveMetrics.completionRate}%`}
-                <span className="text-xs font-normal text-gray-500 ml-1">{isAgent ? '건' : `(${directiveMetrics.completed}건 완료)`}</span>
+                <span className="text-xs font-normal text-muted-foreground ml-1">{isAgent ? '건' : `(${directiveMetrics.completed}건 완료)`}</span>
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <div className="text-xs text-muted-foreground mt-1">
                 결과 메모 제출 완료된 업무
               </div>
             </div>
           </div>
 
           {/* Directive Filter Bar */}
-          <div className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+          <div className="bg-card p-3 rounded-xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
               {[
                 { id: 'all', label: '전체' },
@@ -802,10 +802,10 @@ export const NoticePage: React.FC = () => {
                 <button
                   key={f.id}
                   onClick={() => setDirectiveFilter(f.id)}
-                  className={`px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     directiveFilter === f.id
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+                      ? 'bg-primary text-primary-foreground shadow-2xs'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }`}
                 >
                   {f.label}
@@ -1004,35 +1004,35 @@ export const NoticePage: React.FC = () => {
 
       {/* MODAL 1: Create Notice */}
       {showCreateNoticeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700 space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Plus size={20} className="text-blue-600" /> {isPlatformAdmin ? '플랫폼 전역 공지 송출' : '새 공지사항 작성'}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-card text-card-foreground rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-border space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              <Plus size={18} className="text-primary" /> {isPlatformAdmin ? '플랫폼 전역 공지 송출' : '새 공지사항 작성'}
             </h3>
 
-            <form onSubmit={handleCreateNotice} className="space-y-4 text-sm">
+            <form onSubmit={handleCreateNotice} className="space-y-4 text-xs">
               {/* 총괄 운영자 전용 멀티테넌트 플랫폼 타겟팅 컨트롤 */}
               {isPlatformAdmin && (
-                <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 space-y-3">
+                <div className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
-                      <Crown size={15} className="text-amber-500" /> LeadMaster 총괄 운영자 모드
+                    <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <Crown size={15} className="text-primary" /> LeadMaster 총괄 운영자 모드
                     </span>
-                    <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-purple-800 dark:text-purple-300">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-primary">
                       <input
                         type="checkbox"
                         checked={noticeForm.is_platform_notice}
                         onChange={e => setNoticeForm(f => ({ ...f, is_platform_notice: e.target.checked }))}
-                        className="rounded text-purple-600 focus:ring-purple-500"
+                        className="accent-primary"
                       />
                       전체 입점 고객사 플랫폼 공지
                     </label>
                   </div>
 
                   {noticeForm.is_platform_notice && (
-                    <div className="space-y-2.5 pt-1 border-t border-purple-200/60 dark:border-purple-800/60 text-xs">
+                    <div className="space-y-2.5 pt-1 border-t border-border text-xs">
                       <div>
-                        <span className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">
+                        <span className="font-semibold text-foreground block mb-1">
                           수신 대상 지정 (Target Audience)
                         </span>
                         <div className="grid grid-cols-2 gap-2">
@@ -1041,12 +1041,12 @@ export const NoticePage: React.FC = () => {
                             onClick={() => setNoticeForm(f => ({ ...f, platform_target_role: 'admins_only' }))}
                             className={`p-2.5 rounded-lg border text-left transition-all ${
                               noticeForm.platform_target_role === 'admins_only'
-                                ? 'border-purple-600 bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 font-bold shadow-xs'
-                                : 'border-purple-200 dark:border-purple-900/50 text-gray-600 dark:text-gray-400'
+                                ? 'border-primary bg-primary/10 text-primary font-bold shadow-2xs'
+                                : 'border-border text-muted-foreground hover:bg-muted'
                             }`}
                           >
                             <div className="font-bold flex items-center gap-1">🔒 각 고객사 대표·관리자만</div>
-                            <div className="text-xs opacity-80 mt-0.5">과금/정산/약관/관리자 기능 (상담원 비공개)</div>
+                            <div className="text-2xs text-muted-foreground mt-0.5">과금/정산/약관/관리자 기능 (상담원 비공개)</div>
                           </button>
 
                           <button
@@ -1054,12 +1054,12 @@ export const NoticePage: React.FC = () => {
                             onClick={() => setNoticeForm(f => ({ ...f, platform_target_role: 'all' }))}
                             className={`p-2.5 rounded-lg border text-left transition-all ${
                               noticeForm.platform_target_role === 'all'
-                                ? 'border-purple-600 bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 font-bold shadow-xs'
-                                : 'border-purple-200 dark:border-purple-900/50 text-gray-600 dark:text-gray-400'
+                                ? 'border-primary bg-primary/10 text-primary font-bold shadow-2xs'
+                                : 'border-border text-muted-foreground hover:bg-muted'
                             }`}
                           >
                             <div className="font-bold flex items-center gap-1">👥 모든 고객사 전원 (대표+직원)</div>
-                            <div className="text-xs opacity-80 mt-0.5">서버점검/앱업데이트/전체 기능 안내</div>
+                            <div className="text-2xs text-muted-foreground mt-0.5">서버점검/앱업데이트/전체 기능 안내</div>
                           </button>
                         </div>
                       </div>
@@ -1068,10 +1068,10 @@ export const NoticePage: React.FC = () => {
                       {orgsList.length > 0 && (
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-semibold text-gray-700 dark:text-gray-300">
+                            <span className="font-semibold text-foreground">
                               대상 고객사 범위
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-2xs text-muted-foreground">
                               {noticeForm.target_org_ids.length === 0 ? '모든 입점 고객사' : `${noticeForm.target_org_ids.length}개 고객사 선택됨`}
                             </span>
                           </div>
@@ -1081,8 +1081,8 @@ export const NoticePage: React.FC = () => {
                               onClick={() => setNoticeForm(f => ({ ...f, target_org_ids: [] }))}
                               className={`px-2 py-1 rounded text-xs font-semibold border ${
                                 noticeForm.target_org_ids.length === 0
-                                  ? 'bg-purple-600 text-white border-purple-600'
-                                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300'
+                                  ? 'bg-primary text-primary-foreground border-primary'
+                                  : 'bg-card text-foreground border-border hover:bg-muted'
                               }`}
                             >
                               전체 고객사 일괄 송출
@@ -1096,7 +1096,7 @@ export const NoticePage: React.FC = () => {
                                   setNoticeForm(f => ({ ...f, target_org_ids: [...f.target_org_ids, selectedId] }));
                                 }
                               }}
-                              className="flex-1 px-2 py-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs"
+                              className="flex-1 px-2 py-1 rounded border border-input bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary"
                             >
                               <option value="">+ 특정 고객사 추가 선택...</option>
                               {orgsList.map(o => (
@@ -1109,12 +1109,12 @@ export const NoticePage: React.FC = () => {
                               {noticeForm.target_org_ids.map(id => {
                                 const orgObj = orgsList.find(o => o.id === id);
                                 return (
-                                  <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 text-xs">
+                                  <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary text-2xs font-semibold">
                                     {orgObj?.name || id}
                                     <button
                                       type="button"
                                       onClick={() => setNoticeForm(f => ({ ...f, target_org_ids: f.target_org_ids.filter(x => x !== id) }))}
-                                      className="text-purple-500 hover:text-purple-700"
+                                      className="text-primary hover:text-foreground cursor-pointer"
                                     >
                                       ×
                                     </button>
@@ -1127,12 +1127,12 @@ export const NoticePage: React.FC = () => {
                       )}
 
                       {/* 긴급 필독 팝업 체크박스 */}
-                      <label className="flex items-center gap-2 pt-1 text-gray-700 dark:text-gray-300 font-semibold cursor-pointer">
+                      <label className="flex items-center gap-2 pt-1 text-foreground font-semibold cursor-pointer">
                         <input
                           type="checkbox"
                           checked={noticeForm.require_popup_lock}
                           onChange={e => setNoticeForm(f => ({ ...f, require_popup_lock: e.target.checked }))}
-                          className="rounded text-purple-600 focus:ring-purple-500"
+                          className="accent-primary"
                         />
                         <span>🚨 접속 시 긴급 필독 팝업 잠금 (확인 버튼을 누를 때까지 필수 노출)</span>
                       </label>
@@ -1144,11 +1144,11 @@ export const NoticePage: React.FC = () => {
               {/* 사내 공지 수신 대상 팀 선택 */}
               {!noticeForm.is_platform_notice && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     수신 대상 범위 (Target Audience)
                   </label>
                   {isTeamScope ? (
-                    <div className="p-2.5 rounded-lg bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 text-teal-800 dark:text-teal-200 text-xs font-bold flex items-center gap-2">
+                    <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-bold flex items-center gap-2">
                       <Users size={15} />
                       <span>{myTeam} 소속 팀원 전용 공지로 등록됩니다.</span>
                     </div>
@@ -1156,7 +1156,7 @@ export const NoticePage: React.FC = () => {
                     <select
                       value={noticeForm.target_team_name}
                       onChange={e => setNoticeForm(f => ({ ...f, target_team_name: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs font-semibold"
+                      className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-xs font-semibold outline-none focus:ring-1 focus:ring-primary"
                     >
                       <option value="all">🌐 전사 전체 임직원 대상</option>
                       {availableTeams.map(t => (
@@ -1168,7 +1168,7 @@ export const NoticePage: React.FC = () => {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1">
                   공지 유형
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -1182,10 +1182,10 @@ export const NoticePage: React.FC = () => {
                       type="button"
                       key={t.id}
                       onClick={() => setNoticeForm(f => ({ ...f, notice_type: t.id as any }))}
-                      className={`py-2 text-xs font-semibold rounded-lg border transition-all ${
+                      className={`py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                         noticeForm.notice_type === t.id
-                          ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+                          ? 'border-primary bg-primary/10 text-primary font-bold shadow-2xs'
+                          : 'border-border text-muted-foreground hover:bg-muted'
                       }`}
                     >
                       {t.label}
@@ -1195,39 +1195,39 @@ export const NoticePage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1">
                   노출 방식
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setNoticeForm(f => ({ ...f, display_mode: 'banner' }))}
-                    className={`p-2.5 text-xs font-semibold rounded-lg border text-left transition-all ${
+                    className={`p-2.5 text-xs font-semibold rounded-lg border text-left transition-all cursor-pointer ${
                       noticeForm.display_mode === 'banner'
-                        ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+                        ? 'border-primary bg-primary/10 text-primary font-bold shadow-2xs'
+                        : 'border-border text-muted-foreground hover:bg-muted'
                     }`}
                   >
                     <div className="font-bold">상단 띠배너 + 목록</div>
-                    <div className="text-xs opacity-75">화면 최상단 띠배너로 즉시 강조 노출</div>
+                    <div className="text-2xs text-muted-foreground mt-0.5">화면 최상단 띠배너로 즉시 강조 노출</div>
                   </button>
                   <button
                     type="button"
                     onClick={() => setNoticeForm(f => ({ ...f, display_mode: 'feed' }))}
-                    className={`p-2.5 text-xs font-semibold rounded-lg border text-left transition-all ${
+                    className={`p-2.5 text-xs font-semibold rounded-lg border text-left transition-all cursor-pointer ${
                       noticeForm.display_mode === 'feed'
-                        ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+                        ? 'border-primary bg-primary/10 text-primary font-bold shadow-2xs'
+                        : 'border-border text-muted-foreground hover:bg-muted'
                     }`}
                   >
                     <div className="font-bold">공지사항 목록만</div>
-                    <div className="text-xs opacity-75">공지 게시판 메뉴에만 조용히 등록</div>
+                    <div className="text-2xs text-muted-foreground mt-0.5">공지 게시판 메뉴에만 조용히 등록</div>
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1">
                   공지 제목
                 </label>
                 <input
@@ -1235,12 +1235,12 @@ export const NoticePage: React.FC = () => {
                   value={noticeForm.title}
                   onChange={e => setNoticeForm(f => ({ ...f, title: e.target.value }))}
                   placeholder="예: [긴급] 11월 회생 리드 심사 기준 변경 안내"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1">
                   공지 본문 내용
                 </label>
                 <textarea
@@ -1248,46 +1248,46 @@ export const NoticePage: React.FC = () => {
                   value={noticeForm.content}
                   onChange={e => setNoticeForm(f => ({ ...f, content: e.target.value }))}
                   placeholder="상담원들에게 전달할 구체적인 내용 및 지침을 작성하세요."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary leading-relaxed"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     게시 종료일 (선택)
                   </label>
                   <input
                     type="date"
                     value={noticeForm.ends_at}
                     onChange={e => setNoticeForm(f => ({ ...f, ends_at: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs"
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <div className="flex items-center pt-5">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700 dark:text-gray-300">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-foreground">
                     <input
                       type="checkbox"
                       checked={noticeForm.is_pinned}
                       onChange={e => setNoticeForm(f => ({ ...f, is_pinned: e.target.checked }))}
-                      className="rounded text-blue-600"
+                      className="accent-primary"
                     />
                     목록 상단에 고정
                   </label>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-2 pt-2 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setShowCreateNoticeModal(false)}
-                  className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs font-medium"
+                  className="px-4 py-2 rounded-lg text-muted-foreground hover:bg-muted text-xs font-medium cursor-pointer"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold"
+                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold cursor-pointer shadow-xs"
                 >
                   공지 등록하기
                 </button>
@@ -1299,21 +1299,21 @@ export const NoticePage: React.FC = () => {
 
       {/* MODAL 2: Create Directive */}
       {showCreateDirectiveModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700 space-y-4">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Send size={20} className="text-indigo-600" /> 새 업무 지시 하달
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-card text-card-foreground rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-border space-y-4">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              <Send size={18} className="text-primary" /> 새 업무 지시 하달
             </h3>
 
             <form onSubmit={handleCreateDirective} className="space-y-4 text-sm">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-                  담당 상담원 지정 {isTeamScope && <span className="text-teal-600 dark:text-teal-400 font-bold">({myTeam} 팀원 한정)</span>}
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  담당 상담원 지정 {isTeamScope && <span className="text-primary font-bold">({myTeam} 팀원 한정)</span>}
                 </label>
                 <select
                   value={directiveForm.assigned_to}
                   onChange={e => setDirectiveForm(f => ({ ...f, assigned_to: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs font-medium"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-xs font-medium focus:ring-1 focus:ring-primary outline-none"
                 >
                   <option value="">지시를 전달할 상담원을 선택하세요</option>
                   {myTeamMembers.map(m => (
@@ -1323,14 +1323,14 @@ export const NoticePage: React.FC = () => {
                   ))}
                 </select>
                 {isTeamScope && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     중간 관리자(팀장)는 본인 소속 팀원에게만 업무 지시를 내릴 수 있습니다.
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1">
                   우선순위
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -1343,10 +1343,10 @@ export const NoticePage: React.FC = () => {
                       type="button"
                       key={p.id}
                       onClick={() => setDirectiveForm(f => ({ ...f, priority: p.id as any }))}
-                      className={`py-2 text-xs font-semibold rounded-lg border transition-all ${
+                      className={`py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                         directiveForm.priority === p.id
-                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
-                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+                          ? 'border-primary bg-primary/10 text-primary font-bold shadow-2xs'
+                          : 'border-border text-muted-foreground hover:bg-muted'
                       }`}
                     >
                       {p.label}
@@ -1356,7 +1356,7 @@ export const NoticePage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1">
                   지시 제목
                 </label>
                 <input
@@ -1364,12 +1364,12 @@ export const NoticePage: React.FC = () => {
                   value={directiveForm.title}
                   onChange={e => setDirectiveForm(f => ({ ...f, title: e.target.value }))}
                   placeholder="예: 김김김 고객 3차 부재건 오늘 중 추가 재콜 진행"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-xs focus:ring-1 focus:ring-primary outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1">
                   상세 지시 내용
                 </label>
                 <textarea
@@ -1377,33 +1377,33 @@ export const NoticePage: React.FC = () => {
                   value={directiveForm.description}
                   onChange={e => setDirectiveForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="구체적인 업무 내용 및 주의사항을 작성하세요."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-xs focus:ring-1 focus:ring-primary outline-none leading-relaxed"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1">
                   처리 마감 시한 (선택)
                 </label>
                 <input
                   type="datetime-local"
                   value={directiveForm.due_date}
                   onChange={e => setDirectiveForm(f => ({ ...f, due_date: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-xs focus:ring-1 focus:ring-primary outline-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-2 pt-2 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setShowCreateDirectiveModal(false)}
-                  className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs font-medium"
+                  className="px-4 py-2 rounded-lg text-muted-foreground hover:bg-muted text-xs font-medium cursor-pointer"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold"
+                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold cursor-pointer shadow-xs"
                 >
                   지시 하달하기
                 </button>
@@ -1415,17 +1415,17 @@ export const NoticePage: React.FC = () => {
 
       {/* MODAL 3: Completion Memo */}
       {completingDirective && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700 space-y-4">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <CheckCircle2 size={18} className="text-emerald-600" /> 업무 조치 완료 보고
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-card text-card-foreground rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border space-y-4">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              <CheckCircle2 size={18} className="text-primary" /> 업무 조치 완료 보고
             </h3>
-            <p className="text-xs text-gray-500">
-              지시: <span className="font-semibold text-gray-700 dark:text-gray-300">{completingDirective.title}</span>
+            <p className="text-xs text-muted-foreground">
+              지시: <span className="font-semibold text-foreground">{completingDirective.title}</span>
             </p>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-semibold text-foreground mb-1">
                 이행 결과 메모
               </label>
               <textarea
@@ -1433,22 +1433,22 @@ export const NoticePage: React.FC = () => {
                 value={completionMemo}
                 onChange={e => setCompletionMemo(e.target.value)}
                 placeholder="어떻게 조치 완료되었는지 간단히 기록하세요 (예: 고객 통화 완료, 내일 오전 서류 접수 약속)"
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs"
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary leading-relaxed"
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end gap-2 pt-2 border-t border-border">
               <button
                 type="button"
                 onClick={() => setCompletingDirective(null)}
-                className="px-3 py-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs font-medium"
+                className="px-3.5 py-2 rounded-lg text-muted-foreground hover:bg-muted text-xs font-medium cursor-pointer"
               >
                 취소
               </button>
               <button
                 type="button"
                 onClick={handleSubmitCompletion}
-                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold"
+                className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold cursor-pointer shadow-xs"
               >
                 완료 보고 제출
               </button>
@@ -1459,26 +1459,26 @@ export const NoticePage: React.FC = () => {
 
       {/* MODAL 4: Admin Notice Read Stats */}
       {statsNotice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-card text-card-foreground rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <Users size={18} className="text-blue-600" /> 공지 수신 확인 현황
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Users size={18} className="text-primary" /> 공지 수신 확인 현황
               </h3>
               <button
                 onClick={() => setStatsNotice(null)}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-600 text-sm"
+                className="text-muted-foreground hover:text-foreground p-1 text-sm cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-gray-500 font-medium truncate">
+            <p className="text-xs text-muted-foreground font-medium truncate">
               {statsNotice.title}
             </p>
 
             {loadingStats ? (
-              <div className="py-8 text-center text-xs text-gray-500 dark:text-gray-400">통계 집계 중...</div>
+              <div className="py-8 text-center text-xs text-muted-foreground">통계 집계 중...</div>
             ) : statsData ? (
               <div className="space-y-4 text-xs">
                 {/* Stats Summary Gauge */}
@@ -1490,16 +1490,16 @@ export const NoticePage: React.FC = () => {
 
                   return (
                     <>
-                      <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 flex items-center justify-between">
+                      <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
                         <div>
-                          <div className="font-semibold text-blue-900 dark:text-blue-200">
+                          <div className="font-semibold text-foreground">
                             {isTeamScope ? `${myTeam} 확인 인원:` : '확인 인원:'} {scopedRead.length}명 / 전체 {totalCount}명
                           </div>
-                          <div className="text-xs text-blue-700 dark:text-blue-300">
-                            수신율: {rate}%
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            수신율: <span className="font-mono font-bold text-primary">{rate}%</span>
                           </div>
                         </div>
-                        <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                        <span className="text-xl font-bold font-mono text-primary tabular-nums">
                           {rate}%
                         </span>
                       </div>
@@ -1507,17 +1507,17 @@ export const NoticePage: React.FC = () => {
                       {/* Unread List */}
                       {scopedUnread.length > 0 && (
                         <div className="space-y-1">
-                          <div className="font-bold text-red-600 dark:text-red-400 flex items-center gap-1">
+                          <div className="font-bold text-destructive flex items-center gap-1">
                             <AlertTriangle size={12} /> {isTeamScope ? `${myTeam} 미확인 인원` : '미확인 인원'} ({scopedUnread.length}명)
                           </div>
-                          <div className="max-h-28 overflow-y-auto p-2 rounded-lg bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 space-y-1">
+                          <div className="max-h-28 overflow-y-auto p-2 rounded-lg bg-destructive/10 border border-destructive/20 space-y-1">
                             {scopedUnread.map(m => (
-                              <div key={m.userId} className="text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                              <div key={m.userId} className="text-foreground flex items-center justify-between">
                                 <span className="flex items-center gap-1.5">
                                   <span>{m.displayName}</span>
-                                  <span className="text-xs px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 font-medium">{m.teamName || '1팀'}</span>
+                                  <span className="text-2xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">{m.teamName || '1팀'}</span>
                                 </span>
-                                <span className="text-xs text-red-500 font-bold">미확인</span>
+                                <span className="text-2xs text-destructive font-bold">미확인</span>
                               </div>
                             ))}
                           </div>
@@ -1526,17 +1526,17 @@ export const NoticePage: React.FC = () => {
 
                       {/* Read List */}
                       <div className="space-y-1">
-                        <div className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <div className="font-bold text-primary flex items-center gap-1">
                           <CheckCircle2 size={12} /> {isTeamScope ? `${myTeam} 확인 완료 인원` : '확인 완료 인원'} ({scopedRead.length}명)
                         </div>
-                        <div className="max-h-32 overflow-y-auto p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 space-y-1">
+                        <div className="max-h-32 overflow-y-auto p-2 rounded-lg bg-primary/5 border border-primary/20 space-y-1">
                           {scopedRead.map(m => (
-                            <div key={m.userId} className="text-gray-700 dark:text-gray-300 flex items-center justify-between text-xs">
+                            <div key={m.userId} className="text-foreground flex items-center justify-between text-xs">
                               <span className="flex items-center gap-1.5">
                                 <span>{m.displayName}</span>
-                                <span className="text-xs px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium">{m.teamName || '1팀'}</span>
+                                <span className="text-2xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{m.teamName || '1팀'}</span>
                               </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(m.readAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span className="text-2xs text-muted-foreground font-mono">{new Date(m.readAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                           ))}
                         </div>
@@ -1547,10 +1547,10 @@ export const NoticePage: React.FC = () => {
               </div>
             ) : null}
 
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+            <div className="pt-2 border-t border-border flex justify-end">
               <button
                 onClick={() => setStatsNotice(null)}
-                className="px-4 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-200"
+                className="px-4 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-xs font-semibold text-foreground transition-colors cursor-pointer"
               >
                 닫기
               </button>

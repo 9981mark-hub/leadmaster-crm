@@ -52,48 +52,48 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
     );
   }
   return (
-    <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-2">
-        <Mic size={18} className="text-purple-600" />
-        <h2 className="font-bold text-gray-800 dark:text-white">통화 녹음 · AI 채무 정리</h2>
-        <span className="text-xs text-gray-500 dark:text-gray-400">상담원 폰의 통화 녹음을 리드에 붙이고 AI가 채무·소득·재산을 정리</span>
+    <section className="bg-card text-card-foreground rounded-xl border border-border shadow-xs">
+      <div className="px-5 py-4 border-b border-border flex flex-wrap items-center gap-2">
+        <Mic size={18} className="text-primary" />
+        <h2 className="font-bold text-foreground">통화 녹음 · AI 채무 정리</h2>
+        <span className="text-xs text-muted-foreground">상담원 폰의 통화 녹음을 리드에 붙이고 AI가 채무·소득·재산을 정리</span>
         <div className="ml-auto flex items-center gap-2">
           <button
             type="button"
             onClick={() => setShowBackupCenter(true)}
-            className="px-3 py-1 text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 dark:bg-amber-950 dark:text-amber-300 rounded-lg border border-amber-300 dark:border-amber-800 flex items-center gap-1.5 transition-all shadow-xs"
+            className="px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg border border-primary/20 flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
           >
             <Archive size={13} />
             <span>만료 & 백업 센터 (ZIP 다운로드)</span>
           </button>
-          <button onClick={reload} className="text-xs text-gray-500 flex items-center gap-1"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침</button>
+          <button onClick={reload} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors"><RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침</button>
         </div>
       </div>
       <div className="p-5 grid lg:grid-cols-2 gap-5">
-        <div className="space-y-3 text-sm">
-          <label className="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-100">
-            <input type="checkbox" checked={s.autoUpload} onChange={e => setS({ ...s, autoUpload: e.target.checked })} /> 리드 통화 녹음 자동 업로드
+        <div className="space-y-3 text-xs">
+          <label className="flex items-center gap-2 font-semibold text-foreground cursor-pointer">
+            <input type="checkbox" checked={s.autoUpload} onChange={e => setS({ ...s, autoUpload: e.target.checked })} className="accent-primary" /> 리드 통화 녹음 자동 업로드
           </label>
-          <p className="text-xs text-gray-500 -mt-2">앱이 통화가 끝나면 폰의 통화 녹음 파일(삼성 전화·T전화)을 찾아, <b>리드 번호와의 통화만</b> 회사의 안전한 <b>Supabase Storage(call-recordings 버킷)</b>에 1년간 암호화 보관합니다. 0.1초 고속 스트리밍 및 대화록 싱크 청취를 지원합니다.</p>
-          <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-200 flex flex-wrap items-center gap-1.5 shadow-2xs">
+          <p className="text-2xs text-muted-foreground -mt-1 leading-relaxed">앱이 통화가 끝나면 폰의 통화 녹음 파일(삼성 전화·T전화)을 찾아, <b className="text-foreground">리드 번호와의 통화만</b> 회사의 안전한 <b className="text-foreground">Supabase Storage(call-recordings 버킷)</b>에 1년간 암호화 보관합니다. 0.1초 고속 스트리밍 및 대화록 싱크 청취를 지원합니다.</p>
+          <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-xs text-primary flex flex-wrap items-center gap-1.5 shadow-2xs">
             <span className="font-bold shrink-0">⚡ 32kbps AAC 모노 H/W 가속 압축 활성화</span>
-            <span className="text-xs text-emerald-700 dark:text-emerald-300">· 원본 대비 용량 75% 절감 (100GB 무료 한도 1년 보관 완비)</span>
+            <span className="text-2xs text-primary/80">· 원본 대비 용량 75% 절감 (100GB 무료 한도 1년 보관 완비)</span>
           </div>
-          <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
-            <input type="checkbox" checked={s.autoAnalyze} onChange={e => setS({ ...s, autoAnalyze: e.target.checked })} disabled={!s.autoUpload} /> 올리면 바로 AI 정리 (요약·대화록·채무 정리)
+          <label className="flex items-center gap-2 text-foreground cursor-pointer">
+            <input type="checkbox" checked={s.autoAnalyze} onChange={e => setS({ ...s, autoAnalyze: e.target.checked })} disabled={!s.autoUpload} className="accent-primary" /> 올리면 바로 AI 정리 (요약·대화록·채무 정리)
           </label>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="w-32 text-gray-600 dark:text-gray-300">이보다 짧은 통화 제외</span>
-            <input type="number" min={0} max={3600} value={s.minDurationSec} onChange={e => setS({ ...s, minDurationSec: parseInt(e.target.value, 10) || 0 })} className={`${input} w-20`} /> <span className="text-xs text-gray-500 dark:text-gray-400">초</span>
+            <span className="w-32 text-muted-foreground">이보다 짧은 통화 제외</span>
+            <input type="number" min={0} max={3600} value={s.minDurationSec} onChange={e => setS({ ...s, minDurationSec: parseInt(e.target.value, 10) || 0 })} className={`${input} w-20 font-mono`} /> <span className="text-2xs text-muted-foreground">초</span>
           </div>
-          <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
-            <input type="checkbox" checked={s.wifiOnly} onChange={e => setS({ ...s, wifiOnly: e.target.checked })} /> 와이파이에서만 올리기 (상담원 데이터 요금 절약)
+          <label className="flex items-center gap-2 text-foreground cursor-pointer">
+            <input type="checkbox" checked={s.wifiOnly} onChange={e => setS({ ...s, wifiOnly: e.target.checked })} className="accent-primary" /> 와이파이에서만 올리기 (상담원 데이터 요금 절약)
           </label>
         </div>
-        <div className="space-y-3 text-sm">
+        <div className="space-y-3 text-xs">
           {/* 데이터 및 녹음 보관 기간 설정 (6개월, 1년, 2년 선택) */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="w-32 text-gray-600 dark:text-gray-300">데이터 보존 기간</span>
+            <span className="w-32 text-muted-foreground">데이터 보존 기간</span>
             <select
               value={s.retentionDays || 365}
               onChange={e => setS({ ...s, retentionDays: parseInt(e.target.value, 10) || 365 })}
@@ -108,24 +108,24 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
                 </option>
               )}
             </select>
-            <span className="text-xs text-gray-500 dark:text-gray-400">설정 기간 경과 시 자동 정리</span>
+            <span className="text-2xs text-muted-foreground">설정 기간 경과 시 자동 정리</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="w-32 text-gray-600 dark:text-gray-300">하루 AI 정리 상한</span>
-            <input type="number" min={0} value={s.dailyAnalyzeCap} onChange={e => setS({ ...s, dailyAnalyzeCap: parseInt(e.target.value, 10) || 0 })} className={`${input} w-24`} /> <span className="text-xs text-gray-500 dark:text-gray-400">건 (비용 보호, 넘으면 다음 날)</span>
+            <span className="w-32 text-muted-foreground">하루 AI 정리 상한</span>
+            <input type="number" min={0} value={s.dailyAnalyzeCap} onChange={e => setS({ ...s, dailyAnalyzeCap: parseInt(e.target.value, 10) || 0 })} className={`${input} w-24 font-mono`} /> <span className="text-2xs text-muted-foreground">건 (비용 보호, 넘으면 다음 날)</span>
           </div>
           {usage && (
-            <div className="rounded-lg bg-gray-50 dark:bg-gray-900/30 p-3 text-xs text-gray-600 dark:text-gray-300 grid grid-cols-2 gap-1">
-              <span>스토리지 보관 녹음</span><b>{usage.files.toLocaleString()}개 · {fmtBytes(usage.bytes)}</b>
-              <span>오늘 올라온 녹음</span><b>{usage.uploadedToday.toLocaleString()}개</b>
-              <span>오늘 / 이번 달 AI 정리</span><b>{usage.analyzedToday.toLocaleString()} / {usage.analyzedMonth.toLocaleString()}건</b>
-              <span>이번 달 AI 사용량</span><b>입력 {(usage.tokensInMonth / 1e6).toFixed(2)}M · 출력 {(usage.tokensOutMonth / 1e6).toFixed(2)}M 토큰</b>
-              {usage.failed7d > 0 && <><span className="text-red-600">최근 7일 실패</span><b className="text-red-600">{usage.failed7d}건</b></>}
+            <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground grid grid-cols-2 gap-1 font-mono">
+              <span>스토리지 보관 녹음</span><b className="text-foreground">{usage.files.toLocaleString()}개 · {fmtBytes(usage.bytes)}</b>
+              <span>오늘 올라온 녹음</span><b className="text-foreground">{usage.uploadedToday.toLocaleString()}개</b>
+              <span>오늘 / 이번 달 AI 정리</span><b className="text-foreground">{usage.analyzedToday.toLocaleString()} / {usage.analyzedMonth.toLocaleString()}건</b>
+              <span>이번 달 AI 사용량</span><b className="text-foreground">입력 {(usage.tokensInMonth / 1e6).toFixed(2)}M · 출력 {(usage.tokensOutMonth / 1e6).toFixed(2)}M 토큰</b>
+              {usage.failed7d > 0 && <><span className="text-destructive font-bold">최근 7일 실패</span><b className="text-destructive font-bold">{usage.failed7d}건</b></>}
             </div>
           )}
-          <div className="text-xs text-gray-500">폰 준비: 전화 앱에서 <b>통화 자동 녹음</b> 켜기 → 리드마스터 앱 1.6.0 이상 → 권한 안내 화면에서 <b>음악 및 오디오</b> 허용.</div>
+          <div className="text-2xs text-muted-foreground">폰 준비: 전화 앱에서 <b className="text-foreground">통화 자동 녹음</b> 켜기 → 리드마스터 앱 1.6.0 이상 → 권한 안내 화면에서 <b className="text-foreground">음악 및 오디오</b> 허용.</div>
           <div className="flex justify-end">
-            <button onClick={save} disabled={busy || !dirty} className="px-4 py-2 text-sm font-bold text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-40 flex items-center gap-1"><Save size={14} /> 저장</button>
+            <button onClick={save} disabled={busy || !dirty} className="px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-40 flex items-center gap-1 shadow-2xs cursor-pointer"><Save size={13} /> 저장</button>
           </div>
         </div>
       </div>

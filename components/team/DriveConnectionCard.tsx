@@ -77,47 +77,47 @@ export default function DriveConnectionCard() {
 
   const ready = st.connected && !!st.rootFolderId;
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+    <div className="rounded-xl border border-border p-4 space-y-3 bg-muted/20 text-xs">
       <div className="flex flex-wrap items-center gap-2">
-        <HardDrive size={16} className="text-emerald-600" />
-        <b className="text-sm text-gray-800 dark:text-gray-100">녹음 원본 장기 보관 (회사 구글 드라이브)</b>
-        {ready ? <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">보관 준비됨</span>
-          : st.connected ? <span className="text-xs px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold">폴더를 정하세요</span>
-          : st.status === 'error' ? <span className="text-xs px-1.5 py-0.5 rounded bg-red-50 text-red-700 font-semibold">다시 연결 필요</span>
-          : <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-semibold">연결 안 됨</span>}
-        <button onClick={reload} className="ml-auto text-xs text-gray-500 flex items-center gap-1"><RefreshCw size={12} /> 새로고침</button>
+        <HardDrive size={16} className="text-primary" />
+        <b className="text-sm font-bold text-foreground">녹음 원본 장기 보관 (회사 구글 드라이브)</b>
+        {ready ? <span className="text-2xs px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 font-semibold">보관 준비됨</span>
+          : st.connected ? <span className="text-2xs px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20 font-semibold">폴더를 정하세요</span>
+          : st.status === 'error' ? <span className="text-2xs px-2 py-0.5 rounded-md bg-destructive/10 text-destructive border border-destructive/20 font-semibold">다시 연결 필요</span>
+          : <span className="text-2xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border font-semibold">연결 안 됨</span>}
+        <button onClick={reload} className="ml-auto text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors"><RefreshCw size={12} /> 새로고침</button>
       </div>
-      <p className="text-xs text-gray-500">통화 녹음 원본을 <b>회사 구글 드라이브</b>에 쌓습니다. 파일은 비공개이고, 리드마스터는 자기가 만든 파일과 허용받은 파일만 다룹니다(회사 드라이브의 다른 파일은 못 봄). 자동 삭제는 하지 않습니다.</p>
+      <p className="text-2xs text-muted-foreground leading-relaxed">통화 녹음 원본을 <b className="text-foreground">회사 구글 드라이브</b>에 쌓습니다. 파일은 비공개이고, 리드마스터는 자기가 만든 파일과 허용받은 파일만 다룹니다(회사 드라이브의 다른 파일은 못 봄). 자동 삭제는 하지 않습니다.</p>
 
       {(st.connected || st.status === 'error') && (
-        <div className="text-xs grid grid-cols-[7rem_1fr] gap-y-1 text-gray-600 dark:text-gray-300">
-          <span>구글 계정</span><b>{st.googleEmail || '-'}</b>
-          <span>보관 폴더</span><b>{st.rootFolderName ? `${st.rootFolderName} (${st.folderMode === 'picked' ? '기존 폴더' : '새로 만든 폴더'})` : '아직 안 정함'}</b>
-          <span>연결한 시각</span><span>{fmt(st.connectedAt)}</span>
-          {st.lastOkAt && <><span>마지막 정상</span><span>{fmt(st.lastOkAt)}</span></>}
-          {st.lastError && <><span className="text-red-600">문제</span><span className="text-red-600">{st.lastError}</span></>}
+        <div className="text-xs grid grid-cols-[7rem_1fr] gap-y-1 text-muted-foreground">
+          <span>구글 계정</span><b className="text-foreground font-mono">{st.googleEmail || '-'}</b>
+          <span>보관 폴더</span><b className="text-foreground">{st.rootFolderName ? `${st.rootFolderName} (${st.folderMode === 'picked' ? '기존 폴더' : '새로 만든 폴더'})` : '아직 안 정함'}</b>
+          <span>연결한 시각</span><span className="font-mono">{fmt(st.connectedAt)}</span>
+          {st.lastOkAt && <><span>마지막 정상</span><span className="font-mono">{fmt(st.lastOkAt)}</span></>}
+          {st.lastError && <><span className="text-destructive font-semibold">문제</span><span className="text-destructive">{st.lastError}</span></>}
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 pt-1">
         {!st.connected && (
-          <button onClick={() => run('connect', startDriveConnect)} disabled={!!busy} className={`${btn} border-emerald-300 bg-emerald-600 text-white hover:bg-emerald-700`}>
+          <button onClick={() => run('connect', startDriveConnect)} disabled={!!busy} className={`${btn} border-primary bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer`}>
             <Link2 size={13} /> {st.status === 'error' ? '구글 드라이브 다시 연결' : '구글 드라이브 연결'}
           </button>
         )}
         {st.connected && (
           <>
-            <button onClick={newFolder} disabled={!!busy} className={`${btn} border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700`}><FolderPlus size={13} /> 새 폴더 만들기</button>
-            <button onClick={pickFolder} disabled={!!busy || !PICKER_API_KEY} title={PICKER_API_KEY ? '' : '구글 파일 선택 창 설정(API 키) 후 사용할 수 있습니다'} className={`${btn} border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700`}><FolderOpen size={13} /> 기존 폴더 고르기</button>
+            <button onClick={newFolder} disabled={!!busy} className={`${btn} border-border bg-card text-foreground hover:bg-muted shadow-2xs cursor-pointer`}><FolderPlus size={13} /> 새 폴더 만들기</button>
+            <button onClick={pickFolder} disabled={!!busy || !PICKER_API_KEY} title={PICKER_API_KEY ? '' : '구글 파일 선택 창 설정(API 키) 후 사용할 수 있습니다'} className={`${btn} border-border bg-card text-foreground hover:bg-muted shadow-2xs cursor-pointer`}><FolderOpen size={13} /> 기존 폴더 고르기</button>
             {st.rootFolderId && st.folderMode === 'picked' && (
-              <button onClick={allowFiles} disabled={!!busy || !PICKER_API_KEY} className={`${btn} border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700`}><FileAudio size={13} /> 기존 파일 허용</button>
+              <button onClick={allowFiles} disabled={!!busy || !PICKER_API_KEY} className={`${btn} border-border bg-card text-foreground hover:bg-muted shadow-2xs cursor-pointer`}><FileAudio size={13} /> 기존 파일 허용</button>
             )}
             {st.rootFolderId && (
-              <button onClick={importLegacy} disabled={!!busy} title="리드 상세에 예전 방식으로 올린 드라이브 녹음을 '통화 녹음·AI' 탭의 드라이브 보관 녹음으로 등록합니다. 파일은 옮기지 않습니다." className={`${btn} border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700`}><Download size={13} /> {busy === 'import' ? '등록 중…' : '예전 녹음 등록'}</button>
+              <button onClick={importLegacy} disabled={!!busy} title="리드 상세에 예전 방식으로 올린 드라이브 녹음을 '통화 녹음·AI' 탭의 드라이브 보관 녹음으로 등록합니다. 파일은 옮기지 않습니다." className={`${btn} border-border bg-card text-foreground hover:bg-muted shadow-2xs cursor-pointer`}><Download size={13} /> {busy === 'import' ? '등록 중…' : '예전 녹음 등록'}</button>
             )}
-            <button onClick={test} disabled={!!busy || !st.rootFolderId} className={`${btn} border-sky-300 text-sky-700 hover:bg-sky-50`}><FlaskConical size={13} /> {busy === 'test' ? '시험 중…' : '연결 시험'}</button>
-            <button onClick={() => run('connect', startDriveConnect)} disabled={!!busy} className={`${btn} border-gray-300 text-gray-600 hover:bg-gray-50`}><Link2 size={13} /> 다른 계정으로 다시 연결</button>
-            <button onClick={disconnect} disabled={!!busy} className={`${btn} border-red-200 text-red-600 hover:bg-red-50`}><Unlink size={13} /> 연결 해제</button>
+            <button onClick={test} disabled={!!busy || !st.rootFolderId} className={`${btn} border-primary/30 text-primary bg-primary/10 hover:bg-primary/20 shadow-2xs cursor-pointer`}><FlaskConical size={13} /> {busy === 'test' ? '시험 중…' : '연결 시험'}</button>
+            <button onClick={() => run('connect', startDriveConnect)} disabled={!!busy} className={`${btn} border-border text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer`}><Link2 size={13} /> 다른 계정으로 다시 연결</button>
+            <button onClick={disconnect} disabled={!!busy} className={`${btn} border-destructive/30 text-destructive hover:bg-destructive/10 cursor-pointer`}><Unlink size={13} /> 연결 해제</button>
           </>
         )}
       </div>
