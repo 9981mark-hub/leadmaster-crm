@@ -198,12 +198,12 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
         <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs flex flex-col justify-between card-interactive hover:border-primary/40 transition-all">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
             <span>입금 기한 지난 연체</span>
-            <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 ${totals.overdueWon > 0 ? 'bg-destructive/10 text-destructive border border-destructive/20' : 'bg-muted text-muted-foreground border border-border'}`}>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 ${totals.overdueWon > 0 ? 'bg-red-500/15 text-red-600 dark:text-red-300 border border-red-500/30' : 'bg-muted text-muted-foreground border border-border'}`}>
               <AlertTriangle size={12} strokeWidth={1.75} /> {totals.overdueWon > 0 ? '연체' : '정상'}
             </span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold text-foreground font-mono tabular-nums">
+            <span className={`text-2xl font-bold font-mono tabular-nums ${totals.overdueWon > 0 ? 'text-red-500 dark:text-red-400' : 'text-foreground'}`}>
               ₩ {(totals.overdueWon / 10000).toLocaleString()}
             </span>
             <span className="text-xs font-semibold text-muted-foreground">만원</span>
@@ -314,12 +314,12 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                       {card.partnerName}
                     </h3>
                     <div className="flex items-center gap-1.5 mt-1">
-                      <span className="text-2xs px-2 py-0.5 rounded font-mono font-medium bg-muted text-muted-foreground border border-border">
+                      <span className="text-2xs px-2 py-0.5 rounded font-medium bg-muted text-muted-foreground border border-border tracking-tight">
                         {card.settlementCycleDisplay}
                       </span>
-                      <span className={`text-2xs px-2 py-0.5 rounded font-mono font-medium border ${
+                      <span className={`text-2xs px-2 py-0.5 rounded font-semibold border tracking-tight ${
                         card.dDay < 0
-                          ? 'bg-destructive/10 text-destructive border-destructive/20'
+                          ? 'bg-red-500/15 text-red-600 dark:text-red-300 border-red-500/30'
                           : card.dDay === 0
                           ? 'bg-primary/15 text-primary border border-primary/30'
                           : 'bg-muted/60 text-muted-foreground border border-border'
@@ -329,8 +329,8 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                     </div>
                   </div>
 
-                  <span className="text-2xs font-mono font-medium px-2 py-0.5 bg-muted/60 text-muted-foreground rounded border border-border">
-                    {card.caseCount}건 수임
+                  <span className="text-2xs font-semibold px-2 py-0.5 bg-muted/60 text-muted-foreground rounded border border-border tracking-tight">
+                    <span className="tabular-nums">{card.caseCount}</span>건 수임
                   </span>
                 </div>
 
@@ -365,9 +365,12 @@ export const PartnerSettlementOverviewTab: React.FC<PartnerSettlementOverviewTab
                   </div>
 
                   {card.overdueWon > 0 && (
-                    <div className="flex justify-between items-center text-destructive font-semibold bg-destructive/10 border border-destructive/20 p-2 rounded-lg text-xs font-mono">
-                      <span>연체 경고:</span>
-                      <span>
+                    <div className="flex justify-between items-center bg-red-500/10 border border-red-500/30 p-2.5 rounded-lg text-xs shadow-2xs">
+                      <span className="font-semibold text-red-600 dark:text-red-300 flex items-center gap-1.5">
+                        <AlertTriangle size={13} strokeWidth={2} className="text-red-500 shrink-0" />
+                        <span>연체 경고:</span>
+                      </span>
+                      <span className="font-bold text-red-600 dark:text-red-400 tabular-nums">
                         ₩ {(card.overdueWon / 10000).toLocaleString()} 만원 연체중
                       </span>
                     </div>

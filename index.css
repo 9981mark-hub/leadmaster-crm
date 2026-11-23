@@ -40,7 +40,7 @@
   --muted-foreground: 240 5% 64.9%;   /* #a1a1aa (Zinc 400) */
   --accent: 240 3.7% 15.9%;
   --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
+  --destructive: 0 84.2% 60.2%;       /* #ef4444 (다크모드에서도 선명한 가독성을 제공하는 고대비 로즈 레드) */
   --destructive-foreground: 0 0% 98%;
   --border: 240 3.7% 15.9%;           /* #27272a (1px 다크 미세 테두리) */
   --input: 240 3.7% 15.9%;

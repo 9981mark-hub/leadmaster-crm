@@ -4357,13 +4357,13 @@ export default function Settlement() {
                     <div>
                         <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
                             <span>최종 영업 순이익</span>
-                            <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${(integratedPnLSummary?.profitMarginRate || 0) >= 0 ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-destructive/10 text-destructive border border-destructive/20'}`}>
+                            <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${(integratedPnLSummary?.profitMarginRate || 0) >= 0 ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-red-500/15 text-red-600 dark:text-red-300 border border-red-500/30'}`}>
                                 {integratedPnLSummary?.profitMarginRate || 0}%
                             </span>
                         </div>
                         <div className="flex items-baseline gap-1.5">
                             <span className={`text-2xl font-bold font-mono tabular-nums ${
-                                (integratedPnLSummary?.netProfitWon || 0) >= 0 ? 'text-primary' : 'text-destructive'
+                                (integratedPnLSummary?.netProfitWon || 0) >= 0 ? 'text-primary' : 'text-red-500 dark:text-red-400'
                             }`}>
                                 {(integratedPnLSummary?.netProfitWon || 0) < 0 ? '-' : ''}₩ {Math.abs((integratedPnLSummary?.netProfitWon || 0) / 10000).toLocaleString()}
                             </span>
@@ -4379,16 +4379,21 @@ export default function Settlement() {
             {/* Notification Center */}
             <div className="space-y-2 mb-4">
                 {totalOverdueCount > 0 && (
-                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-center justify-between gap-3 text-destructive">
-                        <div className="flex items-start sm:items-center gap-2">
-                            <span className="font-semibold text-xs shrink-0 whitespace-nowrap">🚨 긴급</span>
-                            <span className="text-xs leading-snug">현재 30일 이상 장기 미수금 건이 <span className="font-bold underline">{totalOverdueCount}건</span> 있습니다.</span>
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+                        <div className="flex items-center gap-2.5">
+                            <span className="font-semibold text-2xs shrink-0 whitespace-nowrap bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                <span>🚨</span>
+                                <span>긴급</span>
+                            </span>
+                            <span className="text-xs font-medium text-foreground">
+                                현재 30일 이상 장기 미수금 건이 <span className="font-bold text-red-500 dark:text-red-400 underline underline-offset-2 tabular-nums">{totalOverdueCount}건</span> 있습니다.
+                            </span>
                         </div>
                         <button
                             onClick={() => { setActiveTab('report'); }}
-                            className="shrink-0 text-2xs bg-destructive/15 text-destructive px-2.5 py-1 rounded font-medium hover:bg-destructive/25 transition-colors"
+                            className="shrink-0 text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-all shadow-2xs"
                         >
-                            확인하기
+                            확인하기 →
                         </button>
                     </div>
                 )}
