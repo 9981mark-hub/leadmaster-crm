@@ -109,10 +109,10 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+              <span className="text-2xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20 tracking-tight">
                 총괄 관리자 · 센터 운영 관제 뷰
               </span>
-              <span className="text-2xs text-muted-foreground font-mono">{todayFormatted}</span>
+              <span className="text-2xs text-muted-foreground font-medium">{todayFormatted}</span>
             </div>
             <h3 className="text-sm font-semibold text-foreground mt-1">
               센터 전사 외근(방문/출장), 팀별 지연 콜 병목 모니터링 및 실무 파이프라인
@@ -122,7 +122,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
 
         {/* 팀 필터 칩 */}
         <div className="flex items-center gap-2">
-          <span className="text-2xs text-muted-foreground font-mono flex items-center gap-1">
+          <span className="text-2xs text-muted-foreground font-medium flex items-center gap-1">
             <Filter size={12} strokeWidth={1.75} /> 팀 필터:
           </span>
           <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border border-border/80">
@@ -161,16 +161,16 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <Users size={14} strokeWidth={1.75} className="text-primary" />
               센터 상담 인력
             </span>
-            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight">
               가동 중
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono">
+            <span className="text-2xl font-semibold tracking-tight text-foreground">
               정상 근무
             </span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal">
             전체 팀 영업 가동 상태
           </div>
         </div>
@@ -181,17 +181,17 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <MapPin size={14} strokeWidth={1.75} className="text-muted-foreground" />
               오늘 대면 미팅
             </span>
-            <span className="text-2xs font-mono font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border">
+            <span className="text-2xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border tracking-tight">
               외근·방문
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
               {operationsData.fieldMeetings.length}
             </span>
             <span className="text-xs text-muted-foreground">건</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal">
             출장 {operationsData.fieldMeetings.filter(m => m.reminder.type === '출장미팅').length}건 / 
             방문 {operationsData.fieldMeetings.filter(m => m.reminder.type === '방문미팅').length}건
           </div>
@@ -203,17 +203,17 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <DollarSign size={14} strokeWidth={1.75} className="text-primary" />
               오늘 입금 약속
             </span>
-            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight">
               예상 실현
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-2xl font-semibold tracking-tight text-primary font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-primary tabular-nums">
               {operationsData.depositPromises.length}
             </span>
             <span className="text-xs text-primary font-medium">건</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono tabular-nums">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal tabular-nums">
             예상 약정액: ₩ {operationsData.depositTotalAmount.toLocaleString()}원
           </div>
         </div>
@@ -227,18 +227,18 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               지연된 콜 (Overdue)
             </span>
             {operationsData.totalOverdue > 0 && (
-              <span className="text-2xs font-mono font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded border border-destructive/20">
+              <span className="text-2xs font-semibold text-destructive bg-destructive/10 px-2 py-0.5 rounded border border-destructive/20 tracking-tight">
                 집중 관리
               </span>
             )}
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className={`text-2xl font-semibold tracking-tight font-mono tabular-nums ${operationsData.totalOverdue > 0 ? 'text-destructive' : 'text-foreground'}`}>
+            <span className={`text-2xl font-semibold tracking-tight tabular-nums ${operationsData.totalOverdue > 0 ? 'text-destructive' : 'text-foreground'}`}>
               {operationsData.totalOverdue}
             </span>
             <span className="text-xs text-muted-foreground">건</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal">
             약속시간 경과 미완료 리마인더
           </div>
         </div>
@@ -256,13 +256,13 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <p className="text-xs text-muted-foreground">외근 나간 상담원 위치 및 계약 체결 대면 일정을 확인하세요.</p>
             </div>
           </div>
-          <span className="text-2xs font-mono font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border">
+          <span className="text-2xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border tracking-tight">
             총 {filteredMeetings.length}건
           </span>
         </div>
 
         {filteredMeetings.length === 0 ? (
-          <div className="py-12 text-center text-muted-foreground text-xs font-mono">
+          <div className="py-12 text-center text-muted-foreground text-xs font-normal">
             오늘 예정된 출장 또는 방문 대면 미팅이 없습니다.
           </div>
         ) : (
@@ -277,7 +277,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
                   className="p-3 rounded-lg bg-muted/40 border border-border hover:border-primary/40 hover:bg-muted/70 transition-all cursor-pointer flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="px-2 py-0.5 rounded text-2xs font-mono font-medium bg-muted text-foreground border border-border">
+                    <span className="px-2 py-0.5 rounded text-2xs font-semibold bg-muted text-foreground border border-border tracking-tight">
                       {reminder.type}
                     </span>
                     <div>
@@ -285,7 +285,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
                         <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
                           {caseData.customerName || '고객명 미상'}
                         </span>
-                        <span className="text-2xs text-muted-foreground font-mono">
+                        <span className="text-2xs text-muted-foreground">
                           [{team}] {caseData.assignee || '미지정'}
                         </span>
                       </div>
@@ -296,7 +296,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 text-right">
-                    <div className="text-xs font-mono font-medium text-primary flex items-center gap-1">
+                    <div className="text-xs font-medium text-primary flex items-center gap-1">
                       <Clock size={12} strokeWidth={1.75} />
                       {time}
                     </div>
@@ -319,7 +319,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <p className="text-xs text-muted-foreground">각 팀별로 당일 처리되지 않고 밀린 고객 콜 건수와 독려 상태입니다.</p>
             </div>
           </div>
-          <span className="text-2xs font-mono font-medium text-destructive bg-destructive/10 px-2.5 py-1 rounded-md border border-destructive/20">
+          <span className="text-2xs font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-md border border-destructive/20 tracking-tight">
             총 {operationsData.totalOverdue}건 지연
           </span>
         </div>
@@ -339,7 +339,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-sm text-foreground">{teamName}</span>
-                    <span className={`text-2xs font-mono font-semibold px-2 py-0.5 rounded border ${
+                    <span className={`text-2xs font-semibold px-2 py-0.5 rounded border tracking-tight ${
                       hasOverdue ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-primary/10 text-primary border border-primary/20'
                     }`}>
                       {hasOverdue ? `${data.count}건 지연` : '정상 완료'}
@@ -379,52 +379,52 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <p className="text-xs text-muted-foreground">주간 마감부터 청구서 발행, 급여 지급 및 DB 회수까지의 실무 타임라인</p>
             </div>
           </div>
-          <span className="text-2xs font-mono font-medium text-muted-foreground">단계별 정규 프로세스</span>
+          <span className="text-2xs font-medium text-muted-foreground tracking-tight">단계별 정규 프로세스</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div className="p-3.5 rounded-lg bg-muted/40 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground">[1단계] 수임 건 마감</span>
-              <span className="text-2xs font-mono bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-medium">완료</span>
+              <span className="text-2xs bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-semibold tracking-tight">완료</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1.5">
               전 팀 수임 사건 계약서 및 입금 내역 1차 대사 마감
             </p>
-            <div className="text-2xs text-muted-foreground mt-2 font-mono">매주 월요일 18:00</div>
+            <div className="text-2xs text-muted-foreground mt-2 font-normal">매주 월요일 18:00</div>
           </div>
 
           <div className="p-3.5 rounded-lg bg-primary/5 border border-primary/20">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground">[2단계] 로펌 청구서 발송</span>
-              <span className="text-2xs font-mono bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-medium">진행중</span>
+              <span className="text-2xs bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-semibold tracking-tight">진행중</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1.5">
               제휴 법률사무소별 세금계산서 발행 및 수수료 입금 요청
             </p>
-            <div className="text-2xs text-primary mt-2 font-mono">매주 화요일 정기 발송</div>
+            <div className="text-2xs text-primary mt-2 font-normal">매주 화요일 정기 발송</div>
           </div>
 
           <div className="p-3.5 rounded-lg bg-muted/40 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground">[3단계] 수당 지급</span>
-              <span className="text-2xs font-mono bg-muted text-muted-foreground border border-border px-1.5 py-0.5 rounded font-medium">D-1 대기</span>
+              <span className="text-2xs bg-muted text-muted-foreground border border-border px-1.5 py-0.5 rounded font-semibold tracking-tight">D-1 대기</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1.5">
               상담원 개인별 인센티브 확정 및 급여 계좌 일괄 이체
             </p>
-            <div className="text-2xs text-muted-foreground mt-2 font-mono">매주 수요일 정오(12:00)</div>
+            <div className="text-2xs text-muted-foreground mt-2 font-normal">매주 수요일 정오(12:00)</div>
           </div>
 
           <div className="p-3.5 rounded-lg bg-muted/40 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground">[4단계] DB 수명 관리</span>
-              <span className="text-2xs font-mono bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded font-medium">정기 회수</span>
+              <span className="text-2xs bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded font-semibold tracking-tight">정기 회수</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1.5">
               3일 이상 미접촉 장기 방치 리드 40건 일괄 회수 및 재배분
             </p>
-            <div className="text-2xs text-muted-foreground mt-2 font-mono">매주 목요일 10:00</div>
+            <div className="text-2xs text-muted-foreground mt-2 font-normal">매주 목요일 10:00</div>
           </div>
         </div>
       </div>

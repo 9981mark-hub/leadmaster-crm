@@ -349,7 +349,7 @@ export const AutoDialFloorMonitor: React.FC<AutoDialFloorMonitorProps> = ({
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-muted/50 text-muted-foreground font-mono text-2xs uppercase tracking-wider border-b border-border">
+            <thead className="bg-muted/50 text-muted-foreground font-medium text-2xs uppercase tracking-wider border-b border-border">
               <tr>
                 <th className="py-3 px-6">상담원</th>
                 <th className="py-3 px-4">실시간 상태</th>

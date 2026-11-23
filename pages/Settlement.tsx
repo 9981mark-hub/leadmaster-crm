@@ -2414,7 +2414,7 @@ export default function Settlement() {
                             <CreditCard size={18} strokeWidth={1.75} />
                         </div>
                         <div>
-                            <div className="text-2xs font-mono font-medium text-primary">TM대표 전용 관제 메뉴</div>
+                            <div className="text-2xs font-semibold text-primary tracking-tight">TM대표 전용 관제 메뉴</div>
                             <div className="text-sm font-semibold text-foreground mt-0.5">
                                 빌링 & 광고비 종합 관제 센터에서 누적 광고비와 CRM 구독료를 통합 확인하세요.
                             </div>
@@ -2434,9 +2434,9 @@ export default function Settlement() {
                         <div>
                             <div className="text-xs font-medium text-muted-foreground flex items-center justify-between mb-1.5">
                                 <span>받은 수수료</span>
-                                <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-primary/10 text-primary border border-primary/20 font-mono">누적</span>
+                                <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-primary/10 text-primary border border-primary/20 tracking-tight">누적</span>
                             </div>
-                            <p className="text-2xl font-bold text-foreground font-mono tabular-nums tracking-tight">{totalPaidCommission.toLocaleString()}<span className="text-xs font-semibold text-muted-foreground ml-1">만원</span></p>
+                            <p className="text-2xl font-bold text-foreground tabular-nums tracking-tight">{totalPaidCommission.toLocaleString()}<span className="text-xs font-semibold text-muted-foreground ml-1">만원</span></p>
                         </div>
                         <p className="text-xs text-muted-foreground mt-2 font-normal">{year}년 전체 누적 실현 수수료</p>
                     </div>
@@ -2444,9 +2444,9 @@ export default function Settlement() {
                         <div>
                             <div className="text-xs font-medium text-muted-foreground flex items-center justify-between mb-1.5">
                                 <span>총 지출</span>
-                                <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border font-mono">경비</span>
+                                <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border tracking-tight">경비</span>
                             </div>
-                            <p className="text-2xl font-bold text-foreground font-mono tabular-nums tracking-tight">{expenseStats.total.toLocaleString()}<span className="text-xs font-semibold text-muted-foreground ml-1">만원</span></p>
+                            <p className="text-2xl font-bold text-foreground tabular-nums tracking-tight">{expenseStats.total.toLocaleString()}<span className="text-xs font-semibold text-muted-foreground ml-1">만원</span></p>
                         </div>
                         <p className="text-xs text-muted-foreground mt-2 font-normal">{month === 'all' ? '전체 월' : `${month}월`}: {thisMonthExpenses.toLocaleString()}만원</p>
                     </div>
@@ -2454,9 +2454,9 @@ export default function Settlement() {
                         <div>
                             <div className="text-xs font-medium text-muted-foreground flex items-center justify-between mb-1.5">
                                 <span>광고비 비중</span>
-                                <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border font-mono">마케팅</span>
+                                <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-muted text-muted-foreground border border-border tracking-tight">마케팅</span>
                             </div>
-                            <p className="text-2xl font-bold text-foreground font-mono tabular-nums tracking-tight">
+                            <p className="text-2xl font-bold text-foreground tabular-nums tracking-tight">
                                 {expenseStats.total > 0 ? Math.round((expenseStats.byCategory['광고비'] / expenseStats.total) * 100) : 0}%
                             </p>
                         </div>
@@ -2466,9 +2466,9 @@ export default function Settlement() {
                         <div>
                             <div className="text-xs font-medium text-muted-foreground flex items-center justify-between mb-1.5">
                                 <span>순이익</span>
-                                <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold font-mono ${netProfit >= 0 ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-destructive/10 text-destructive border border-destructive/20'}`}>손익</span>
+                                <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold tracking-tight ${netProfit >= 0 ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-destructive/10 text-destructive border border-destructive/20'}`}>손익</span>
                             </div>
-                            <p className={`text-2xl font-bold font-mono tabular-nums tracking-tight ${netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                            <p className={`text-2xl font-bold tabular-nums tracking-tight ${netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>
                                 {netProfit < 0 ? '-' : ''}{Math.abs(netProfit).toLocaleString()}<span className="text-xs font-semibold text-muted-foreground ml-1">만원</span>
                             </p>
                         </div>
@@ -2484,7 +2484,7 @@ export default function Settlement() {
                                 <h3 className="font-bold text-foreground flex items-center gap-2 text-sm">
                                     <span className="text-base">📢</span> 토스 애즈 광고비 연동
                                 </h3>
-                                <p className="text-xs text-muted-foreground mt-0.5 font-mono">토스 애즈 성과보고서(CSV)를 업로드하여 시스템에 쉽게 반영하세요.</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">토스 애즈 성과보고서(CSV)를 업로드하여 시스템에 쉽게 반영하세요.</p>
                             </div>
                             <div className="flex items-center gap-2">
                                 <input
@@ -2508,23 +2508,23 @@ export default function Settlement() {
                             <div className="p-4 bg-card border-b border-border">
                                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                                     <div>
-                                        <h4 className="font-semibold text-foreground text-xs font-mono">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
+                                        <h4 className="font-semibold text-foreground text-xs">이번 주({tossAdsWeeklySummary.weekLabel}) 광고 성과 요약</h4>
                                         <div className="flex gap-4 mt-2">
                                             <div className="bg-muted/40 px-3 py-2 rounded-lg border border-border text-center">
-                                                <p className="text-2xs font-mono text-muted-foreground">소진비용 (VAT별도)</p>
-                                                <p className="font-bold text-foreground font-mono text-xs">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
+                                                <p className="text-2xs text-muted-foreground">소진비용 (VAT별도)</p>
+                                                <p className="font-bold text-foreground tabular-nums text-xs">{tossAdsWeeklySummary.totalSpendExVat.toLocaleString()}원</p>
                                             </div>
                                             <div className="bg-muted/40 px-3 py-2 rounded-lg border border-border text-center">
-                                                <p className="text-2xs font-mono text-muted-foreground">잠재고객</p>
-                                                <p className="font-bold text-foreground font-mono text-xs">{tossAdsWeeklySummary.totalLeads}명</p>
+                                                <p className="text-2xs text-muted-foreground">잠재고객</p>
+                                                <p className="font-bold text-foreground tabular-nums text-xs">{tossAdsWeeklySummary.totalLeads}명</p>
                                             </div>
                                             <div className="bg-muted/40 px-3 py-2 rounded-lg border border-border text-center hidden sm:block">
-                                                <p className="text-2xs font-mono text-muted-foreground">평균 CPL</p>
-                                                <p className="font-bold text-foreground font-mono text-xs">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
+                                                <p className="text-2xs text-muted-foreground">평균 CPL</p>
+                                                <p className="font-bold text-foreground tabular-nums text-xs">{tossAdsWeeklySummary.avgCpl.toLocaleString()}원</p>
                                             </div>
                                             <div className="bg-muted/40 px-3 py-2 rounded-lg border border-border text-center hidden md:block">
-                                                <p className="text-2xs font-mono text-muted-foreground">총 노출</p>
-                                                <p className="font-bold text-foreground font-mono text-xs">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
+                                                <p className="text-2xs text-muted-foreground">총 노출</p>
+                                                <p className="font-bold text-foreground tabular-nums text-xs">{tossAdsWeeklySummary.totalImpressions.toLocaleString()}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -3283,7 +3283,7 @@ export default function Settlement() {
                             <TrendingUp size={16} className="text-primary" strokeWidth={1.75} />
                             월별 손익계산서
                         </h3>
-                        <p className="text-2xs text-muted-foreground font-mono mt-0.5">{year}년 월별 수입/지출/순이익 분석</p>
+                        <p className="text-2xs text-muted-foreground mt-0.5">{year}년 월별 수입/지출/순이익 분석</p>
                     </div>
                     <div className="p-4">
                         {(() => {
@@ -3397,7 +3397,7 @@ export default function Settlement() {
                             <Building size={16} className="text-primary" strokeWidth={1.75} />
                             거래처별 수익 분석
                         </h3>
-                        <p className="text-2xs text-muted-foreground font-mono mt-0.5">{year}년 파트너별 발생 수수료</p>
+                        <p className="text-2xs text-muted-foreground mt-0.5">{year}년 파트너별 발생 수수료</p>
                     </div>
                     <div className="p-4">
                         {(() => {
@@ -4208,7 +4208,7 @@ export default function Settlement() {
                     <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
                         <DollarSign className="w-6 h-6 text-primary" strokeWidth={1.75} />
                         <span>통합 정산 & 경영 손익(P&L) 센터</span>
-                        <span className="text-2xs px-2 py-0.5 rounded font-mono font-medium bg-primary/10 text-primary border border-primary/20">
+                        <span className="text-2xs px-2 py-0.5 rounded font-semibold tracking-tight bg-primary/10 text-primary border border-primary/20">
                             v4.5 Master
                         </span>
                     </h2>

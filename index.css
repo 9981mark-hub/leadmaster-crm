@@ -62,6 +62,13 @@ body {
   font-feature-settings: "tnum";
 }
 
+/* 고정폭 폰트(mono) 사용 시 한글 비트맵(굴림체) 폴백 원천 차단 및 부드러운 안티앨리어싱 강제 */
+.font-mono, code, kbd, samp, pre {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", "Pretendard Variable", Pretendard, monospace !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
 /* ========================================================
    Modernized Surface Panels (shadcn & Arbling Style)
    ======================================================== */

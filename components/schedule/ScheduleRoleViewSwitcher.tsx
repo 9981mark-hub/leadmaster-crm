@@ -166,7 +166,7 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
               <span className="hidden md:inline">{tab.label}</span>
               <span className="md:hidden">{tab.shortLabel}</span>
               {tab.badge && (
-                <span className="text-2xs font-mono px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">
+                <span className="text-2xs font-semibold px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20 tracking-tight">
                   {tab.badge}
                 </span>
               )}
@@ -177,8 +177,8 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
 
       {/* 우측 직급 식별 배지 */}
       <div className="hidden lg:flex items-center gap-2 px-2 py-0.5">
-        <span className="text-2xs text-muted-foreground font-mono">접속 권한:</span>
-        <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
+        <span className="text-2xs text-muted-foreground font-medium">접속 권한:</span>
+        <span className="text-2xs font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 flex items-center gap-1 tracking-tight">
           {isPlatformAdmin ? (
             <><Crown size={12} strokeWidth={1.75} className="text-amber-500" /> 최고관리자</>
           ) : role === 'owner' ? (

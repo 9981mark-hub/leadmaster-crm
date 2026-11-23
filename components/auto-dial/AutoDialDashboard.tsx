@@ -193,7 +193,7 @@ const AutoDialDashboard: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card text-card-foreground p-5 sm:p-6 rounded-xl border border-border shadow-xs">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-2xs px-2 py-0.5 rounded font-mono font-medium bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
+            <span className="text-2xs px-2 py-0.5 rounded font-semibold tracking-tight bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
               <Sparkles size={11} strokeWidth={1.75} className="text-primary" />
               AUTO-DIALER v4.0
             </span>
@@ -302,7 +302,7 @@ const AutoDialDashboard: React.FC = () => {
           {/* 캠페인 셀렉터 바 */}
           {campaigns.length > 0 ? (
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              <span className="text-2xs font-mono font-medium text-muted-foreground uppercase shrink-0">캠페인:</span>
+              <span className="text-2xs font-medium text-muted-foreground uppercase shrink-0">캠페인:</span>
               {campaigns.map(camp => {
                 const isSelected = activeCampaignId === camp.id;
                 return (

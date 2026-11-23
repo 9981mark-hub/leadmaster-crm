@@ -143,10 +143,10 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+              <span className="text-2xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20 tracking-tight">
                 TM 대표 전용 · 경영 & 자금 전용 뷰
               </span>
-              <span className="text-2xs text-muted-foreground font-mono">{todayFormatted}</span>
+              <span className="text-2xs text-muted-foreground font-medium">{todayFormatted}</span>
             </div>
             <h3 className="text-sm font-semibold text-foreground mt-1">
               제휴 로펌 수임료 청구, 상담원 인센티브, DB 원가 및 고정비 거시 캘린더
@@ -180,17 +180,17 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <DollarSign size={14} strokeWidth={1.75} className="text-primary" />
               로펌 수수료 총매출
             </span>
-            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight">
               {partners.length}개 로펌
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
               ₩ {metrics.totalCommissionWon.toLocaleString()}
             </span>
             <span className="text-xs text-muted-foreground">원</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal">
             체결 수임 사건 누적 수수료
           </div>
         </div>
@@ -201,17 +201,17 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <CheckCircle2 size={14} strokeWidth={1.75} className="text-primary" />
               수금 완료 금액
             </span>
-            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight">
               정산 완료
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-2xl font-semibold tracking-tight text-primary font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-primary tabular-nums">
               ₩ {metrics.totalDepositedWon.toLocaleString()}
             </span>
             <span className="text-xs text-primary font-medium">원</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal">
             실제 입금 완료된 계약금 총액
           </div>
         </div>
@@ -222,17 +222,17 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <AlertCircle size={14} strokeWidth={1.75} className="text-amber-500" />
               미수금 잔액
             </span>
-            <span className="text-2xs font-mono font-medium text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+            <span className="text-2xs font-semibold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 tracking-tight">
               회수 관리
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-2xl font-semibold tracking-tight text-amber-500 font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-amber-500 tabular-nums">
               ₩ {metrics.outstandingWon.toLocaleString()}
             </span>
             <span className="text-xs text-amber-500 font-medium">원</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal">
             분납 약정 및 미입금 잔액
           </div>
         </div>
@@ -243,17 +243,17 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <Users size={14} strokeWidth={1.75} className="text-primary" />
               상담원 인센티브 대기
             </span>
-            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight">
               지급 예정
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
               ₩ {metrics.pendingPayoutWon.toLocaleString()}
             </span>
             <span className="text-xs text-muted-foreground">원</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal">
             정산 확정 미지급 수당 총액
           </div>
         </div>
@@ -269,7 +269,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <p className="text-xs text-muted-foreground">대표가 반드시 사전에 대비해야 할 주간/월간 자금 일정입니다.</p>
             </div>
           </div>
-          <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20">
+          <span className="text-2xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 tracking-tight">
             정기 집행 스케줄
           </span>
         </div>
@@ -289,11 +289,11 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-foreground">{evt.title}</span>
-                      <span className="text-2xs font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+                      <span className="text-2xs font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border tracking-tight">
                         {evt.category}
                       </span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 font-mono">
+                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 font-normal">
                       <span>{evt.dateDesc}</span>
                       {evt.amountWon > 0 && (
                         <span className="font-semibold text-foreground tabular-nums">
@@ -305,7 +305,7 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
                 </div>
 
                 <div className="text-right">
-                  <span className="inline-block px-2 py-0.5 rounded text-2xs font-mono font-semibold bg-primary/10 text-primary border border-primary/20">
+                  <span className="inline-block px-2 py-0.5 rounded text-2xs font-semibold bg-primary/10 text-primary border border-primary/20 tabular-nums">
                     D-{evt.dDay}
                   </span>
                 </div>
@@ -339,11 +339,11 @@ export const ExecutiveFinancialView: React.FC<ExecutiveFinancialViewProps> = ({
               <div>
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-sm text-foreground">{p.name}</span>
-                  <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
-                    {p.caseCount}건 유치
+                  <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight">
+                    <span className="tabular-nums">{p.caseCount}</span>건 유치
                   </span>
                 </div>
-                <div className="mt-2.5 space-y-1 text-xs text-muted-foreground font-mono">
+                <div className="mt-2.5 space-y-1 text-xs text-muted-foreground">
                   <div className="flex justify-between">
                     <span>정산 주기:</span>
                     <span className="text-foreground font-medium">{p.cutoffLabel} → {p.payoutLabel}</span>

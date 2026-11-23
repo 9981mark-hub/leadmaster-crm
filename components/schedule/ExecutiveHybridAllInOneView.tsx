@@ -176,10 +176,10 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+              <span className="text-2xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20 tracking-tight">
                 TM 최고경영자 · 현장 총괄 통합 뷰
               </span>
-              <span className="text-2xs text-muted-foreground font-mono">{todayFormatted}</span>
+              <span className="text-2xs text-muted-foreground font-medium">{todayFormatted}</span>
             </div>
             <h3 className="text-sm font-semibold text-foreground mt-1">
               자금 흐름(수임료·인센티브·DB)과 당일 현장 영업(외근·입금·미처리) 원스톱 관제
@@ -215,17 +215,17 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               <DollarSign size={14} strokeWidth={1.75} className="text-primary" />
               제휴처 수수료 매출
             </span>
-            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight">
               {partners.length}개 로펌
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
               ₩ {financialSummary.totalCommissionWon.toLocaleString()}
             </span>
             <span className="text-xs text-muted-foreground">원</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 flex justify-between font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 flex justify-between font-normal">
             <span>수금 ₩ {financialSummary.totalDepositedWon.toLocaleString()}원</span>
             <span className="text-amber-500 font-medium">미수 ₩ {financialSummary.outstandingWon.toLocaleString()}원</span>
           </div>
@@ -238,17 +238,17 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               <Users size={14} strokeWidth={1.75} className="text-primary" />
               상담원 수당 지급 대기
             </span>
-            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight">
               지급 예정
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-2xl font-semibold tracking-tight text-primary font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-primary tabular-nums">
               ₩ {financialSummary.pendingPayoutWon.toLocaleString()}
             </span>
             <span className="text-xs text-primary font-medium">원</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal">
             정기 수당 지급일 D-Day 카운트다운
           </div>
         </div>
@@ -260,17 +260,17 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               <MapPin size={14} strokeWidth={1.75} className="text-muted-foreground" />
               오늘 대면 미팅 (외근/방문)
             </span>
-            <span className="text-2xs font-mono font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border">
+            <span className="text-2xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border tracking-tight">
               클로징 중요
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
+            <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
               {todayOperations.fieldMeetings.length}
             </span>
             <span className="text-xs text-muted-foreground">건</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal">
             출장 {todayOperations.fieldMeetings.filter(m => m.reminder.type === '출장미팅').length}건 / 방문 {todayOperations.fieldMeetings.filter(m => m.reminder.type === '방문미팅').length}건
           </div>
         </div>
@@ -287,18 +287,18 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               지연된 미처리 콜 (Overdue)
             </span>
             {todayOperations.overdueRemindersCount > 0 && (
-              <span className="text-2xs font-mono font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded border border-destructive/20">
+              <span className="text-2xs font-semibold text-destructive bg-destructive/10 px-2 py-0.5 rounded border border-destructive/20 tracking-tight">
                 독려 필요
               </span>
             )}
           </div>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className={`text-2xl font-semibold tracking-tight font-mono tabular-nums ${todayOperations.overdueRemindersCount > 0 ? 'text-destructive' : 'text-foreground'}`}>
+            <span className={`text-2xl font-semibold tracking-tight tabular-nums ${todayOperations.overdueRemindersCount > 0 ? 'text-destructive' : 'text-foreground'}`}>
               {todayOperations.overdueRemindersCount}
             </span>
             <span className="text-xs text-muted-foreground">건</span>
           </div>
-          <div className="text-2xs text-muted-foreground mt-2 font-mono">
+          <div className="text-2xs text-muted-foreground mt-2 font-normal">
             약속 시간 지난 미완료 고객 콜
           </div>
         </div>
@@ -320,13 +320,13 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                 <p className="text-xs text-muted-foreground">외근 나간 상담원과 클로징 미팅 일정을 확인하세요.</p>
               </div>
             </div>
-            <span className="text-2xs font-mono font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border">
+            <span className="text-2xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border tracking-tight">
               총 {todayOperations.fieldMeetings.length}건
             </span>
           </div>
 
           {todayOperations.fieldMeetings.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground text-xs font-mono">
+            <div className="py-12 text-center text-muted-foreground text-xs font-normal">
               오늘 예정된 출장 또는 센터 방문 대면 미팅이 없습니다.
             </div>
           ) : (
@@ -341,7 +341,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                     className="p-3 rounded-lg bg-muted/40 border border-border hover:border-primary/40 hover:bg-muted/70 transition-all cursor-pointer flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded text-2xs font-mono font-medium bg-muted text-foreground border border-border">
+                      <span className="px-2 py-0.5 rounded text-2xs font-semibold bg-muted text-foreground border border-border tracking-tight">
                         {reminder.type}
                       </span>
                       <div>
@@ -349,7 +349,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                           <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
                             {caseData.customerName || '고객명 미상'}
                           </span>
-                          <span className="text-2xs text-muted-foreground font-mono">
+                          <span className="text-2xs text-muted-foreground">
                             담당: {caseData.assignee || '미지정'}
                           </span>
                         </div>
@@ -360,7 +360,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                     </div>
                     
                     <div className="flex items-center gap-2 text-right">
-                      <div className="text-xs font-mono font-medium text-primary flex items-center gap-1">
+                      <div className="text-xs font-medium text-primary flex items-center gap-1">
                         <Clock size={12} strokeWidth={1.75} />
                         {time}
                       </div>
@@ -385,13 +385,13 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                 <p className="text-xs text-muted-foreground">오늘 입금 완료되어야 할 착수금 및 분납금 건입니다.</p>
               </div>
             </div>
-            <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20">
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 tracking-tight">
               총 {todayOperations.depositPromises.length}건
             </span>
           </div>
 
           {todayOperations.depositPromises.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground text-xs font-mono">
+            <div className="py-12 text-center text-muted-foreground text-xs font-normal">
               오늘 약속된 수임료 입금 일정이 없습니다.
             </div>
           ) : (
@@ -406,7 +406,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                     className="p-3 rounded-lg bg-muted/40 border border-border hover:border-primary/40 hover:bg-muted/70 transition-all cursor-pointer flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded text-2xs font-mono font-medium bg-primary/10 text-primary border border-primary/20">
+                      <span className="px-2 py-0.5 rounded text-2xs font-semibold bg-primary/10 text-primary border border-primary/20 tracking-tight">
                         입금약속
                       </span>
                       <div>
@@ -414,7 +414,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                           <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
                             {caseData.customerName || '고객명 미상'}
                           </span>
-                          <span className="text-2xs text-muted-foreground font-mono tabular-nums">
+                          <span className="text-2xs text-muted-foreground tabular-nums">
                             계약금: ₩ {totalContract.toLocaleString()}원
                           </span>
                         </div>
@@ -425,7 +425,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                     </div>
 
                     <div className="flex items-center gap-2 text-right">
-                      <div className="text-xs font-mono font-medium text-primary flex items-center gap-1">
+                      <div className="text-xs font-medium text-primary flex items-center gap-1">
                         <Clock size={12} strokeWidth={1.75} />
                         {time}
                       </div>
@@ -447,7 +447,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
             <Building size={16} strokeWidth={1.75} className="text-primary" />
             <h4 className="text-sm font-semibold text-foreground">제휴 법률사무소별 정산 마감 & 주간 파이프라인</h4>
           </div>
-          <span className="text-2xs text-muted-foreground font-mono">복수 제휴처 개별 정산 정책 연동</span>
+          <span className="text-2xs text-muted-foreground tracking-tight">복수 제휴처 개별 정산 정책 연동</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -455,13 +455,13 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
             <div key={p.partnerId} className="p-3.5 rounded-lg bg-muted/40 border border-border">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-sm text-foreground">{p.name}</span>
-                <span className="text-2xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">{p.caseCount}건 유치</span>
+                <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight"><span className="tabular-nums">{p.caseCount}</span>건 유치</span>
               </div>
-              <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between font-mono">
+              <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between">
                 <span>정산 주기:</span>
                 <span className="text-foreground font-medium">{p.cutoffLabel} → {p.payoutLabel}</span>
               </div>
-              <div className="mt-1 text-xs text-muted-foreground flex items-center justify-between font-mono">
+              <div className="mt-1 text-xs text-muted-foreground flex items-center justify-between">
                 <span>예상 수수료:</span>
                 <span className="text-primary font-semibold tabular-nums">₩ {p.commissionWon.toLocaleString()}</span>
               </div>
