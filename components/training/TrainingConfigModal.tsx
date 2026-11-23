@@ -7,6 +7,8 @@ import {
   interpolateOpeningScript,
   DEFAULT_TRAINING_CONFIG,
 } from '../../services/trainingService';
+import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import {
   Settings,
   X,
@@ -31,6 +33,8 @@ interface Props {
 }
 
 export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
+  const { showToast } = useToast();
+  const { confirm: confirmDialog } = useConfirmDialog();
   const [config, setConfig] = useState<CompanyTrainingConfig>(() => getCompanyTrainingConfig());
   const [activeTab, setActiveTab] = useState<'outbound' | 'inbound' | 'compliance'>('outbound');
   const [newRequiredKeyword, setNewRequiredKeyword] = useState('');
@@ -38,12 +42,19 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
   const [isSaved, setIsSaved] = useState(false);
 
   // 프리셋 로드
-  const handleApplyPreset = (key: string) => {
+  const handleApplyPreset = async (key: string) => {
     const preset = PRESETS_CONFIG[key];
     if (preset) {
-      if (confirm(`'${preset.label}' 표준 템플릿과 설정으로 덮어씌우시겠습니까?`)) {
+      const ok = await confirmDialog({
+        title: '훈련 프리셋 적용',
+        message: `'${preset.label}' 표준 템플릿과 설정으로 덮어씌우시겠습니까?`,
+        confirmLabel: '프리셋 적용',
+        cancelLabel: '취소'
+      });
+      if (ok) {
         setConfig(JSON.parse(JSON.stringify(preset.config)));
         setIsSaved(false);
+        showToast(`'${preset.label}' 템플릿이 적용되었습니다.`, 'success');
       }
     }
   };
@@ -129,9 +140,10 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
 
     const error = await saveCompanyTrainingConfig(finalConfig);
     if (error) {
-      alert(`훈련 설정을 저장하지 못했습니다. ${error}`);
+      showToast(`훈련 설정을 저장하지 못했습니다: ${error}`, 'error');
       return;
     }
+    showToast('회사 맞춤 훈련 및 멘트 설정이 저장되었습니다.', 'success');
     setIsSaved(true);
     onSaved(finalConfig);
     setTimeout(() => {
@@ -680,10 +692,18 @@ export const TrainingConfigModal: React.FC<Props> = ({ onClose, onSaved }) => {
         <div className="sticky bottom-0 px-6 py-4 bg-muted/40 backdrop-blur border-t border-border flex items-center justify-between">
           <button
             type="button"
-            onClick={() => {
-              if (confirm('모든 설정을 기본값(독립 TM 대행사 표준)으로 초기화하시겠습니까?')) {
+            onClick={async () => {
+              const ok = await confirmDialog({
+                title: '설정 기본값 복원',
+                message: '모든 설정을 기본값(독립 TM 대행사 표준)으로 초기화하시겠습니까?',
+                confirmLabel: '기본값 복원',
+                cancelLabel: '취소',
+                variant: 'destructive'
+              });
+              if (ok) {
                 setConfig(JSON.parse(JSON.stringify(DEFAULT_TRAINING_CONFIG)));
                 setIsSaved(false);
+                showToast('표준 기본값으로 초기화되었습니다.', 'success');
               }
             }}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted transition-colors cursor-pointer"

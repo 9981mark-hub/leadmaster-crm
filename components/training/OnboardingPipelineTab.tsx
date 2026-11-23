@@ -10,6 +10,7 @@ import {
 } from '../../services/trainingOnboardingService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import { AdminOnboardingModal } from './AdminOnboardingModal';
 import {
   GraduationCap,
@@ -39,7 +40,9 @@ interface Props {
 
 export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
   const { user } = useAuth();
-  const { addToast } = useToast();
+  const { showToast } = useToast();
+  const addToast = (msg: string, type?: any) => showToast(msg, type === 'info' ? 'success' : type);
+  const { confirm } = useConfirmDialog();
 
   const currentUserId = user?.email || user?.id || 'new_agent_01';
   const currentUserName = user?.name || user?.email || '신입 상담원';
@@ -102,8 +105,14 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
   };
 
   // 관리자 전용: 9단계 전체 원클릭 완료 (테스트/시연용)
-  const handleAdminCompleteAll = () => {
-    if (window.confirm('관리자 권한으로 9개 퀘스트를 모두 즉시 완료 처리하시겠습니까?')) {
+  const handleAdminCompleteAll = async () => {
+    const ok = await confirm({
+      title: '온보딩 퀘스트 일괄 완료',
+      message: '관리자 권한으로 9개 퀘스트를 모두 즉시 완료 처리하시겠습니까?',
+      confirmLabel: '일괄 완료',
+      cancelLabel: '취소'
+    });
+    if (ok) {
       let p = profile;
       ONBOARDING_STEP_METAS.forEach((m) => {
         p = completeOnboardingStep(currentUserId, m.id, 92, '관리자 일괄 테스트 통과');
@@ -114,8 +123,15 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
   };
 
   // 온보딩 리셋
-  const handleReset = () => {
-    if (window.confirm('온보딩 진행 내역을 처음부터 다시 시작하시겠습니까?')) {
+  const handleReset = async () => {
+    const ok = await confirm({
+      title: '온보딩 내역 초기화',
+      message: '온보딩 진행 내역을 처음부터 다시 시작하시겠습니까?',
+      confirmLabel: '초기화 실행',
+      cancelLabel: '취소',
+      variant: 'destructive'
+    });
+    if (ok) {
       const resetP = resetOnboardingProfile(currentUserId);
       setProfile(resetP);
       addToast('온보딩 진행 내역이 초기화되었습니다.', 'info');

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 import {
   PlatformOrg, createOrganization, fetchOrganizations, setOrganizationStatus,
   computeBillingSummary, generateOrgInvoiceMarkdown, PRICE_PER_AGENT_MONTH,
@@ -30,6 +31,7 @@ const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('ko-KR
 export default function PlatformPage() {
   const { org, isPlatformAdmin } = useAuth();
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const [orgs, setOrgs] = useState<PlatformOrg[]>([]);
   const [applications, setApplications] = useState<OrgApplication[]>([]);
   const [seatRequests, setSeatRequests] = useState<SeatExpansionRequest[]>([]);
@@ -121,7 +123,13 @@ export default function PlatformPage() {
     if (busy) return;
     const confirmMsg = `'${name.trim()}' 회사를 만들고 ${ownerEmail.trim()} 을(를) 대표로 초대할까요?` +
       (applyTmPreset ? '\n(TM 실무 표준 1·2차 상태, 첫인사 스크립트, 10년 녹음보존 프리셋이 함께 적용됩니다)' : '');
-    if (!window.confirm(confirmMsg)) return;
+    const ok = await confirm({
+      title: '회사 테넌트 생성 및 대표 초대',
+      message: confirmMsg,
+      confirmLabel: '회사 생성',
+      cancelLabel: '취소'
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await createOrganization(name, ownerEmail, applyTmPreset);
@@ -204,7 +212,14 @@ export default function PlatformPage() {
     const msg = next === 'suspended'
       ? `'${o.name}' 회사를 사용 중지할까요?\n중지하면 해당 회사 소속 사용자들은 로그인해도 데이터가 완전히 차단됩니다. (데이터는 안전 보존)`
       : `'${o.name}' 회사를 다시 정상 사용으로 전환할까요?`;
-    if (!window.confirm(msg)) return;
+    const ok = await confirm({
+      title: next === 'suspended' ? '회사 사용 중지' : '회사 사용 재개',
+      message: msg,
+      confirmLabel: next === 'suspended' ? '사용 중지' : '정상 사용 전환',
+      cancelLabel: '취소',
+      variant: next === 'suspended' ? 'destructive' : 'default'
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await setOrganizationStatus(o.id, next);

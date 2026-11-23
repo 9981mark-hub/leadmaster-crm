@@ -35,6 +35,7 @@ import { TelegramRuleModal } from '../components/telegram/TelegramRuleModal';
 import { fetchTelegramBotLiveStatus, TelegramBotLiveStatus } from '../services/telegramBot';
 import { analyzeTelegramFeedbackText, ParsedFeedbackInsights } from '../utils/koreanDateParser';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 import { useAuth } from '../contexts/AuthContext';
 import { format, parseISO, startOfDay, endOfDay, startOfMonth, endOfMonth, isToday } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -136,6 +137,7 @@ type FeedbackTypeFilter = 'all' | 'schedule' | 'care' | 'missed' | 'contract' | 
 export default function TelegramSync() {
     const { user, isAdmin, org } = useAuth();
     const { showToast } = useToast();
+    const { confirm } = useConfirmDialog();
 
     const [activeTab, setActiveTab] = useState<TabType>('pending');
     const [pendingFeedbacks, setPendingFeedbacks] = useState<TelegramFeedback[]>([]);
@@ -537,7 +539,13 @@ export default function TelegramSync() {
             return;
         }
 
-        if (!window.confirm(`선택한 ${toConfirm.length}건의 피드백을 한 번에 승인하시겠습니까?`)) return;
+        const ok = await confirm({
+            title: '피드백 일괄 승인',
+            message: `선택한 ${toConfirm.length}건의 피드백을 한 번에 승인하시겠습니까?`,
+            confirmLabel: '일괄 승인',
+            cancelLabel: '취소'
+        });
+        if (!ok) return;
 
         setIsActionBusy(true);
         const batchItems = toConfirm.map(f => {
@@ -578,7 +586,13 @@ export default function TelegramSync() {
             return;
         }
 
-        if (!window.confirm(`매칭이 확인된 ${matchedItems.length}건의 피드백을 추천 설정대로 일괄 승인하시겠습니까?`)) return;
+        const ok = await confirm({
+            title: '매칭 피드백 전체 일괄 승인',
+            message: `매칭이 확인된 ${matchedItems.length}건의 피드백을 추천 설정대로 일괄 승인하시겠습니까?`,
+            confirmLabel: '일괄 승인',
+            cancelLabel: '취소'
+        });
+        if (!ok) return;
 
         setIsActionBusy(true);
         const batchItems = matchedItems.map(f => {
@@ -616,7 +630,14 @@ export default function TelegramSync() {
         const ids: string[] = Array.from(selectedIds);
         if (ids.length === 0) return;
 
-        if (!window.confirm(`선택한 ${ids.length}건의 피드백을 일괄 무시(확인 완료) 처리하시겠습니까?`)) return;
+        const ok = await confirm({
+            title: '피드백 일괄 무시 처리',
+            message: `선택한 ${ids.length}건의 피드백을 일괄 무시(확인 완료) 처리하시겠습니까?`,
+            confirmLabel: '무시 처리',
+            cancelLabel: '취소',
+            variant: 'destructive'
+        });
+        if (!ok) return;
 
         setIsActionBusy(true);
         const success = await dismissBatchFeedbacks(ids);
@@ -670,7 +691,14 @@ export default function TelegramSync() {
             ? `${deleteDate} 일자의 모든 텔레그램 히스토리를 영구 삭제하시겠습니까?`
             : `${deleteMonth} 월의 모든 텔레그램 히스토리를 영구 삭제하시겠습니까?`;
 
-        if (!window.confirm(confirmMsg)) return;
+        const ok = await confirm({
+            title: '텔레그램 히스토리 영구 삭제',
+            message: confirmMsg,
+            confirmLabel: '영구 삭제',
+            cancelLabel: '취소',
+            variant: 'destructive'
+        });
+        if (!ok) return;
 
         setIsDeleting(true);
         const success = await deleteFeedbacksByDateRange(startStr, endStr);

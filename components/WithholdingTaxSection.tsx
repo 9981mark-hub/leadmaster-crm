@@ -3,6 +3,8 @@ import * as XLSX from 'xlsx';
 import { Plus, Trash2, Download, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useOrgStore, mutateOrgStore } from '../services/orgStore';
 import { WITHHOLDING_SPEC, WithholdingRecord, WithholdingData, IncomeType } from '../services/orgData';
+import { useToast } from '../contexts/ToastContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 
 const INCOME_RATES: Record<IncomeType, number> = {
     '사업소득(3.3%)': 0.033,
@@ -16,10 +18,13 @@ const recordsOf = (d: WithholdingData | undefined): WithholdingRecord[] =>
     d && Array.isArray(d.records) ? d.records : [];
 
 /** 서버 최신값에 변경을 적용해 저장. 실패하면 안내 후 false */
-async function saveWithholding(mutate: (d: WithholdingData) => WithholdingData): Promise<boolean> {
+async function saveWithholding(
+    mutate: (d: WithholdingData) => WithholdingData,
+    onError?: (err: string) => void
+): Promise<boolean> {
     const res = await mutateOrgStore(WITHHOLDING_SPEC, d => mutate({ records: recordsOf(d), semiAnnual: !!d?.semiAnnual }));
     if (!res.ok) {
-        alert(`원천세 기록을 저장하지 못했습니다. ${res.error}`);
+        if (onError) onError(`원천세 기록을 저장하지 못했습니다: ${res.error}`);
         return false;
     }
     return true;
@@ -64,6 +69,8 @@ const EMPTY_FORM = {
 };
 
 export default function WithholdingTaxSection({ year }: { year: number }) {
+    const { showToast } = useToast();
+    const { confirm: confirmDialog } = useConfirmDialog();
     const { value: stored } = useOrgStore(WITHHOLDING_SPEC);
     const records = useMemo(
         () => recordsOf(stored).filter(r => (r.payDate || '').startsWith(String(year))),
@@ -82,12 +89,12 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
                 ...r,
                 ...calcRecord(r.payDate, r.payAmount, r.incomeType, newVal)
             })),
-        }));
+        }), err => showToast(err, 'error'));
     };
 
     const handleAdd = async () => {
         if (!form.name || !form.payDate || form.payAmount <= 0) {
-            alert('이름, 지급일, 지급액을 모두 입력해주세요.');
+            showToast('이름, 지급일, 지급액을 모두 입력해주세요.', 'error');
             return;
         }
         const calc = calcRecord(form.payDate, form.payAmount, form.incomeType, isSemiAnnual);
@@ -97,15 +104,30 @@ export default function WithholdingTaxSection({ year }: { year: number }) {
             ...calc,
             isFilingDone: false,
         };
-        const ok = await saveWithholding(d => ({ ...d, records: [...d.records.filter(r => r.id !== newRecord.id), newRecord] }));
+        const ok = await saveWithholding(
+            d => ({ ...d, records: [...d.records.filter(r => r.id !== newRecord.id), newRecord] }),
+            err => showToast(err, 'error')
+        );
         if (!ok) return;
+        showToast('원천세 기록이 등록되었습니다.', 'success');
         setForm({ ...EMPTY_FORM });
         setShowForm(false);
     };
 
-    const handleDelete = (id: string) => {
-        if (!confirm('삭제하시겠습니까?')) return;
-        saveWithholding(d => ({ ...d, records: d.records.filter(r => r.id !== id) }));
+    const handleDelete = async (id: string) => {
+        const ok = await confirmDialog({
+            title: '원천세 기록 삭제',
+            message: '선택하신 원천세 기록을 삭제하시겠습니까?',
+            confirmLabel: '삭제',
+            cancelLabel: '취소',
+            variant: 'destructive'
+        });
+        if (!ok) return;
+        saveWithholding(
+            d => ({ ...d, records: d.records.filter(r => r.id !== id) }),
+            err => showToast(err, 'error')
+        );
+        showToast('원천세 기록이 삭제되었습니다.', 'success');
     };
 
     const toggleFiling = (id: string) => {

@@ -17,6 +17,7 @@ import {
 } from '../../services/trainingEducationService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import {
   BookOpen,
   FileText,
@@ -191,6 +192,7 @@ interface EducationHubTabProps {
 export default function EducationHubTab({ initialSubView }: EducationHubTabProps = {}) {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
 
   const isAdmin = user?.role === 'admin' || user?.role === 'owner';
 
@@ -396,7 +398,14 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
 
   // Reset to default
   const handleResetDefaults = async () => {
-    if (!window.confirm('모든 교육 자료와 설정을 시스템 기본값으로 초기화하시겠습니까?')) return;
+    const ok = await confirm({
+      title: '교육 자료 기본값 초기화',
+      message: '모든 교육 자료와 설정을 시스템 기본값으로 초기화하시겠습니까?\n\n직접 편집하신 스크립트와 가이드가 시스템 표준값으로 덮어씌워집니다.',
+      confirmLabel: '초기화 실행',
+      cancelLabel: '취소',
+      variant: 'destructive'
+    });
+    if (!ok) return;
     try {
       setIsSaving(true);
       const err = await resetEducationMaterialsToDefault(user?.name || '관리자');

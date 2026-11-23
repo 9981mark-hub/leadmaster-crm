@@ -5,7 +5,6 @@ import {
   RecordingSettings, RecordingUsage, DEFAULT_RECORDING_SETTINGS, fetchRecordingSettings, fetchRecordingUsage,
   saveRecordingSettings, isNotReadyError, fmtBytes,
 } from '../../services/recordings';
-import DriveConnectionCard from './DriveConnectionCard';
 import RecordingBackupCenterModal from '../recordings/RecordingBackupCenterModal';
 
 /** 팀 관리 → 통화 녹음·AI 정리 설정 + 사용량 */
@@ -129,9 +128,7 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
           </div>
         </div>
       </div>
-      <div className="px-5 pb-5">
-        <DriveConnectionCard />
-      </div>
+      {/* 레거시 구글 드라이브 카드는 Supabase Storage 1년 보관 체계로 전면 전환되어 은닉 처리 */}
 
       <RecordingBackupCenterModal
         orgId={orgId}

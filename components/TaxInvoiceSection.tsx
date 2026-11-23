@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useToast } from '../contexts/ToastContext';
 import { fetchTaxInvoices, createTaxInvoice, deleteTaxInvoice, getTaxInvoiceStats, bulkCreateTaxInvoices, parseHometaxExcel } from '../services/api';
 import { TaxInvoice, TaxInvoiceType } from '../types';
 import * as XLSX from 'xlsx';
@@ -9,6 +10,7 @@ interface TaxInvoiceSectionProps {
 }
 
 const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChanged }) => {
+    const { showToast } = useToast();
     const [invoices, setInvoices] = useState<TaxInvoice[]>([]);
     const [stats, setStats] = useState({
         salesCount: 0,
@@ -55,7 +57,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
     // 세금계산서 등록
     const handleSubmit = async () => {
         if (!formData.companyName || !formData.supplyAmount) {
-            alert('거래처명과 공급가액을 입력해주세요.');
+            showToast('거래처명과 공급가액을 입력해주세요.', 'error');
             return;
         }
 
@@ -125,7 +127,7 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
             const result = parseHometaxExcel(data, file.name);
 
             if (result.invoices.length === 0) {
-                alert('파싱된 세금계산서가 없습니다. 파일 형식을 확인해주세요.');
+                showToast('파싱된 세금계산서가 없습니다. 파일 형식을 확인해주세요.', 'error');
                 setIsUploading(false);
                 return;
             }
@@ -137,12 +139,13 @@ const TaxInvoiceSection: React.FC<TaxInvoiceSectionProps> = ({ year, onDataChang
                 skipped: saveResult.skipped,
                 type: result.type
             });
+            showToast(`세금계산서 ${saveResult.added}건이 등록되었습니다.`, 'success');
 
             await loadData();
             onDataChanged?.();
         } catch (err) {
             console.error('Excel upload error:', err);
-            alert('엑셀 파일 처리 중 오류가 발생했습니다.');
+            showToast('엑셀 파일 처리 중 오류가 발생했습니다.', 'error');
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';

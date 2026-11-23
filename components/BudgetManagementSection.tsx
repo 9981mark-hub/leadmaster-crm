@@ -3,6 +3,7 @@ import { fetchExpenses, EXPENSE_CATEGORIES } from '../services/api';
 import { ExpenseCategory } from '../types';
 import { useOrgStore, mutateOrgStore } from '../services/orgStore';
 import { BUDGETS_SPEC, Budget } from '../services/orgData';
+import { useToast } from '../contexts/ToastContext';
 
 interface BudgetManagementSectionProps {
     year: number;
@@ -10,6 +11,7 @@ interface BudgetManagementSectionProps {
 }
 
 const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year, month }) => {
+    const { showToast } = useToast();
     // [2026-11-13 KIRO] 예산은 회사별 서버(settings 'budgets')가 원본
     const { value: allBudgets } = useOrgStore(BUDGETS_SPEC);
     const budgets: Budget[] = (Array.isArray(allBudgets) ? allBudgets : []).filter(b => b.year === year && b.month === month);
@@ -49,9 +51,10 @@ const BudgetManagementSection: React.FC<BudgetManagementSectionProps> = ({ year,
         ]);
         setSaving(false);
         if (!res.ok) {
-            alert(`예산을 저장하지 못했습니다. ${res.error}`);
+            showToast(`예산을 저장하지 못했습니다: ${res.error}`, 'error');
             return;
         }
+        showToast('예산 설정이 저장되었습니다.', 'success');
         setIsEditMode(false);
     };
 

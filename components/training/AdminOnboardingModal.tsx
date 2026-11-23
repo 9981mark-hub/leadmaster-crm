@@ -8,6 +8,7 @@ import {
 } from '../../services/trainingOnboardingService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import {
   Users,
   X,
@@ -29,7 +30,9 @@ interface Props {
 
 export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
-  const { addToast } = useToast();
+  const { showToast } = useToast();
+  const addToast = (msg: string, type?: any) => showToast(msg, type === 'info' ? 'success' : type);
+  const { confirm } = useConfirmDialog();
 
   const [profiles, setProfiles] = useState<UserOnboardingProfile[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -57,12 +60,15 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleReset = (targetUserId: string, userName: string) => {
-    if (
-      window.confirm(
-        `정말로 [${userName}] 상담원의 온보딩 훈련 기록을 초기화하시겠습니까?\n모든 퀘스트가 1단계로 되돌아갑니다.`
-      )
-    ) {
+  const handleReset = async (targetUserId: string, userName: string) => {
+    const ok = await confirm({
+      title: '온보딩 훈련 기록 초기화',
+      message: `정말로 [${userName}] 상담원의 온보딩 훈련 기록을 초기화하시겠습니까?\n모든 퀘스트가 1단계로 되돌아갑니다.`,
+      confirmLabel: '기록 초기화',
+      cancelLabel: '취소',
+      variant: 'destructive'
+    });
+    if (ok) {
       resetOnboardingProfile(targetUserId);
       addToast(`[${userName}] 상담원의 온보딩 기록이 초기화되었습니다.`, 'info');
       loadData();

@@ -173,34 +173,34 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-gray-900 w-full max-w-6xl max-h-[92vh] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/75 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-card text-card-foreground w-full max-w-6xl max-h-[92vh] rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden">
         
         {/* 상단 헤더 */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex flex-wrap items-center justify-between gap-3 bg-gray-50/80 dark:bg-gray-800/60">
+        <div className="px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-3 bg-muted/40">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
+            <span className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-2xs">
               <PhoneCall size={20} />
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h2 className="text-base font-bold text-foreground">
                   {item.customerName} 고객 통화 모니터링
                 </h2>
-                <span className="text-xs text-gray-500 dark:text-gray-400">({item.customerPhone})</span>
+                <span className="text-xs font-mono text-muted-foreground">({item.customerPhone})</span>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                   item.qualification.isMeaningful
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                    ? 'bg-primary/10 text-primary border border-primary/20'
+                    : 'bg-muted text-muted-foreground border border-border'
                 }`}>
                   {item.qualification.callTypeLabel}
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/15 text-primary border border-primary/20 font-mono">
                   {item.caseStatus}
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                <span>담당 상담원: <strong className="text-gray-800 dark:text-gray-200">{item.userName}</strong></span>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 font-mono">
+                <span>담당 상담원: <strong className="text-foreground">{item.userName}</strong></span>
                 <span>·</span>
                 <span>일시: {item.formattedDate}</span>
                 <span>·</span>
@@ -221,13 +221,13 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
                 navigate(`/cases/${item.caseId}`);
                 onClose();
               }}
-              className="px-3.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-lg flex items-center gap-1.5 transition-colors border border-blue-200 dark:border-blue-800"
+              className="px-3.5 py-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg flex items-center gap-1.5 transition-colors border border-primary/20 shadow-2xs cursor-pointer"
             >
               <ExternalLink size={14} /> 고객 상세 열기
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -235,19 +235,19 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
         </div>
 
         {/* 상단 오디오 플레이어 바 */}
-        <div className="px-6 py-3 bg-purple-50/50 dark:bg-purple-950/20 border-b border-purple-100 dark:border-purple-900/30">
+        <div className="px-6 py-3 bg-muted/20 border-b border-border">
           {audioLoading ? (
-            <div className="flex items-center justify-center gap-2 py-1 text-xs text-purple-700 dark:text-purple-300">
-              <Loader2 size={16} className="animate-spin" />
-              <span>구글 드라이브 비공개 저장소에서 녹음 파일을 안전하게 불러오는 중입니다...</span>
+            <div className="flex items-center justify-center gap-2 py-1 text-xs text-primary font-mono">
+              <Loader2 size={16} className="animate-spin text-primary" />
+              <span>암호화 비공개 저장소에서 녹음 파일을 안전하게 불러오는 중입니다...</span>
             </div>
           ) : audioError ? (
-            <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 py-1">
+            <div className="flex items-center justify-between text-xs text-amber-500 py-1 font-mono">
               <div className="flex items-center gap-1.5">
                 <AlertCircle size={15} />
                 <span>녹음 음성 재생 불가: {audioError}</span>
               </div>
-              <span className="text-gray-500 dark:text-gray-400 text-xs">(AI 요약문과 대화록 텍스트는 정상 열람 가능합니다)</span>
+              <span className="text-muted-foreground text-xs">(AI 요약문과 대화록 텍스트는 정상 열람 가능합니다)</span>
             </div>
           ) : audioUrl ? (
             <div className="flex flex-wrap items-center gap-3">
@@ -262,13 +262,13 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
               />
               <button
                 onClick={togglePlay}
-                className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center hover:bg-purple-700 active:scale-95 transition-all shadow-sm"
+                className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all shadow-2xs cursor-pointer"
               >
                 {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
               </button>
 
               <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                <span className="text-xs font-mono text-purple-700 dark:text-purple-300 w-10 text-right">
+                <span className="text-xs font-mono text-primary w-10 text-right tabular-nums">
                   {fmtTime(currentTime)}
                 </span>
                 <input
@@ -277,23 +277,23 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
                   max={duration || 100}
                   value={currentTime}
                   onChange={handleSeek}
-                  className="flex-1 h-1.5 bg-purple-200 dark:bg-purple-800 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                  className="flex-1 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                 />
-                <span className="text-xs font-mono text-purple-700 dark:text-purple-300 w-10">
+                <span className="text-xs font-mono text-muted-foreground w-10 tabular-nums">
                   {fmtTime(duration)}
                 </span>
               </div>
 
               {/* 배속 조절 */}
-              <div className="flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg p-0.5 border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-1 bg-card rounded-lg p-0.5 border border-border shadow-2xs">
                 {[1.0, 1.25, 1.5, 2.0].map(rate => (
                   <button
                     key={rate}
                     onClick={() => handleRateChange(rate)}
-                    className={`px-2 py-0.5 text-xs font-medium rounded ${
+                    className={`px-2 py-0.5 text-xs font-medium rounded transition-colors cursor-pointer ${
                       playbackRate === rate
-                        ? 'bg-purple-600 text-white'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-gray-700'
+                        ? 'bg-primary text-primary-foreground font-bold'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     }`}
                   >
                     {rate}x
@@ -304,49 +304,49 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
               {/* 음소거 토글 */}
               <button
                 onClick={() => setIsMuted(!isMuted)}
-                className="p-1.5 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 rounded-lg transition-colors"
+                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
                 title={isMuted ? '음소거 해제' : '음소거'}
               >
                 {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
               </button>
             </div>
           ) : (
-            <div className="text-xs text-gray-500 dark:text-gray-400 py-1 flex items-center gap-1.5">
-              <AlertCircle size={14} className="text-gray-500 dark:text-gray-400" />
+            <div className="text-xs text-muted-foreground py-1 flex items-center gap-1.5 font-mono">
+              <AlertCircle size={14} className="text-muted-foreground" />
               <span>보관된 음성 녹음 파일이 없습니다. (AI 텍스트 기록만 보존됨)</span>
             </div>
           )}
         </div>
 
         {/* 2열 스플릿 본문 (AI 요약문 + STT 대화록) */}
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 p-5 overflow-y-auto min-h-0 bg-gray-100/50 dark:bg-gray-950/40">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 p-5 overflow-y-auto min-h-0 bg-muted/20">
           
           {/* LEFT: AI 요약문 */}
-          <div className="flex flex-col bg-white dark:bg-gray-800 rounded-xl border border-purple-100 dark:border-purple-900/40 shadow-xs overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-purple-50/30 dark:bg-purple-950/10">
-              <div className="flex items-center gap-2 font-bold text-sm text-purple-800 dark:text-purple-300">
-                <Sparkles size={16} />
+          <div className="flex flex-col bg-card rounded-xl border border-border shadow-2xs overflow-hidden">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/40">
+              <div className="flex items-center gap-2 font-bold text-sm text-foreground">
+                <Sparkles size={16} className="text-primary" />
                 <span>AI 상담 요약문</span>
               </div>
               <button
                 onClick={handleCopySummary}
-                className="px-2.5 py-1 text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/40 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-md flex items-center gap-1 transition-colors"
+                className="px-2.5 py-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-md flex items-center gap-1 transition-colors border border-primary/20 shadow-2xs cursor-pointer"
               >
                 {copiedSummary ? <Check size={12} /> : <Copy size={12} />}
                 <span>{copiedSummary ? '복사됨' : '복사'}</span>
               </button>
             </div>
 
-            <div className="flex-1 p-4 overflow-y-auto max-h-[550px] text-sm text-gray-800 dark:text-gray-200 space-y-3 leading-relaxed">
+            <div className="flex-1 p-4 overflow-y-auto max-h-[550px] text-xs text-foreground space-y-3 leading-relaxed">
               {/* 적격성 메모 박스 */}
               {item.qualification.reason && (
-                <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 rounded-lg text-xs space-y-1">
-                  <div className="font-semibold text-blue-800 dark:text-blue-300 flex items-center gap-1">
-                    <ShieldCheck size={14} /> 상담 판정: {item.qualification.callTypeLabel}
+                <div className="p-3 bg-muted/40 border border-border rounded-lg text-xs space-y-1">
+                  <div className="font-semibold text-foreground flex items-center gap-1">
+                    <ShieldCheck size={14} className="text-primary" /> 상담 판정: {item.qualification.callTypeLabel}
                   </div>
-                  <p className="text-blue-700 dark:text-blue-400">{item.qualification.reason}</p>
+                  <p className="text-muted-foreground">{item.qualification.reason}</p>
                   {item.qualification.scheduleNote && (
-                    <p className="text-amber-700 dark:text-amber-400 font-medium pt-1 border-t border-blue-200 dark:border-blue-900/60">
+                    <p className="text-amber-500 font-medium pt-1 border-t border-border font-mono">
                       📅 재통화 약속: {item.qualification.scheduleNote}
                     </p>
                   )}
@@ -355,11 +355,11 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
 
               {/* 요약문 본문 */}
               {item.summaryText ? (
-                <div className="whitespace-pre-wrap font-sans text-gray-700 dark:text-gray-200 leading-relaxed">
+                <div className="whitespace-pre-wrap font-sans text-foreground leading-relaxed">
                   {item.summaryText}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400 dark:text-gray-500 gap-2">
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
                   <Sparkles size={36} className="opacity-20" />
                   <p className="text-xs">생성된 AI 요약문이 없습니다.</p>
                 </div>
@@ -368,12 +368,12 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
           </div>
 
           {/* RIGHT: STT 대화록 */}
-          <div className="flex flex-col bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/60 dark:bg-gray-800/40">
-              <div className="flex items-center gap-2 font-bold text-sm text-gray-800 dark:text-gray-200">
-                <ListOrdered size={16} className="text-blue-600" />
+          <div className="flex flex-col bg-card rounded-xl border border-border shadow-2xs overflow-hidden">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/40">
+              <div className="flex items-center gap-2 font-bold text-sm text-foreground">
+                <ListOrdered size={16} className="text-primary" />
                 <span>STT 화자별 대화록</span>
-                <span className="px-2 py-0.5 rounded-full text-xs font-normal bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                <span className="px-2 py-0.5 rounded-full text-xs font-normal bg-muted text-muted-foreground border border-border font-mono">
                   발화 {item.transcriptCount}건
                 </span>
               </div>
@@ -381,7 +381,7 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
                 <button
                   onClick={handleCopyTranscript}
                   disabled={item.transcriptCount === 0}
-                  className="px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md flex items-center gap-1 transition-colors disabled:opacity-50"
+                  className="px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted hover:bg-muted/80 rounded-md flex items-center gap-1 transition-colors disabled:opacity-50 border border-border cursor-pointer shadow-2xs"
                 >
                   {copiedTranscript ? <Check size={12} /> : <Copy size={12} />}
                   <span>{copiedTranscript ? '복사됨' : '전체 복사'}</span>
@@ -391,26 +391,26 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
 
             {/* 대화록 검색 인풋 */}
             {item.transcriptCount > 0 && (
-              <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <div className="px-4 py-2 border-b border-border bg-card">
                 <input
                   type="text"
                   placeholder="대화 내용 검색..."
                   value={transcriptSearch}
                   onChange={e => setTranscriptSearch(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 text-xs bg-background border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs font-mono"
                 />
               </div>
             )}
 
             {/* 대화록 버블 리스트 */}
-            <div className="flex-1 p-4 overflow-y-auto max-h-[550px] space-y-3 bg-gray-50/50 dark:bg-gray-900/30">
+            <div className="flex-1 p-4 overflow-y-auto max-h-[550px] space-y-3 bg-muted/10">
               {item.transcriptCount === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400 dark:text-gray-500 gap-2">
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
                   <ListOrdered size={36} className="opacity-20" />
                   <p className="text-xs">기록된 STT 대화록이 없습니다.</p>
                 </div>
               ) : filteredTranscript.length === 0 ? (
-                <div className="py-8 text-center text-xs text-gray-500 dark:text-gray-400">
+                <div className="py-8 text-center text-xs text-muted-foreground font-mono">
                   '{transcriptSearch}' 검색 결과가 없습니다.
                 </div>
               ) : (
@@ -421,18 +421,18 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
                       key={idx}
                       className={`flex flex-col ${isAgent ? 'items-end' : 'items-start'}`}
                     >
-                      <div className="flex items-center gap-1.5 mb-1 px-1 text-xs text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold text-gray-600 dark:text-gray-300">
+                      <div className="flex items-center gap-1.5 mb-1 px-1 text-2xs text-muted-foreground font-mono">
+                        <span className="font-semibold text-foreground">
                           {isAgent ? `${item.userName} (상담원)` : '고객'}
                         </span>
                         <span>·</span>
-                        <span className="font-mono">{t.t}</span>
+                        <span className="tabular-nums">{t.t}</span>
                       </div>
                       <div
                         className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed shadow-2xs whitespace-pre-wrap ${
                           isAgent
-                            ? 'bg-blue-600 text-white rounded-tr-xs'
-                            : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-tl-xs'
+                            ? 'bg-primary text-primary-foreground rounded-tr-xs font-medium'
+                            : 'bg-card text-foreground border border-border rounded-tl-xs'
                         }`}
                       >
                         {t.text}
@@ -446,13 +446,13 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
         </div>
 
         {/* 모달 하단 닫기 바 */}
-        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/80 flex items-center justify-between">
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="px-6 py-3 border-t border-border bg-muted/40 flex items-center justify-between">
+          <span className="text-2xs text-muted-foreground font-mono">
             * 통화 녹음과 AI 대화록은 개인정보보호법에 의거하여 회사 안전 비공개 저장소에 암호화 보관됩니다.
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-foreground bg-card hover:bg-muted border border-border rounded-lg transition-colors cursor-pointer shadow-2xs"
           >
             닫기
           </button>

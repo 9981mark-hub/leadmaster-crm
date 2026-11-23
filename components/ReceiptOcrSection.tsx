@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 // 영수증 글자 읽기는 서버 AI(ai-proxy)가 한다 → 로그인만 돼 있으면 쓸 수 있다 (키 입력 없음)
 import { analyzeReceiptImage, imageToBase64, resizeImage } from '../services/visionService';
+import { useToast } from '../contexts/ToastContext';
 
 interface OcrResult {
     success: boolean;
@@ -52,6 +53,7 @@ const toImageDataUrl = (image: string): string =>
     image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`;
 
 const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved }) => {
+    const { showToast } = useToast();
     const [ocrLoading, setOcrLoading] = useState(false);
     const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
     const [ocrFormData, setOcrFormData] = useState<ExpenseFormData>({
@@ -156,7 +158,7 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
     // 지출 저장
     const handleSaveExpense = async () => {
         if (!ocrFormData.amount || !ocrFormData.date) {
-            alert('날짜와 금액을 입력해주세요.');
+            showToast('날짜와 금액을 입력해주세요.', 'error');
             return;
         }
 
@@ -170,13 +172,13 @@ const ReceiptOcrSection: React.FC<ReceiptOcrSectionProps> = ({ onExpenseSaved })
                 ocrText: ocrResult?.rawText || ''
             });
 
-            alert('지출이 등록되었습니다!');
+            showToast('영수증 지출이 등록되었습니다!', 'success');
             setOcrResult(null);
             setOcrFormData({ date: '', amount: 0, description: '', category: '기타지출' });
             onExpenseSaved?.();
         } catch (error) {
             console.error('Save expense error:', error);
-            alert('지출 등록 중 오류가 발생했습니다.');
+            showToast('지출 등록 중 오류가 발생했습니다.', 'error');
         }
     };
 

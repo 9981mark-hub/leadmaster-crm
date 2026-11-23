@@ -194,7 +194,7 @@ export function buildCallHistoryList(
       // 음성 소스 파일이 없거나 브라우저 임시 주소(blob:)가 만료된 과거 녹음
       clientStatus = 'no_audio';
       clientAudioProblem = isBlob
-        ? '브라우저 임시 주소(blob:)가 만료되어 음성 원본 파일이 서버나 구글 드라이브에 남아있지 않습니다.'
+        ? '브라우저 임시 주소(blob:)가 만료되어 음성 원본 파일이 스토리지 저장소에 남아있지 않습니다.'
         : '등록된 통화 녹음 음성 파일(소스)이 존재하지 않습니다.';
     } else {
       // 유효한 드라이브/원격 주소가 있으나 AI 분석을 아직 돌리지 않은 녹음

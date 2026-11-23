@@ -3,6 +3,8 @@ import { createExpense, EXPENSE_CATEGORIES } from '../services/api';
 import { ExpenseCategory } from '../types';
 import { useOrgStore, mutateOrgStore } from '../services/orgStore';
 import { FIXED_COSTS_SPEC, FixedCost } from '../services/orgData';
+import { useToast } from '../contexts/ToastContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 
 interface FixedCostSectionProps {
     year: number;
@@ -11,6 +13,8 @@ interface FixedCostSectionProps {
 }
 
 const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpenseCreated }) => {
+    const { showToast } = useToast();
+    const { confirm: confirmDialog } = useConfirmDialog();
     // [2026-11-13 KIRO] 고정비는 회사별 서버(settings 'fixedCosts')가 원본
     const { value: storedCosts } = useOrgStore(FIXED_COSTS_SPEC);
     const fixedCosts: FixedCost[] = Array.isArray(storedCosts) ? storedCosts : [];
@@ -30,7 +34,7 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
         try {
             const res = await mutateOrgStore(FIXED_COSTS_SPEC, list => mutate(Array.isArray(list) ? list : []));
             if (!res.ok) {
-                alert(`고정비를 저장하지 못했습니다. ${res.error}`);
+                showToast(`고정비를 저장하지 못했습니다: ${res.error}`, 'error');
                 return false;
             }
             return true;
@@ -42,7 +46,7 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
     // 고정비 추가
     const handleAdd = async () => {
         if (!formData.name || formData.amount <= 0) {
-            alert('항목명과 금액을 입력해주세요.');
+            showToast('항목명과 금액을 입력해주세요.', 'error');
             return;
         }
 
@@ -91,13 +95,17 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
     const registerAsExpenses = async () => {
         const activeCosts = fixedCosts.filter(c => c.isActive);
         if (activeCosts.length === 0) {
-            alert('등록할 활성 고정비가 없습니다.');
+            showToast('등록할 활성 고정비가 없습니다.', 'error');
             return;
         }
 
-        if (!confirm(`${activeCosts.length}개 고정비를 ${month}월 지출로 등록하시겠습니까?`)) {
-            return;
-        }
+        const ok = await confirmDialog({
+            title: '고정비 지출 일괄 등록',
+            message: `${activeCosts.length}개 고정비를 ${month}월 지출로 등록하시겠습니까?`,
+            confirmLabel: '지출 등록',
+            cancelLabel: '취소'
+        });
+        if (!ok) return;
 
         try {
             for (const cost of activeCosts) {
@@ -111,7 +119,7 @@ const FixedCostSection: React.FC<FixedCostSectionProps> = ({ year, month, onExpe
                     description: `[고정비] ${cost.name}${cost.description ? ` - ${cost.description}` : ''}`
                 });
             }
-            alert(`${activeCosts.length}개 고정비가 지출로 등록되었습니다.`);
+            showToast(`${activeCosts.length}개 고정비가 지출로 등록되었습니다.`, 'success');
             onExpenseCreated?.();
         } catch (e) {
             // 저장 실패 안내는 createExpense가 이미 띄운다 (중간에 멈췄으면 그 전 항목은 등록됨)

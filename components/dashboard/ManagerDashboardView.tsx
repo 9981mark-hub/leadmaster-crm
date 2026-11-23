@@ -23,6 +23,8 @@ import { TeamMember, assignRoundRobin } from '../../services/team';
 import { KPICard } from '../ui/KPICard';
 import { ParalegalPipelineWidget } from './ParalegalPipelineWidget';
 import { applyLocalAssignment } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 
 interface ManagerDashboardViewProps {
   cases: Case[];
@@ -41,6 +43,8 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
   onShowOverdueModal,
   onShowWarningModal,
 }) => {
+  const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
   const [isDistributing, setIsDistributing] = useState(false);
   const [distributeSuccessMsg, setDistributeSuccessMsg] = useState<string | null>(null);
 
@@ -128,16 +132,21 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
   // 원클릭 라운드로빈 빠른 배분 실행 함수
   const handleQuickDistribute = async () => {
     if (unassignedCases.length === 0) {
-      alert('현재 배분할 미배정 리드가 없습니다.');
+      showToast('현재 배분할 미배정 리드가 없습니다.', 'error');
       return;
     }
     if (activeAgents.length === 0) {
-      alert('배정받을 수 있는 활성 상담원이 없습니다. [팀 관리]에서 상담원을 등록하세요.');
+      showToast('배정받을 수 있는 활성 상담원이 없습니다. [팀 관리]에서 상담원을 등록하세요.', 'error');
       return;
     }
 
-    const confirmMsg = `미배정 리드 ${unassignedCases.length}건을 활성 상담원 ${activeAgents.length}명에게 균등 배분하시겠습니까?`;
-    if (!window.confirm(confirmMsg)) return;
+    const ok = await confirm({
+      title: '미배정 리드 자동 균등 배분',
+      message: `미배정 리드 ${unassignedCases.length}건을 활성 상담원 ${activeAgents.length}명에게 균등 배분하시겠습니까?`,
+      confirmLabel: '배분 실행',
+      cancelLabel: '취소'
+    });
+    if (!ok) return;
 
     try {
       setIsDistributing(true);
@@ -153,12 +162,13 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
         // 배정 반영
       });
 
+      showToast(`총 ${caseIds.length}건의 리드가 공평하게 배분되었습니다!`, 'success');
       setDistributeSuccessMsg(`성공: 총 ${caseIds.length}건의 리드가 공평하게 배분되었습니다!`);
       if (onRefreshCases) onRefreshCases();
 
       setTimeout(() => setDistributeSuccessMsg(null), 5000);
     } catch (err: any) {
-      alert(`리드 배분 중 오류가 발생했습니다: ${err.message}`);
+      showToast(`리드 배분 중 오류가 발생했습니다: ${err.message}`, 'error');
     } finally {
       setIsDistributing(false);
     }

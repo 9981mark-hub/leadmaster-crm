@@ -296,36 +296,89 @@ export const fetchAllPayrollProfiles = async (): Promise<Record<string, AgentPay
   }
 };
 
-/** 단일 상담원 급여 프로필 조회 */
+/** 단일 상담원 급여 프로필 조회 (팀관리 인사정보와 자동 연동) */
 export const fetchAgentPayrollProfile = async (
   userId: string
 ): Promise<AgentPayrollProfile> => {
+  const org = loadCachedOrg();
   const all = await fetchAllPayrollProfiles();
-  if (all[userId]) return all[userId];
+  let prof = all[userId];
 
-  // 로컬 캐시 조회
-  try {
-    const raw = localStorage.getItem(`leadmaster_payroll_${userId}`);
-    if (raw) return JSON.parse(raw);
-  } catch {}
+  // 로컬 payroll 캐시 조회
+  if (!prof) {
+    try {
+      const raw = localStorage.getItem(`leadmaster_payroll_${userId}`);
+      if (raw) prof = JSON.parse(raw);
+    } catch {}
+  }
+
+  // 팀관리 멤버 인사정보(leadmaster_hr_{orgId}_{userId})에서 계좌/인센티브 정보 fallback 보강
+  let hrFallback: any = null;
+  if (org?.orgId) {
+    try {
+      const hrRaw = localStorage.getItem(`leadmaster_hr_${org.orgId}_${userId}`);
+      if (hrRaw) hrFallback = JSON.parse(hrRaw);
+    } catch {}
+  }
 
   return {
     ...DEFAULT_PAYROLL_PROFILE,
-    userId
+    userId,
+    ...(prof || {}),
+    bankName: prof?.bankName || hrFallback?.bankName || '',
+    accountNumber: prof?.accountNumber || hrFallback?.accountNumber || '',
+    accountHolder: prof?.accountHolder || hrFallback?.accountHolder || hrFallback?.displayName || '',
+    salaryType: prof?.salaryType || hrFallback?.salaryType || 'pure_incentive',
+    baseSalary: prof?.baseSalary !== undefined ? prof.baseSalary : (hrFallback?.baseSalary || 0),
+    unitIncentive: prof?.unitIncentive !== undefined ? prof.unitIncentive : (hrFallback?.unitIncentive ?? 150000),
+    incentiveRate: prof?.incentiveRate !== undefined ? prof.incentiveRate : (hrFallback?.incentiveRate || 0),
+    dailyAllowance: prof?.dailyAllowance !== undefined ? prof.dailyAllowance : (hrFallback?.dailyAllowance || 0),
+    bonusAllowance: prof?.bonusAllowance !== undefined ? prof.bonusAllowance : (hrFallback?.bonusAllowance || 0),
+    taxType: prof?.taxType || hrFallback?.taxType || 'freelancer_3_3'
   };
 };
 
-/** 상담원별 급여 프로필 저장 */
+/** 상담원별 급여 프로필 저장 (팀 관리 멤버 인사정보와 실시간 양방향 연동) */
 export const saveAgentPayrollProfile = async (
   profile: AgentPayrollProfile
 ): Promise<void> => {
   const org = loadCachedOrg();
   if (!org?.orgId) throw new Error('조직 정보가 없습니다.');
 
-  // 로컬 캐시 저장
+  // 1. 로컬 payroll 캐시 저장
   try {
     localStorage.setItem(`leadmaster_payroll_${profile.userId}`, JSON.stringify(profile));
   } catch {}
+
+  // 2. 팀관리 멤버 인사정보(MemberHrProfile) 캐시와 실시간 양방향 동기화
+  try {
+    const hrKey = `leadmaster_hr_${org.orgId}_${profile.userId}`;
+    const existingHrRaw = localStorage.getItem(hrKey);
+    const existingHr = existingHrRaw ? JSON.parse(existingHrRaw) : {};
+    const updatedHr = {
+      ...existingHr,
+      userId: profile.userId,
+      orgId: org.orgId,
+      bankName: profile.bankName || existingHr.bankName || '',
+      accountNumber: profile.accountNumber || existingHr.accountNumber || '',
+      accountHolder: profile.accountHolder || existingHr.accountHolder || '',
+      salaryType: profile.salaryType,
+      baseSalary: profile.baseSalary,
+      unitIncentive: profile.unitIncentive,
+      incentiveRate: profile.incentiveRate,
+      dailyAllowance: profile.dailyAllowance,
+      bonusAllowance: profile.bonusAllowance,
+      taxType: profile.taxType,
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem(hrKey, JSON.stringify(updatedHr));
+    // 인사정보 변경 이벤트 전파
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('crm:hr_profile_updated', { detail: { userId: profile.userId } }));
+    }
+  } catch (err) {
+    console.warn('[HR] Failed to sync with member HR profile cache:', err);
+  }
 
   const payload = {
     org_id: org.orgId,

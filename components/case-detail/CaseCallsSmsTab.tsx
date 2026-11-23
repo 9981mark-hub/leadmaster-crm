@@ -4,6 +4,8 @@ import { Case } from '../../types';
 import { useCommunicationLogs, useSmsTemplates, useSaveSmsTemplateMutation, useEnqueueSmsMutation } from '../../services/queries';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 
 interface CaseCallsSmsTabProps {
   c: Case;
@@ -25,30 +27,44 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
 
-  const handleSendSms = (content: string) => {
+  const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
+
+  const handleSendSms = async (content: string) => {
     if (!content.trim()) return;
-    if (window.confirm(`스마트폰을 통해 문자를 발송하시겠습니까?\n\n내용:\n${content}`)) {
-      enqueueSmsMutation.mutate({ phone: c.phone, content });
+    const ok = await confirm({
+      title: '문자(SMS) 발송',
+      message: `스마트폰을 통해 문자를 발송하시겠습니까?\n\n내용:\n${content}`,
+      confirmLabel: '발송하기',
+      cancelLabel: '취소'
+    });
+    if (ok) {
+      enqueueSmsMutation.mutate({ phone: c.phone, content }, {
+        onSuccess: () => showToast('문자 발송 대기열에 등록되었습니다.', 'success'),
+        onError: (err: any) => showToast(`발송 실패: ${err?.message || '알 수 없는 오류'}`, 'error')
+      });
     }
   };
 
   const handleSaveTemplate = () => {
     if (!editingTemplate) return;
     if (!editingTemplate.title.trim() || !editingTemplate.content.trim()) {
-      alert('제목과 내용을 모두 입력해주세요.');
+      showToast('제목과 내용을 모두 입력해주세요.', 'error');
       return;
     }
     
     // Max 5 templates rule
     if (!editingTemplate.id && templates.length >= 5) {
-      alert('템플릿은 최대 5개까지만 저장할 수 있습니다.');
+      showToast('템플릿은 최대 5개까지만 저장할 수 있습니다.', 'error');
       return;
     }
 
     saveTemplateMutation.mutate(editingTemplate, {
       onSuccess: () => {
+        showToast('문자 템플릿을 저장했습니다.', 'success');
         setEditingTemplate(null);
-      }
+      },
+      onError: (err: any) => showToast(`저장 실패: ${err?.message || '알 수 없는 오류'}`, 'error')
     });
   };
 

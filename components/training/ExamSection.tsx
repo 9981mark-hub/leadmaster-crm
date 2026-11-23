@@ -10,6 +10,7 @@ import {
   resetLevelExamProgress,
 } from '../../services/trainingExamBank';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 import {
   GraduationCap,
   Clock,
@@ -105,7 +106,9 @@ const ROUND_DESCRIPTIONS: {
 };
 
 export const ExamSection: React.FC = () => {
-  const { addToast } = useToast();
+  const { showToast } = useToast();
+  const addToast = (msg: string, type?: any) => showToast(msg, type === 'info' ? 'success' : type);
+  const { confirm } = useConfirmDialog();
 
   // 화면 모드 및 선택 상태
   const [selectedLevel, setSelectedLevel] = useState<ExamLevel>('beginner');
@@ -196,15 +199,19 @@ export const ExamSection: React.FC = () => {
   };
 
   // 시험 답안 제출 핸들러
-  const handleSubmitExam = (isTimeOut = false) => {
+  const handleSubmitExam = async (isTimeOut = false) => {
     const totalCount = questions.length;
     const answeredCount = Object.keys(userAnswers).length;
 
     if (!isTimeOut && answeredCount < totalCount) {
       const remaining = totalCount - answeredCount;
-      const confirmSubmit = window.confirm(
-        `아직 풀지 않은 문제가 ${remaining}문항 남아있습니다.\n정말 이대로 답안을 제출하시겠습니까?`
-      );
+      const confirmSubmit = await confirm({
+        title: '시험 답안 제출',
+        message: `아직 풀지 않은 문제가 ${remaining}문항 남아있습니다.\n정말 이대로 답안을 제출하시겠습니까?`,
+        confirmLabel: '제출하기',
+        cancelLabel: '돌아가서 풀기',
+        variant: 'default'
+      });
       if (!confirmSubmit) return;
     }
 
@@ -262,14 +269,17 @@ export const ExamSection: React.FC = () => {
   };
 
   // 등급 초기화 핸들러
-  const handleResetProgress = () => {
+  const handleResetProgress = async () => {
     const levelName =
       selectedLevel === 'beginner' ? '초급' : selectedLevel === 'intermediate' ? '중급' : '고급';
-    if (
-      window.confirm(
-        `정말로 ${levelName} 난이도의 모든 회차 시험 기록을 초기화하시겠습니까?\n마스터 인증 상태가 해제됩니다.`
-      )
-    ) {
+    const ok = await confirm({
+      title: `${levelName} 시험 기록 초기화`,
+      message: `정말로 ${levelName} 난이도의 모든 회차 시험 기록을 초기화하시겠습니까?\n마스터 인증 상태가 해제됩니다.`,
+      confirmLabel: '기록 초기화',
+      cancelLabel: '취소',
+      variant: 'destructive'
+    });
+    if (ok) {
       resetLevelExamProgress(selectedLevel);
       setProgress(loadLevelExamProgress(selectedLevel));
       addToast(`${levelName} 난이도 시험 기록이 초기화되었습니다.`, 'info');
@@ -534,8 +544,15 @@ export const ExamSection: React.FC = () => {
         <div className="p-4 rounded-3xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 sticky top-4 z-20 backdrop-blur-md bg-white/95 dark:bg-gray-800/95">
           <div className="flex items-center gap-3 w-full md:w-auto">
             <button
-              onClick={() => {
-                if (window.confirm('시험을 중단하고 대기실로 돌아가시겠습니까? 작성 중인 답안은 저장되지 않습니다.')) {
+              onClick={async () => {
+                const ok = await confirm({
+                  title: '시험 나가기',
+                  message: '시험을 중단하고 대기실로 돌아가시겠습니까?\n작성 중인 답안은 저장되지 않습니다.',
+                  confirmLabel: '시험 나가기',
+                  cancelLabel: '계속 풀기',
+                  variant: 'destructive'
+                });
+                if (ok) {
                   setViewMode('lobby');
                 }
               }}

@@ -89,7 +89,7 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
         const rawData: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
         
         if (rawData.length === 0) {
-          showToast('error', '파일이 비어있습니다.');
+          showToast('파일이 비어있습니다.', 'error');
           setIsUploading(false);
           return;
         }
@@ -191,12 +191,12 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
     const selectedRows = parsedData.filter(r => r.selected && r.isValid);
     
     if (selectedRows.length === 0) {
-      showToast('error', '선택된 유효한 연락처가 없습니다.');
+      showToast('선택된 유효한 연락처가 없습니다.', 'error');
       return;
     }
     
     if (!batchName.trim()) {
-      showToast('error', '배치 이름을 입력해주세요.');
+      showToast('배치 이름을 입력해주세요.', 'error');
       return;
     }
     
@@ -218,12 +218,12 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
         items
       });
       
-      showToast('success', `성공적으로 ${items.length}개의 연락처가 추가되었습니다.`);
+      showToast(`성공적으로 ${items.length}개의 연락처가 추가되었습니다.`, 'success');
       onCreated();
       handleClose();
     } catch (error) {
       console.error('Error creating batch:', error);
-      showToast('error', '배치 생성 중 오류가 발생했습니다.');
+      showToast('배치 생성 중 오류가 발생했습니다.', 'error');
     } finally {
       setIsSubmitting(false);
     }

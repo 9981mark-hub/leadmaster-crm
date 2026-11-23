@@ -460,11 +460,11 @@ export default function CaseDetail() {
                     window.dispatchEvent(new CustomEvent('crm:call_history_reload'));
                 }
                 showToast(r.exists
-                    ? '이미 드라이브에 보관된 녹음입니다. 통화 녹음·AI 탭에서 볼 수 있습니다.'
-                    : '회사 구글 드라이브에 비공개로 저장했습니다. 통화 녹음·AI 탭에도 올라갔습니다.');
+                    ? '이미 보관된 통화 녹음입니다. 통화 녹음·AI 탭에서 즉시 청취할 수 있습니다.'
+                    : '안전 비공개 저장소에 녹음을 보관했습니다. 통화 녹음·AI 탭에도 등록되었습니다.');
             } catch (err: any) {
                 console.error("Upload Error:", err);
-                showToast(`드라이브 업로드 실패: ${err?.message || '알 수 없는 오류'}`, 'error');
+                showToast(`녹음 파일 업로드 실패: ${err?.message || '알 수 없는 오류'}`, 'error');
             } finally {
                 setIsFileUploading(false);
                 // Reset file input value to allow selecting the same file again

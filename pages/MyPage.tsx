@@ -33,6 +33,7 @@ import { AttendanceHeaderWidget } from '../components/hr/AttendanceHeaderWidget'
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 import { saveGlobalSettings } from '../services/api';
 import { PageShell, Card, Button } from '../components/ui';
 import { AvatarSettingModal } from '../components/mypage/AvatarSettingModal';
@@ -51,6 +52,7 @@ interface PopupTemplate {
 
 export default function MyPage() {
     const { showToast } = useToast();
+    const { confirm } = useConfirmDialog();
     const { theme, toggleTheme } = useTheme();
     const {
         logout,
@@ -299,10 +301,15 @@ export default function MyPage() {
         showToast('로그아웃 되었습니다.');
     };
 
-    const handleEmergencyForceLogoutAll = () => {
-        if (!window.confirm('⚠️ [대표 전용 긴급 보안 통제]\n\n현재 접속 중인 모든 기기(PC, 모바일)의 세션을 일괄 강제 만료시키고 로그아웃 처리하시겠습니까?\n\n보안 침해 의심 또는 긴급 세션 파기 시에만 사용하십시오.')) {
-            return;
-        }
+    const handleEmergencyForceLogoutAll = async () => {
+        const ok = await confirm({
+            title: '대표 전용 긴급 보안 통제',
+            message: '현재 접속 중인 모든 기기(PC, 모바일)의 세션을 일괄 강제 만료시키고 로그아웃 처리하시겠습니까?\n\n보안 침해 의심 또는 긴급 세션 파기 시에만 사용하십시오.',
+            confirmLabel: '강제 만료 및 로그아웃',
+            cancelLabel: '취소',
+            variant: 'destructive'
+        });
+        if (!ok) return;
         logout();
         showToast('모든 기기의 세션이 강제 종료되었습니다. 다시 로그인하십시오.');
     };
@@ -322,12 +329,19 @@ export default function MyPage() {
         showToast('허용 관리자 이메일이 추가되었습니다.');
     };
 
-    const handleRemoveEmail = (email: string) => {
+    const handleRemoveEmail = async (email: string) => {
         if (allowedEmails.length <= 1) {
             showToast('최소 한 개의 관리자 계정은 유지되어야 합니다.', 'error');
             return;
         }
-        if (!window.confirm(`'${email}' 계정의 관리자 접근 권한을 삭제하시겠습니까?`)) return;
+        const ok = await confirm({
+            title: '관리자 권한 삭제',
+            message: `'${email}' 계정의 관리자 접근 권한을 삭제하시겠습니까?`,
+            confirmLabel: '권한 삭제',
+            cancelLabel: '취소',
+            variant: 'destructive'
+        });
+        if (!ok) return;
         removeAllowedEmail(email);
         showToast('권한이 삭제되었습니다.');
     };

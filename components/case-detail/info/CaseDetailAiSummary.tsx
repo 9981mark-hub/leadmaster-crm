@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Archive, Edit2, Mic, PlayCircle, Send, Sparkles, Trash2, X, MessageCircle, FileText, ListOrdered, Copy, Check } from 'lucide-react';
 import { Case, RecordingItem } from '../../../types';
-import { CustomAudioPlayer, CustomAudioPlayerRef } from '../../CustomAudioPlayer';
+import SmartAudioPlayer, { SmartAudioPlayerRef } from '../SmartAudioPlayer';
 import { convertToPlayableUrl, safeFormat, loadTelegramRooms, parseAiTranscript } from '../../../utils';
 import { getLegacyDrivePlayUrl } from '../../../services/recordings';
 import { FillFromSummaryButton } from '../FillFromSummaryButton';
@@ -58,7 +58,7 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
     const [transcriptSearch, setTranscriptSearch] = useState('');
     const [copiedTranscript, setCopiedTranscript] = useState(false);
 
-    const playerRef = useRef<CustomAudioPlayerRef>(null);
+    const playerRef = useRef<SmartAudioPlayerRef>(null);
     const audioInputRef = useRef<HTMLInputElement>(null);
 
     // [2026-11-02] 통화별 요약: 최근 요약(aiSummaryText) 말고 지난 통화 요약을 볼 수 있다 (보기만)
@@ -238,12 +238,15 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
                             이 녹음은 예전에 브라우저 임시 주소로만 저장되어 서버에 원본이 없습니다. 원본 파일이 있으면 다시 올려 주세요.
                         </div>
                     ) : (activeAudioUrl && activeAudioUrl.includes('drive.google.com') && !playSrc) ? (
-                        <div className="text-xs text-muted-foreground p-3">녹음 여는 중…</div>
+                        <div className="text-xs text-muted-foreground p-3">녹음 스트리밍 준비 중…</div>
                     ) : (
-                        <CustomAudioPlayer
+                        <SmartAudioPlayer
                             ref={playerRef}
+                            file={currentAudioFile}
                             src={playSrc || (activeAudioUrl || '')}
                             fileName={activeFileName}
+                            caseId={c.caseId}
+                            showToast={showToast}
                         />
                     )}
                 </div>

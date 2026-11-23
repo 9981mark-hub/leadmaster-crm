@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TrainingReport, TrainingPersona, TrainingSessionRecord, updateAdminFeedback, AdminFeedback } from '../../services/trainingService';
+import { useToast } from '../../contexts/ToastContext';
 import {
   Award,
   CheckCircle2,
@@ -52,6 +53,7 @@ export const TrainingReportModal: React.FC<Props> = ({
 
   // 관리자 평가 상태
   const existingFeedback = sessionRecord.adminFeedback;
+  const { showToast } = useToast();
   const [adminGrade, setAdminGrade] = useState<'S' | 'A' | 'B' | 'C' | 'F'>(existingFeedback?.grade || 'A');
   const [adminComment, setAdminComment] = useState(existingFeedback?.comment || '');
   const [adminEvaluator, setAdminEvaluator] = useState(existingFeedback?.evaluatorName || '총괄팀장');
@@ -84,8 +86,9 @@ export const TrainingReportModal: React.FC<Props> = ({
     if (result.ok) {
       setIsSavedFeedback(true);
       sessionRecord.adminFeedback = feedback;
+      showToast('팀장 코칭 피드백이 저장되었습니다.', 'success');
     } else {
-      alert(`피드백을 저장하지 못했습니다. ${result.error || ''}`);
+      showToast(`피드백을 저장하지 못했습니다: ${result.error || ''}`, 'error');
     }
   };
 
