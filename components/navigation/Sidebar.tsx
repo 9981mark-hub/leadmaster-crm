@@ -113,18 +113,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside 
-      className={`hidden md:flex flex-col bg-card text-card-foreground border-r border-border transition-all duration-200 z-30 select-none ${
-        collapsed ? 'w-[72px]' : 'w-64'
+      className={`hidden md:flex flex-col bg-[#f6f7fb] dark:bg-card text-foreground border-r border-[#d0d4e4] dark:border-border transition-all duration-200 z-30 select-none ${
+        collapsed ? 'w-[56px]' : 'w-60'
       }`}
     >
       {/* 1. Header: Workspace Brand Card & Logo */}
-      <div className={`border-b border-border ${collapsed ? 'p-3 flex flex-col items-center gap-2' : 'p-4'}`}>
+      <div className={`border-b border-[#d0d4e4] dark:border-border ${collapsed ? 'p-2.5 flex flex-col items-center gap-2' : 'p-3.5'}`}>
         {collapsed ? (
           <>
             <img 
               src={`${import.meta.env.BASE_URL}leadmaster_logo_120.png`} 
               alt="LeadMaster Logo" 
-              className="w-8 h-8 rounded-xl shadow-xs cursor-pointer hover:opacity-85 transition-opacity" 
+              className="w-8 h-8 rounded-lg shadow-2xs cursor-pointer hover:opacity-85 transition-opacity" 
               onClick={onToggleCollapse} 
               title="클릭하여 사이드바 펼치기" 
             />
@@ -132,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <img
                 src={org.orgLogo}
                 alt={orgName}
-                className="w-7 h-7 rounded-lg object-cover border border-border shadow-2xs cursor-pointer hover:scale-105 transition-transform"
+                className="w-7 h-7 rounded-[4px] object-cover border border-[#d0d4e4] dark:border-border shadow-2xs cursor-pointer hover:scale-105 transition-transform"
                 onClick={() => {
                   if (isOwner) setIsCompanyModalOpen(true);
                   else onToggleCollapse();
@@ -145,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   if (isOwner) setIsCompanyModalOpen(true);
                   else onToggleCollapse();
                 }}
-                className={`w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 transition-transform ${isOwner ? 'cursor-pointer hover:scale-105' : ''}`}
+                className={`w-7 h-7 rounded-[4px] bg-[#0073ea]/10 text-[#0073ea] dark:bg-primary/10 dark:text-primary flex items-center justify-center shrink-0 border border-[#0073ea]/20 dark:border-primary/20 transition-transform ${isOwner ? 'cursor-pointer hover:scale-105' : ''}`}
                 title={`${orgName} (${roleInfo.badgeText})${isOwner ? ' - 클릭하여 설정' : ''}`}
               >
                 <Building2 size={13} strokeWidth={1.75} />
@@ -153,41 +153,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
             <button 
               onClick={onToggleCollapse}
-              className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="p-1 rounded-[4px] text-[#676879] dark:text-muted-foreground hover:text-[#323338] dark:hover:text-foreground hover:bg-[#dcdfec]/40 dark:hover:bg-muted transition-colors"
               title="사이드바 펼치기"
             >
               <ChevronsRight size={16} strokeWidth={1.75} />
             </button>
           </>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {/* Logo row + Collapse Button */}
             <div className="flex items-center justify-between">
               <Link to="/" className="flex items-center gap-2 group">
                 <img 
                   src={theme === 'dark' ? `${import.meta.env.BASE_URL}leadmaster_logo_horizontal_dark.png` : `${import.meta.env.BASE_URL}leadmaster_logo_horizontal.png`} 
                   alt="LeadMaster CRM" 
-                  className="h-6 w-auto object-contain shrink-0 group-hover:opacity-90 transition-opacity" 
+                  className="h-5.5 w-auto object-contain shrink-0 group-hover:opacity-90 transition-opacity" 
                 />
               </Link>
               <button 
                 onClick={onToggleCollapse} 
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0" 
+                className="p-1.5 rounded-[4px] text-[#676879] dark:text-muted-foreground hover:text-[#323338] dark:hover:text-foreground hover:bg-[#dcdfec]/40 dark:hover:bg-muted transition-colors shrink-0" 
                 title="사이드바 접기"
               >
-                <ChevronsLeft size={17} strokeWidth={1.75} />
+                <ChevronsLeft size={16} strokeWidth={1.75} />
               </button>
             </div>
 
-            {/* Tenant Workspace Card (회사명 & 대표 사진/로고 설정) */}
+            {/* Tenant Workspace Card (monday White Box Style) */}
             <div 
               onClick={() => {
                 if (isOwner) setIsCompanyModalOpen(true);
               }}
-              className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-colors ${
+              className={`p-2 rounded-lg border flex items-center justify-between gap-2 transition-colors ${
                 isOwner 
-                  ? 'cursor-pointer group bg-muted/40 hover:bg-muted/80 border-border' 
-                  : 'bg-muted/20 border-border'
+                  ? 'cursor-pointer group bg-white dark:bg-muted/40 hover:border-[#0073ea]/50 border-[#d0d4e4] dark:border-border shadow-2xs' 
+                  : 'bg-white/80 dark:bg-muted/20 border-[#d0d4e4] dark:border-border shadow-2xs'
               }`}
               title={isOwner ? '클릭하여 회사명 및 대표 사진/로고 설정 (대표 전용)' : orgName}
             >
@@ -196,24 +196,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <img
                     src={org.orgLogo}
                     alt={orgName}
-                    className="w-6 h-6 rounded-lg object-cover border border-border shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
+                    className="w-5.5 h-5.5 rounded-[4px] object-cover border border-[#d0d4e4] dark:border-border shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
                   />
                 ) : (
-                  <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <Building2 size={13} strokeWidth={1.75} />
+                  <div className="w-5.5 h-5.5 rounded-[4px] bg-[#0073ea]/10 text-[#0073ea] dark:bg-primary/10 dark:text-primary flex items-center justify-center shrink-0">
+                    <Building2 size={12} strokeWidth={1.75} />
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-foreground truncate leading-tight group-hover:text-primary transition-colors" title={orgName}>
+                  <p className="text-[12px] font-bold text-[#323338] dark:text-foreground truncate leading-tight group-hover:text-[#0073ea] dark:group-hover:text-primary transition-colors" title={orgName}>
                     {orgName}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 {isOwner && (
-                  <Settings size={12} strokeWidth={1.75} className="text-muted-foreground opacity-60 group-hover:opacity-100 group-hover:text-primary transition-all" />
+                  <Settings size={11} strokeWidth={1.75} className="text-[#676879] opacity-60 group-hover:opacity-100 group-hover:text-[#0073ea] transition-all" />
                 )}
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold shadow-2xs ${roleInfo.colorClass}`}>
+                <span className={`shrink-0 rounded-[4px] px-1.5 py-0.5 text-[10px] font-bold shadow-2xs ${roleInfo.colorClass}`}>
                   {roleInfo.badgeText}
                 </span>
               </div>
@@ -223,7 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {isPlatformAdmin && (
               <Link
                 to="/platform"
-                className={`p-2.5 rounded-xl flex items-center justify-between transition-all text-xs font-semibold ${
+                className={`p-2 rounded-lg flex items-center justify-between transition-all text-xs font-semibold ${
                   path === '/platform'
                     ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs border border-purple-500 font-bold'
                     : 'bg-gradient-to-r from-purple-50 to-indigo-50/80 hover:from-purple-100/90 hover:to-indigo-100/90 border border-purple-200/90 text-purple-900 shadow-2xs dark:from-purple-950/40 dark:to-indigo-950/40 dark:border-purple-500/30 dark:text-purple-200 dark:hover:text-white dark:hover:border-purple-400/60'
@@ -240,7 +240,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   />
                   <span className="truncate">플랫폼 총괄 어드민</span>
                 </div>
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0 transition-colors ${
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-[4px] font-bold shrink-0 transition-colors ${
                   path === '/platform'
                     ? 'bg-white/20 text-white border border-white/30'
                     : 'bg-purple-100 text-purple-700 border border-purple-300/80 dark:bg-purple-500/25 dark:text-purple-200 dark:border-purple-500/40'
@@ -254,13 +254,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* 2. Navigation: 4 Grouped Sections */}
-      <nav className={`flex-1 overflow-y-auto no-scrollbar ${collapsed ? 'px-2 py-3 space-y-4' : 'px-3 py-3 space-y-4'}`}>
+      <nav className={`flex-1 overflow-y-auto no-scrollbar ${collapsed ? 'px-1.5 py-2.5 space-y-3' : 'px-2 py-2.5 space-y-3'}`}>
         {navGroups.map(group => {
           // Filter items based on user permissions
           const visibleItems = group.items.filter(item => {
             if (item.platformAdminOnly && !isPlatformAdmin) return false;
             if (item.adminOnly && !isAdmin) return false;
-            // 시스템 설정(/settings): 대표/플랫폼관리자 또는 권한 위임 관리자만 노출
             if (item.to === '/settings') {
               const isOwner = org?.role === 'owner' || user?.email === (org as any)?.ownerEmail;
               if (!isOwner && !isPlatformAdmin && !org?.adminPermissions?.settings?.allowAccess) {
@@ -277,15 +276,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           if (visibleItems.length === 0) return null;
 
           return (
-            <div key={group.id} className="space-y-1">
+            <div key={group.id} className="space-y-0.5">
               {!collapsed ? (
                 <div className="px-2 pt-2 pb-1">
-                  <p className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
+                  <p className="text-[11px] font-semibold tracking-wider uppercase text-[#676879] dark:text-muted-foreground">
                     {group.label}
                   </p>
                 </div>
               ) : (
-                <div className="my-1.5 mx-2 border-t border-border" />
+                <div className="my-1.5 mx-1.5 border-t border-[#d0d4e4] dark:border-border" />
               )}
 
               {visibleItems.map(item => {
@@ -297,44 +296,44 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     key={item.to}
                     to={item.to}
                     title={collapsed ? item.label : undefined}
-                    className={`relative flex items-center transition-all duration-150 group ${
+                    className={`relative flex items-center transition-all duration-70 ease-[cubic-bezier(0.4,0,0.2,1)] active:scale-[0.98] group ${
                       collapsed 
-                        ? 'p-2.5 justify-center rounded-lg' 
-                        : 'px-3 py-2 rounded-lg justify-between'
+                        ? 'p-2 justify-center rounded-[4px]' 
+                        : 'px-2.5 py-1.5 rounded-[4px] justify-between h-[34px]'
                     } ${
                       active
-                        ? 'bg-primary/10 text-primary font-semibold shadow-2xs'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground font-medium'
+                        ? 'bg-[#cce5ff]/60 text-[#0073ea] font-semibold dark:bg-primary/10 dark:text-primary shadow-2xs'
+                        : 'text-[#323338] dark:text-muted-foreground hover:bg-[#dcdfec]/40 dark:hover:bg-muted hover:text-[#0073ea] dark:hover:text-foreground font-medium'
                     }`}
                   >
-                    {/* Active accent bar */}
+                    {/* Active accent bar (3px vertical line) */}
                     {active && !collapsed && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#0073ea] dark:bg-primary rounded-r-full" />
                     )}
 
-                    <div className={`flex items-center ${collapsed ? '' : 'gap-2.5 min-w-0'}`}>
+                    <div className={`flex items-center ${collapsed ? '' : 'gap-2 min-w-0'}`}>
                       <Icon 
-                        size={18} 
+                        size={17} 
                         strokeWidth={1.75}
                         className={`shrink-0 transition-colors ${
                           active 
-                            ? 'text-primary' 
-                            : 'text-muted-foreground group-hover:text-foreground'
+                            ? 'text-[#0073ea] dark:text-primary' 
+                            : 'text-[#676879] dark:text-muted-foreground group-hover:text-[#0073ea] dark:group-hover:text-foreground'
                         }`} 
                       />
                       {!collapsed && (
-                        <span className="text-xs truncate tracking-tight">{item.label}</span>
+                        <span className="text-[13px] truncate tracking-tight">{item.label}</span>
                       )}
                     </div>
 
                     {/* Badge */}
                     {item.badge && !collapsed && (
-                      <span className="bg-rose-500 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full animate-pulse shadow-2xs">
+                      <span className="bg-[#df2f4a] text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full animate-pulse shadow-2xs">
                         {item.badge}
                       </span>
                     )}
                     {item.badge && collapsed && (
-                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full animate-ping" />
+                      <span className="absolute top-1 right-1 w-2 h-2 bg-[#df2f4a] rounded-full animate-ping" />
                     )}
                   </Link>
                 );
@@ -345,14 +344,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* 3. Footer: Version & Status */}
-      <div className={`border-t border-border ${collapsed ? 'p-2 flex justify-center' : 'p-3 flex items-center justify-between'}`}>
+      <div className={`border-t border-[#d0d4e4] dark:border-border ${collapsed ? 'p-2 flex justify-center' : 'p-2.5 flex items-center justify-between'}`}>
         {!collapsed ? (
-          <div className="flex items-center justify-between w-full text-xs text-muted-foreground font-medium">
+          <div className="flex items-center justify-between w-full text-[11px] text-[#676879] dark:text-muted-foreground font-medium">
             <span>LeadMaster SaaS</span>
             <span className="font-mono">v3.80</span>
           </div>
         ) : (
-          <span className="text-xs font-mono text-muted-foreground">v3.8</span>
+          <span className="text-[10px] font-mono text-[#676879] dark:text-muted-foreground">v3.8</span>
         )}
       </div>
 

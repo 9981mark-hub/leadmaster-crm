@@ -154,7 +154,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                         <button
                             type="button"
                             onClick={onToggleDensity}
-                            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-foreground text-xs font-medium hover:bg-muted shadow-xs transition-colors whitespace-nowrap"
+                            className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 rounded-[4px] border border-[#d0d4e4] dark:border-border bg-white dark:bg-card text-[#323338] dark:text-foreground text-xs font-medium hover:bg-[#f6f7fb] dark:hover:bg-muted shadow-2xs active:scale-[0.97] transition-all whitespace-nowrap cursor-pointer"
                             title={density === 'compact' ? '표준 보기로 전환' : '컴팩트(압축) 보기로 전환'}
                         >
                             <span>{density === 'compact' ? '표준 뷰' : '압축 뷰'}</span>
@@ -164,16 +164,16 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                         <button
                             type="button"
                             onClick={onOpenNewCaseModal}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg shadow-xs active:scale-95 transition-all whitespace-nowrap"
+                            className="flex items-center gap-1.5 h-8 px-3.5 bg-[#0073ea] hover:bg-[#0060c0] text-white text-xs font-semibold rounded-[4px] shadow-2xs active:scale-[0.97] transition-all whitespace-nowrap cursor-pointer"
                             title="새 고객 케이스 빠른 등록 (Alt+N)"
                         >
-                            <Plus size={14} strokeWidth={1.75} />
+                            <Plus size={14} strokeWidth={2} />
                             <span>신규 등록</span>
                         </button>
                     )}
                     <Link
                         to="/lite"
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-card hover:bg-muted border border-border text-foreground text-xs font-medium rounded-lg shadow-xs active:scale-95 transition-all whitespace-nowrap"
+                        className="flex items-center gap-1.5 h-8 px-3 bg-white dark:bg-card hover:bg-[#f6f7fb] dark:hover:bg-muted border border-[#d0d4e4] dark:border-border text-[#323338] dark:text-foreground text-xs font-medium rounded-[4px] shadow-2xs active:scale-[0.97] transition-all whitespace-nowrap cursor-pointer"
                         title="재택/이동 중 모바일 스마트폰 간편 콜 모드"
                     >
                         <Zap size={13} strokeWidth={1.75} className="text-amber-500" />
@@ -183,7 +183,7 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                     {canExport && (
                         <button
                             onClick={onExportClick}
-                            className="px-3 py-1.5 bg-card hover:bg-muted border border-border text-foreground text-xs font-medium rounded-lg shadow-xs transition-colors whitespace-nowrap"
+                            className="h-8 px-3 bg-white dark:bg-card hover:bg-[#f6f7fb] dark:hover:bg-muted border border-[#d0d4e4] dark:border-border text-[#323338] dark:text-foreground text-xs font-medium rounded-[4px] shadow-2xs active:scale-[0.97] transition-all whitespace-nowrap cursor-pointer"
                         >
                             데이터 내보내기
                         </button>

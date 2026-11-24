@@ -3,26 +3,61 @@
    ======================================================== */
 
 :root {
-  --background: 210 40% 98%;          /* #f8fafc (Slate 50 - 캔버스) */
-  --foreground: 222 47% 11%;          /* #0f172a (Slate 900 - 딥 슬레이트 먹색 텍스트) */
-  --card: 0 0% 100%;                  /* #ffffff (Pure White - 카드 서피스) */
-  --card-foreground: 222 47% 11%;
-  --popover: 0 0% 100%;               /* #ffffff (모달/팝오버) */
-  --popover-foreground: 222 47% 11%;
-  --primary: 160 84% 39%;             /* #059669 (신뢰의 딥 에메랄드) */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 210 40% 96.1%;         /* #f1f5f9 (Slate 100) */
-  --secondary-foreground: 222 47% 11%;
-  --muted: 210 40% 96.1%;             /* #f1f5f9 */
-  --muted-foreground: 215 16% 47%;    /* #64748b (Slate 500) */
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222 47% 11%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214 32% 91%;              /* #e2e8f0 (Slate 200 - 1px 미세 테두리) */
-  --input: 214 32% 91%;
-  --ring: 160 84% 39%;
-  --radius: 0.75rem;                  /* 12px 카드 곡률 */
+  /* 1. Surfaces & Canvas (monday.com Vibe 1:1) */
+  --background: 228 33% 97.5%;        /* #f6f7fb (Riverstone Gray - 눈부심 방지 캔버스) */
+  --foreground: 230 6% 21%;           /* #323338 (Mud Black - 장시간 편안한 본문 잉크색) */
+  --card: 0 0% 100%;                  /* #ffffff (Pure Snow White - 보드 행 및 카드 서피스) */
+  --card-foreground: 230 6% 21%;      /* #323338 */
+  --popover: 0 0% 100%;               /* #ffffff (모달/드로어/팝오버) */
+  --popover-foreground: 230 6% 21%;
+  --primary: 211 100% 46%;            /* #0073ea (monday.com Basic Blue 브랜드 주색상) */
+  --primary-foreground: 0 0% 100%;    /* #ffffff */
+  --secondary: 228 33% 96%;           /* #f0f3ff (Light Blue-Gray Surface) */
+  --secondary-foreground: 230 6% 21%;
+  --muted: 228 20% 95%;               /* #edf0f8 */
+  --muted-foreground: 237 8% 44%;     /* #676879 (Asphalt - 보조 텍스트 및 컬럼 라벨) */
+  --accent: 211 100% 90%;             /* #cce5ff (Highlight Blue 선택 배경) */
+  --accent-foreground: 211 100% 35%;  /* #0060b9 */
+  --destructive: 351 74% 53%;         /* #df2f4a (monday Stuck Red) */
+  --destructive-foreground: 0 0% 100%;
+  --border: 228 26% 85%;              /* #d0d4e4 (Layout Border - 정밀 1px 구분선) */
+  --input: 229 17% 80%;               /* #c3c6d4 (Wolf Gray UI Border) */
+  --ring: 211 100% 46%;               /* #0073ea */
+  --radius: 0.5rem;                   /* 8px 표준 카드 곡률 */
+
+  /* 2. Motion Duration Tokens */
+  --motion-productive-short: 70ms;
+  --motion-productive-med: 100ms;
+  --motion-productive-long: 150ms;
+  --motion-expressive-short: 250ms;
+  --motion-expressive-long: 400ms;
+
+  /* 3. Cubic-Bezier Motion Curves */
+  --motion-timing-enter: cubic-bezier(0, 0, 0.35, 1);
+  --motion-timing-exit: cubic-bezier(0.4, 0, 1, 1);
+  --motion-timing-transition: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-timing-emphasize: cubic-bezier(0, 0, 0.2, 1.4);
+
+  /* 4. 5-Level Elevation Shadows */
+  --shadow-sticky-col: 3px 0 4px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0px 4px 8px rgba(0, 0, 0, 0.06);
+  --shadow-popover: 0px 6px 20px rgba(0, 0, 0, 0.15);
+  --shadow-drawer: -4px 0 24px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0px 15px 50px rgba(0, 0, 0, 0.2);
+  --backdrop: rgba(33, 33, 33, 0.7);
+
+  /* 5. monday.com Signature Status Palette */
+  --status-done: #00c875;
+  --status-done-hover: #0f9b63;
+  --status-working: #fdab3d;
+  --status-working-hover: #c0873c;
+  --status-stuck: #df2f4a;
+  --status-stuck-hover: #ad3f51;
+  --status-pending: #ffcb00;
+  --status-pending-hover: #eaaa15;
+  --status-qualified: #579bfc;
+  --status-qualified-hover: #4c7cc1;
+  --status-empty: #c4c4c4;
 }
 
 .dark {
@@ -45,17 +80,25 @@
   --border: 240 3.7% 15.9%;           /* #27272a (1px 다크 미세 테두리) */
   --input: 240 3.7% 15.9%;
   --ring: 158 64% 52%;
+
+  /* Dark Mode Shadow Overrides */
+  --shadow-sticky-col: 3px 0 4px rgba(0, 0, 0, 0.5);
+  --shadow-card-hover: 0px 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-popover: 0px 6px 20px rgba(0, 0, 0, 0.5);
+  --shadow-drawer: -4px 0 24px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0px 15px 50px rgba(0, 0, 0, 0.7);
+  --backdrop: rgba(0, 0, 0, 0.85);
 }
 
 /* Base Body & Global Typography Setup */
 html, body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif !important;
+  font-family: Figtree, "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif !important;
   font-feature-settings: "rlig" 1, "calt" 1, "tnum" 1;
   -webkit-font-smoothing: antialiased !important;
   -moz-osx-font-smoothing: grayscale !important;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.01em;
 }
 
 /* 숫자/금액/시간/전화번호 고정폭 클래스 */

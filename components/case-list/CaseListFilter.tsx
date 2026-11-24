@@ -70,16 +70,16 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
     };
 
     return (
-        <div className="flex flex-col xl:flex-row justify-start items-start xl:items-center gap-2 bg-card p-3 rounded-xl shadow-xs border border-border">
+        <div className="flex flex-col xl:flex-row justify-start items-start xl:items-center gap-2 bg-white dark:bg-card p-2.5 rounded-[8px] shadow-2xs border border-[#d0d4e4] dark:border-border">
             {/* [Row 1] Search + Mobile Upload Action */}
             <div className="flex w-full xl:w-auto gap-2">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-2.5 text-muted-foreground" size={16} strokeWidth={1.75} />
+                    <Search className="absolute left-3 top-2.5 text-[#676879] dark:text-muted-foreground" size={15} strokeWidth={1.75} />
                     <input
                         type="text"
                         placeholder="이름·번호·메모·문자 검색"
                         aria-label="검색"
-                        className="pl-9 pr-9 py-2 border border-border rounded-lg text-xs w-full xl:w-64 focus:outline-none focus:ring-1 focus:ring-ring bg-card text-foreground placeholder:text-muted-foreground"
+                        className="pl-8 pr-8 py-1.5 border border-[#d0d4e4] dark:border-border rounded-[4px] text-xs w-full xl:w-60 focus:outline-none focus:ring-1 focus:ring-[#0073ea] bg-[#f6f7fb] dark:bg-card text-[#323338] dark:text-foreground placeholder:text-[#676879] dark:placeholder:text-muted-foreground"
                         value={search}
                         onChange={withReset(setSearch)}
                     />
@@ -87,9 +87,9 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         <button
                             type="button"
                             onClick={() => { setSearch(''); onResetPage(); }}
-                            className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+                            className="absolute right-2.5 top-2 text-[#676879] hover:text-[#323338] dark:hover:text-foreground"
                         >
-                            <XCircle size={16} strokeWidth={1.75} />
+                            <XCircle size={15} strokeWidth={1.75} />
                         </button>
                     )}
                 </div>
@@ -97,7 +97,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                 <button
                     type="button"
                     onClick={() => { setShowStarredOnly(!showStarredOnly); onResetPage(); }}
-                    className={`flex items-center justify-center p-2 border rounded-lg transition-colors shadow-2xs shrink-0 ${showStarredOnly ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-card border-border text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                    className={`flex items-center justify-center p-1.5 border rounded-[4px] transition-all shadow-2xs shrink-0 ${showStarredOnly ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-white dark:bg-card border-[#d0d4e4] dark:border-border text-[#676879] dark:text-muted-foreground hover:bg-[#f6f7fb] dark:hover:bg-muted hover:text-[#323338] dark:hover:text-foreground'}`}
                     title="중요 표시된 항목만 보기"
                 >
                     <Star size={16} strokeWidth={1.75} fill={showStarredOnly ? 'currentColor' : 'none'} />
@@ -297,17 +297,18 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             <Upload size={16} strokeWidth={1.75} />
                         </button>}
 
-                        <div className="bg-muted p-1 rounded-lg border border-border flex items-center gap-1 shadow-2xs">
+                        {/* Layout Toggle (List / Kanban) - monday.com 표준 4px 뷰 스위처 */}
+                        <div className="bg-[#f6f7fb] dark:bg-muted p-0.5 rounded-[4px] border border-[#d0d4e4] dark:border-border flex items-center gap-0.5 shadow-2xs">
                             <button
                                 onClick={() => setLayoutMode('list')}
-                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'list' ? 'bg-card shadow-2xs text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
-                                title="리스트 보기"
+                                className={`p-1.5 rounded-[3px] transition-all ${layoutMode === 'list' ? 'bg-white dark:bg-card shadow-2xs text-[#0073ea] font-semibold' : 'text-[#676879] dark:text-muted-foreground hover:text-[#323338] dark:hover:text-foreground'}`}
+                                title="테이블(목록) 보기"
                             >
                                 <LayoutList size={15} strokeWidth={1.75} />
                             </button>
                             <button
                                 onClick={() => setLayoutMode('kanban')}
-                                className={`p-1.5 rounded-md transition-all ${layoutMode === 'kanban' ? 'bg-card shadow-2xs text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                                className={`p-1.5 rounded-[3px] transition-all ${layoutMode === 'kanban' ? 'bg-white dark:bg-card shadow-2xs text-[#0073ea] font-semibold' : 'text-[#676879] dark:text-muted-foreground hover:text-[#323338] dark:hover:text-foreground'}`}
                                 title="칸반 보드 보기"
                             >
                                 <LayoutGrid size={15} strokeWidth={1.75} />

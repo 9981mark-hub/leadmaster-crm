@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, Star, History, Archive, Scale, Eye } from 'lucide-react';
+import { Phone, PhoneMissed, AlertTriangle, MessageSquare, Trash2, Sparkles, MapPin, Briefcase, MoreHorizontal, ChevronDown, ChevronRight, Star, History, Archive, Scale, Eye } from 'lucide-react';
 import { Case, Partner, ReminderItem, CaseStatusLog, MissedCallIntervalTier } from '../../types';
 import { getCaseWarnings, safeFormat, parseReminder, isOverdueMissedCall } from '../../utils';
 import HoverCheckTooltip from '../HoverCheckTooltip';
 import CommunicationHistoryTooltipContent from './CommunicationHistoryTooltipContent';
+import { StatusCell } from './StatusCell';
+import { BatteryProgress } from '../common/BatteryProgress';
+import { cn } from '../ui/cn';
 
 import CallConfirmPopup from '../CallConfirmPopup';
 import { STATUS_COLOR_MAP } from '../../constants';
@@ -278,6 +281,71 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     if (cases.length === 0) {
         return <div className="p-8 text-center text-gray-500 dark:text-gray-400 flex-1 flex items-center justify-center">검색 결과가 없습니다.</div>;
     }
+
+    // 4대 monday.com Vibe 그룹 분할
+    const caseGroups = useMemo(() => {
+        if (viewMode !== 'active') {
+            return [
+                {
+                    id: viewMode,
+                    title: viewMode === 'archived' ? '보관함 리드' : '휴지통 리드',
+                    color: viewMode === 'archived' ? '#676879' : '#df2f4a',
+                    cases,
+                }
+            ];
+        }
+
+        const groups = [
+            {
+                id: 'new',
+                title: '신규 접수 리드',
+                color: '#0073ea',
+                cases: cases.filter(c => c.isNew || ['신규접수', '접수', '배정대기'].includes(c.status)),
+            },
+            {
+                id: 'working',
+                title: '1차 상담 진행 중',
+                color: '#fdab3d',
+                cases: cases.filter(c => !c.isNew && ['상담진행', '상담진행중', '진행중', '1차상담', '재통화요', '재통화', '부재중', '사무장 접수'].includes(c.status)),
+            },
+            {
+                id: 'qualified',
+                title: '적격 심사 & 계약 준비',
+                color: '#579bfc',
+                cases: cases.filter(c => !c.isNew && ['적격심사', '1차적격', '심사중', '계약서작성', '서류보완요청'].includes(c.status)),
+            },
+            {
+                id: 'done',
+                title: '계약 / 수임 완료',
+                color: '#00c875',
+                cases: cases.filter(c => ['계약완료', '수임완료', '완료', '계약 완료'].includes(c.status)),
+            },
+            {
+                id: 'stuck',
+                title: '보류 / 취소 / 종결',
+                color: '#df2f4a',
+                cases: cases.filter(c => ['진행불가', '고객취소', '거절', '부적격'].includes(c.status)),
+            },
+        ];
+
+        const assignedIds = new Set(groups.flatMap(g => g.cases.map(c => c.caseId)));
+        const others = cases.filter(c => !assignedIds.has(c.caseId));
+        if (others.length > 0) {
+            groups.push({
+                id: 'other',
+                title: '기타 보류 리드',
+                color: '#676879',
+                cases: others,
+            });
+        }
+
+        return groups.filter(g => g.cases.length > 0);
+    }, [cases, viewMode]);
+
+    const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+    const toggleGroupCollapse = (groupId: string) => {
+        setCollapsedGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
+    };
 
     return (
         <div className="bg-card rounded-xl shadow-xs border border-border min-h-[500px] flex flex-col overflow-hidden">
@@ -579,360 +647,362 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                 })}
             </div>
 
-            {/* Desktop View (Table) */}
-            <div className="hidden md:block flex-1 overflow-x-auto">
-                <table className={`w-full ${textScale} text-left text-muted-foreground table-fixed`}>
-                    <thead className="bg-muted/50 text-muted-foreground uppercase font-semibold text-xs border-b border-border">
-                        <tr>
-                            {selectable && (
-                                <th className={`pl-3 pr-1 ${headerPadding} w-[3%] text-center`}>
-                                    <input type="checkbox" aria-label="이 쪽 모두 선택" checked={allOnPage} onChange={() => onToggleSelectAll?.(pageIds, !allOnPage)} />
-                                </th>
-                            )}
-                            <th className={`px-2 ${headerPadding} w-[3%] text-center whitespace-nowrap`}><Star size={14} strokeWidth={1.75} className="inline text-muted-foreground" /></th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[14%] whitespace-nowrap`}>유형/경로/거래처</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[11%] whitespace-nowrap`}>고객명</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[12%] whitespace-nowrap`}>연락처</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%] whitespace-nowrap`}>상태</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%] whitespace-nowrap`}>등록일</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} w-[10%] whitespace-nowrap`}>최종상담일</th>
-                            <th className={`px-3 md:px-4 ${headerPadding} ${viewMode === 'active' ? 'w-[30%]' : 'w-[20%]'} whitespace-nowrap`}>리마인더</th>
-                            {viewMode !== 'active' && (
-                                <th className={`px-3 md:px-4 ${headerPadding} w-[10%] text-center whitespace-nowrap`}>
-                                    {viewMode === 'archived' ? '보관·삭제' : '휴지통 관리'}
-                                </th>
-                            )}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                        {cases.map((c, index) => {
-                            const partner = partners.find(p => p.partnerId === c.partnerId);
-                            const warnings = getCaseWarnings(c, partner);
-                            const lastConsultDate = getLastConsultationDate(c);
-                            const nextReminder = getNextUpcomingReminder(c.reminders);
-                            const overdueReminder = getOverdueReminder(c.reminders);
-                            const isSelected = !!selectedIds?.has(c.caseId);
+            {/* Desktop View (monday.com Multi-Group Accordion Table) */}
+            <div className="hidden md:block flex-1 overflow-x-auto space-y-4 p-2 bg-[#f6f7fb] dark:bg-transparent">
+                {caseGroups.map(group => {
+                    const isCollapsed = !!collapsedGroups[group.id];
+                    const groupStatusCounts = Object.entries(
+                        group.cases.reduce((acc, c) => {
+                            acc[c.status] = (acc[c.status] || 0) + 1;
+                            return acc;
+                        }, {} as Record<string, number>)
+                    ).map(([status, count]) => ({ status, count }));
 
-                            return (
-                                <tr
-                                    key={c.caseId}
-                                    className={`hover:bg-muted/40 transition-colors ${isSelected ? 'bg-primary/5' : c.isStarred ? 'bg-amber-500/5' : ''}`}
-                                >
-                                    {selectable && (
-                                        <td className={`pl-3 pr-1 ${cellPadding} text-center`}>
-                                            <input type="checkbox" aria-label={`${c.customerName} 선택`} checked={isSelected} onChange={() => onToggleSelect?.(c.caseId)} />
-                                        </td>
-                                    )}
-                                    {/* Star Column */}
-                                    <td className={`px-2 ${cellPadding} text-center`}>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
-                                            className={`p-1 rounded-md transition-all hover:scale-110 ${c.isStarred ? 'text-amber-500' : 'text-muted-foreground/60 hover:text-amber-500'}`}
-                                            title={c.isStarred ? '중요 표시 해제' : '중요 표시'}
-                                        >
-                                            <Star size={15} strokeWidth={1.75} fill={c.isStarred ? 'currentColor' : 'none'} />
-                                        </button>
-                                    </td>
-                                    <td className={cellPadding}>
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-xs font-semibold text-foreground">{c.caseType}</span>
-                                            <span className="text-[11px] text-muted-foreground">{c.inboundPath}</span>
-                                            <span className="text-[11px] text-muted-foreground/75">{partner?.name}</span>
-                                        </div>
-                                    </td>
-                                    <td className={cellPadding}>
-                                        <div className="flex items-center gap-1.5">
-                                            <Link
-                                                to={`/case/${c.caseId}`}
-                                                onClick={(e) => { if (onOpenDrawer && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onOpenDrawer(c); } }}
-                                                className="font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1"
-                                            >
-                                                <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
-                                                    {getDisplayName(c.customerName, c.caseId)}
-                                                </span>
-                                                {c.isNew && <span className="text-[10px] font-semibold bg-destructive/15 text-destructive border border-destructive/30 px-1.5 py-0.5 rounded-md flex-shrink-0">NEW</span>}
-                                                {c.isArchived && <span className="text-[10px] bg-muted text-muted-foreground border border-border px-1.5 py-0.5 rounded-md flex-shrink-0 font-medium" title={c.archivedReason || '보관됨'}>보관</span>}
-                                            </Link>
-                                            <HoverCheckTooltip
-                                                desktopAlign="left"
-                                                trigger={
-                                                    <div className={`p-1 rounded-full cursor-pointer transition-colors ${
-                                                        shouldShowRedHistory(c.phone, c.status)
-                                                            ? 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-800'
-                                                            : 'bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800'
-                                                    }`} title={shouldShowRedHistory(c.phone, c.status) ? '발신 문자 없음 - 통화 및 문자 기록' : '통화 및 문자 기록'}>
-                                                        <History size={13} className={shouldShowRedHistory(c.phone, c.status) ? 'text-red-500 dark:text-red-400' : 'text-blue-500 dark:text-blue-400'} />
-                                                    </div>
-                                                }
-                                                content={() => <CommunicationHistoryTooltipContent phone={c.phone} />}
-                                            />
-                                        </div>
+                    return (
+                        <div 
+                            key={group.id} 
+                            className="bg-white dark:bg-card rounded-lg border border-[#d0d4e4] dark:border-border shadow-xs overflow-hidden transition-all duration-200"
+                        >
+                            {/* Group Accordion Header */}
+                            <div 
+                                onClick={() => toggleGroupCollapse(group.id)}
+                                className="flex items-center justify-between px-3.5 py-2.5 bg-white dark:bg-card hover:bg-[#f6f7fb] dark:hover:bg-muted/40 cursor-pointer select-none transition-colors border-b border-[#d0d4e4]/60 dark:border-border"
+                            >
+                                <div className="flex items-center gap-2.5">
+                                    <span 
+                                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs" 
+                                        style={{ backgroundColor: group.color }} 
+                                    />
+                                    <ChevronDown 
+                                        size={16} 
+                                        style={{ color: group.color }}
+                                        className={cn(
+                                            "transition-transform duration-150 shrink-0", 
+                                            isCollapsed && "-rotate-90"
+                                        )} 
+                                    />
+                                    <h3 
+                                        className="font-bold text-[15px] tracking-tight text-[#323338] dark:text-foreground"
+                                    >
+                                        {group.title}
+                                    </h3>
+                                    <span 
+                                        className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold"
+                                        style={{ 
+                                            backgroundColor: `${group.color}15`,
+                                            color: group.color 
+                                        }}
+                                    >
+                                        {group.cases.length}건
+                                    </span>
+                                </div>
 
-                                        {/* Hover Tooltip for Quick Memo View */}
-                                        <div className="ml-1 inline-block">
-                                            <HoverCheckTooltip
-                                                trigger={
-                                                    <MessageSquare size={14} className="text-gray-600 dark:text-gray-300 hover:text-blue-500 transition-colors" />
-                                                }
-                                                content={
-                                                    <div className="space-y-2">
-                                                        <p className="font-bold text-gray-600 dark:text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
-                                                        {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
-                                                            c.specialMemo
-                                                                .filter(m => !m.content.startsWith('[상태변경]'))
-                                                                .slice(0, 3)
-                                                                .map((m, i) => (
-                                                                    <div key={i} className="text-xs leading-relaxed">
-                                                                        <span className="text-blue-300 mr-1">[{(m.createdAt || (m as any).datetime)?.split('T')[0]?.split(' ')[0] || ''}]</span>
-                                                                        {m.content}
-                                                                    </div>
-                                                                ))
-                                                        ) : (
-                                                            <span className="text-gray-500 italic">내역 없음</span>
-                                                        )}
-                                                    </div>
-                                                }
-                                            />
-                                        </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-[12px] text-[#676879] dark:text-muted-foreground hidden sm:inline">
+                                        {isCollapsed ? '펼치기' : '접기'}
+                                    </span>
+                                </div>
+                            </div>
 
-                                        {warnings.length > 0 && <span className="ml-2 text-red-500 text-xs" title={warnings.join(', ')}>⚠</span>}
-                                        {memberName && (
-                                            <div className={`text-xs mt-0.5 ${c.assignedUserId ? 'text-slate-500' : 'text-orange-500'}`}>
-                                                {c.assignedUserId ? `담당 ${memberName(c.assignedUserId) || '?'}` : '미배정'}
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td className={`${cellPadding} font-medium font-mono tabular-nums ${c.status === '진행불가' || c.status === '고객취소'
-                                        ? 'text-red-600 dark:text-red-400'
-                                        : ''
-                                        }`}>
-                                        <div className="flex items-center gap-1.5">
-                                            <button
-                                                onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)}
-                                                className="hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 hover:underline transition-colors cursor-pointer"
-                                            >
-                                                {getDisplayPhone(c.phone, c.caseId)}
-                                            </button>
-                                            {isMaskingEnabled && !unmaskedCases.has(c.caseId) && (
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => handleUnmask(e, c.caseId)}
-                                                    className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-600 dark:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                                    title="마스킹 해제 (열람 기록 남김)"
-                                                >
-                                                    <Eye size={12} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className={`${cellPadding} relative`}>
-                                        {/* [NEW] Status with Click-to-Change Dropdown */}
-                                        <div className="relative" ref={openDropdownId === c.caseId ? dropdownRef : null}>
-                                            <HoverCheckTooltip
-                                                trigger={
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setOpenDropdownId(openDropdownId === c.caseId ? null : c.caseId);
-                                                        }}
-                                                        className="flex items-center gap-1 group"
-                                                    >
-                                                        {c.status === '사무장 접수' && c.secondaryStatus ? (
-                                                            // 2차/3차 상태: 세로 스택 뱃지
-                                                            <span className="inline-flex flex-col px-2 py-0.5 rounded text-xs bg-muted/50 border border-border max-w-[120px]">
-                                                                <span className="text-primary font-medium whitespace-nowrap">✓사무장</span>
-                                                                <span className="flex items-center gap-0.5 mt-0.5">
-                                                                    <span className={`font-medium truncate ${c.secondaryStatus === '고객취소' || c.secondaryStatus === '진행불가' ? 'text-red-600' :
-                                                                        c.secondaryStatus === '연락안받음' ? 'text-orange-600' :
-                                                                            c.secondaryStatus === '출장예약' ? 'text-green-600' :
-                                                                                c.secondaryStatus === '방문예약' ? 'text-blue-600' :
-                                                                                    c.secondaryStatus === '고민중' ? 'text-yellow-600' :
-                                                                                        c.secondaryStatus === '계약서작성' ? 'text-cyan-600' :
-                                                                                            c.secondaryStatus === '관리중' ? 'text-indigo-600' :
-                                                                                                c.secondaryStatus === '착수금입금' || c.secondaryStatus === '기준비용입금' ? 'text-emerald-600' :
-                                                                                                    'text-purple-700'
-                                                                        }`}>{c.secondaryStatus}</span>
-                                                                    {c.tertiaryStatus && (
-                                                                        <>
-                                                                            <span className="text-gray-500 dark:text-gray-400">›</span>
-                                                                            <span className="font-medium text-amber-700 truncate">{c.tertiaryStatus}</span>
-                                                                        </>
-                                                                    )}
-                                                                </span>
-                                                            </span>
-                                                        ) : (
-                                                            // 일반 상태 표시
-                                                            <span className={`px-2 py-1 rounded text-xs whitespace-nowrap ${STATUS_COLOR_MAP[c.status]
-                                                                ? STATUS_COLOR_MAP[c.status].replace('bg-blue-50', 'bg-blue-100')
-                                                                : 'bg-gray-100 dark:bg-gray-700'
-                                                                } ${c.status === '진행불가' || c.status === '고객취소' ? 'text-red-700 bg-red-100' : ''
-                                                                } ${c.status === '사무장 접수' ? 'bg-green-100 text-green-700' : ''}`}>
-                                                                {c.status === '사무장 접수' ? '✓ 사무장접수' : c.status}
-                                                            </span>
-                                                        )}
-                                                        <ChevronDown size={12} className="text-gray-500 dark:text-gray-400 group-hover:text-gray-600 transition-colors" />
-                                                    </button>
-                                                }
-                                                content={() => <StatusHistoryTooltipContent c={c} />}
-                                            />
-                                            {c.status === '사무장 접수' && onOpenParalegalModal && (
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); onOpenParalegalModal(c); }}
-                                                    className="mt-1 px-2 py-0.5 rounded text-xs font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 shadow-xs transition-all active:scale-95"
-                                                    title="사무장 사건 심사 & 수임 판정 열기"
-                                                >
-                                                    <Scale size={11} />
-                                                    <span>사무장 심사</span>
-                                                </button>
-                                            )}
-
-                                            {/* Status Change Dropdown */}
-                                            <AnimatePresence>
-                                                {openDropdownId === c.caseId && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: -5 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        exit={{ opacity: 0, y: -5 }}
-                                                        transition={{ duration: 0.15 }}
-                                                        className="absolute z-50 top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[140px] max-h-[300px] overflow-y-auto"
-                                                    >
-                                                        <div className="px-2 py-1 text-xs text-muted-foreground border-b border-border">
-                                                            상태 변경
-                                                        </div>
-                                                        {statuses.map((status) => (
-                                                            <button
-                                                                key={status}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    if (status !== c.status) {
-                                                                        onStatusChange(c.caseId, status, c.status);
-                                                                    }
-                                                                    setOpenDropdownId(null);
-                                                                }}
-                                                                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-muted transition-colors flex items-center gap-2 ${status === c.status ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'
-                                                                    }`}
-                                                            >
-                                                                <span className={`w-2 h-2 rounded-full ${STATUS_COLOR_MAP[status]?.split(' ')[0] || 'bg-muted-foreground'}`}></span>
-                                                                {status}
-                                                                {status === c.status && <span className="ml-auto text-primary">✓</span>}
-                                                            </button>
-                                                        ))}
-                                                    </motion.div>
+                            {/* Group Table */}
+                            {!isCollapsed && (
+                                <>
+                                    <table className={`w-full ${textScale} text-left text-muted-foreground table-fixed`}>
+                                        <thead className="bg-[#f6f7fb]/80 dark:bg-muted/40 text-[#676879] dark:text-muted-foreground font-medium text-[13px] border-b border-[#d0d4e4] dark:border-border">
+                                            <tr className="h-9">
+                                                {selectable && (
+                                                    <th className="pl-3 pr-1 w-[3%] text-center">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            aria-label="이 쪽 모두 선택" 
+                                                            checked={allOnPage} 
+                                                            onChange={() => onToggleSelectAll?.(pageIds, !allOnPage)} 
+                                                        />
+                                                    </th>
                                                 )}
-                                            </AnimatePresence>
-                                        </div>
+                                                <th className="px-2 w-[3%] text-center whitespace-nowrap">
+                                                    <Star size={14} strokeWidth={1.75} className="inline text-muted-foreground" />
+                                                </th>
+                                                <th className="px-3.5 w-[14%] whitespace-nowrap">유형/경로/거래처</th>
+                                                <th className="px-3.5 w-[12%] whitespace-nowrap">고객명</th>
+                                                <th className="px-3.5 w-[13%] whitespace-nowrap">연락처</th>
+                                                <th className="px-3.5 w-[13%] whitespace-nowrap">상태</th>
+                                                <th className="px-3.5 w-[9%] whitespace-nowrap">등록일</th>
+                                                <th className="px-3.5 w-[9%] whitespace-nowrap">최종상담일</th>
+                                                <th className={`px-3.5 ${viewMode === 'active' ? 'w-[27%]' : 'w-[17%]'} whitespace-nowrap`}>리마인더</th>
+                                                {viewMode !== 'active' && (
+                                                    <th className="px-3.5 w-[10%] text-center whitespace-nowrap">
+                                                        {viewMode === 'archived' ? '보관·삭제' : '휴지통 관리'}
+                                                    </th>
+                                                )}
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-[#d0d4e4]/70 dark:divide-border bg-white dark:bg-card">
+                                            {group.cases.map((c) => {
+                                                const partner = partners.find(p => p.partnerId === c.partnerId);
+                                                const warnings = getCaseWarnings(c, partner);
+                                                const lastConsultDate = getLastConsultationDate(c);
+                                                const nextReminder = getNextUpcomingReminder(c.reminders);
+                                                const overdueReminder = getOverdueReminder(c.reminders);
+                                                const isSelected = !!selectedIds?.has(c.caseId);
 
-                                        {/* Missed Call Button (Desktop) - Appears next to status if missed */}
-                                        {c.status === missedCallStatus && (
-                                            <div className="mt-1 flex items-center gap-1">
-                                                <button
-                                                    onClick={(e) => onMissedCall(e, c)}
-                                                    className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold border transition-all ${isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers)
-                                                        ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
-                                                        : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
-                                                        }`}
-                                                    title={`마지막 부재: ${safeFormat(c.lastMissedCallAt, 'yyyy-MM-dd HH:mm', '없음')}`}
-                                                >
-                                                    <PhoneMissed size={10} />
-                                                    <span>+{c.missedCallCount || 0}</span>
-                                                </button>
-                                                <span className="text-xs text-gray-500 tracking-tight">
-                                                    {safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}
-                                                </span>
-                                            </div>
-                                        )}
+                                                return (
+                                                    <tr
+                                                        key={c.caseId}
+                                                        className={`h-10 hover:bg-[#f5f6f8] dark:hover:bg-muted/40 transition-colors duration-70 ${isSelected ? 'bg-[#cce5ff]/20 dark:bg-primary/5' : c.isStarred ? 'bg-amber-500/5' : ''}`}
+                                                    >
+                                                        {selectable && (
+                                                            <td className="pl-3 pr-1 py-[9px] text-center">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    aria-label={`${c.customerName} 선택`} 
+                                                                    checked={isSelected} 
+                                                                    onChange={() => onToggleSelect?.(c.caseId)} 
+                                                                />
+                                                            </td>
+                                                        )}
+                                                        {/* Star Column */}
+                                                        <td className="px-2 py-[9px] text-center">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); onToggleStar(c.caseId, !!c.isStarred); }}
+                                                                className={`p-1 rounded-[4px] transition-all hover:scale-110 ${c.isStarred ? 'text-amber-500' : 'text-muted-foreground/60 hover:text-amber-500'}`}
+                                                                title={c.isStarred ? '중요 표시 해제' : '중요 표시'}
+                                                            >
+                                                                <Star size={15} strokeWidth={1.75} fill={c.isStarred ? 'currentColor' : 'none'} />
+                                                            </button>
+                                                        </td>
+                                                        <td className="px-3.5 py-[9px]">
+                                                            <div className="flex flex-col gap-0.5">
+                                                                <span className="text-xs font-semibold text-[#323338] dark:text-foreground">{c.caseType}</span>
+                                                                <span className="text-[11px] text-[#676879] dark:text-muted-foreground">{c.inboundPath}</span>
+                                                                <span className="text-[11px] text-[#676879]/75 dark:text-muted-foreground/75">{partner?.name}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3.5 py-[9px]">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <Link
+                                                                    to={`/case/${c.caseId}`}
+                                                                    onClick={(e) => { if (onOpenDrawer && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onOpenDrawer(c); } }}
+                                                                    className="font-semibold text-[#323338] dark:text-foreground hover:text-[#0073ea] dark:hover:text-primary transition-colors flex items-center gap-1 text-[14px]"
+                                                                >
+                                                                    <span className="truncate max-w-[90px] inline-block align-bottom" title={c.customerName}>
+                                                                        {getDisplayName(c.customerName, c.caseId)}
+                                                                    </span>
+                                                                    {c.isNew && <span className="text-[10px] font-semibold bg-[#0073ea]/15 text-[#0073ea] border border-[#0073ea]/30 px-1.5 py-0.2 rounded-[4px] flex-shrink-0">NEW</span>}
+                                                                    {c.isArchived && <span className="text-[10px] bg-muted text-muted-foreground border border-border px-1.5 py-0.2 rounded-[4px] flex-shrink-0 font-medium" title={c.archivedReason || '보관됨'}>보관</span>}
+                                                                </Link>
+                                                                <HoverCheckTooltip
+                                                                    desktopAlign="left"
+                                                                    trigger={
+                                                                        <div className={`p-1 rounded-full cursor-pointer transition-colors ${
+                                                                            shouldShowRedHistory(c.phone, c.status)
+                                                                                ? 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-800'
+                                                                                : 'bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800'
+                                                                        }`} title={shouldShowRedHistory(c.phone, c.status) ? '발신 문자 없음 - 통화 및 문자 기록' : '통화 및 문자 기록'}>
+                                                                            <History size={13} className={shouldShowRedHistory(c.phone, c.status) ? 'text-red-500 dark:text-red-400' : 'text-blue-500 dark:text-blue-400'} />
+                                                                        </div>
+                                                                    }
+                                                                    content={() => <CommunicationHistoryTooltipContent phone={c.phone} />}
+                                                                />
+                                                            </div>
 
-                                    </td>
-                                    <td className={`${cellPadding} text-xs font-mono tabular-nums text-gray-500`}>
-                                        {safeFormat(c.createdAt, 'yyyy-MM-dd')}
-                                    </td>
-                                    <td className={`${cellPadding} text-xs font-mono tabular-nums text-gray-500`}>
-                                        {safeFormat(lastConsultDate, 'yyyy-MM-dd')}
-                                    </td>
-                                    <td className={`${cellPadding} text-xs font-mono tabular-nums`}>
-                                        {overdueReminder && (
-                                            <div className="mb-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-50 text-red-700 font-semibold dark:bg-red-900/30 dark:text-red-300" title={overdueReminder.content || ''}>
-                                                지난 일정 {overdueReminder.datetime.slice(5)}
-                                            </div>
-                                        )}
-                                        {nextReminder ? (
-                                            <HoverCheckTooltip
-                                                trigger={
-                                                    <div className="flex items-center gap-1.5 cursor-help">
-                                                        {/* Icon for Reminder Type */}
-                                                        {(() => {
-                                                            const rType = nextReminder.type || '통화';
-                                                            if (rType === '통화') return <Phone size={14} className="text-blue-600" />;
-                                                            if (rType === '출장미팅') return <Briefcase size={14} className="text-green-600" />;
-                                                            if (rType === '방문미팅') return <MapPin size={14} className="text-purple-600" />;
-                                                            return <MoreHorizontal size={14} className="text-gray-600" />;
-                                                        })()}
-                                                        <span className="text-gray-700 dark:text-gray-300 font-medium">{nextReminder.datetime}</span>
-                                                        {(c.reminders?.length || 0) > 1 && <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1 rounded-sm">+{((c.reminders?.length || 0) - 1)}</span>}
-                                                    </div>
-                                                }
-                                                content={
-                                                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                                                        <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
-                                                        {c.reminders?.map((reminder, idx) => (
-                                                            <div key={idx} className="text-xs border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
-                                                                <p className="text-gray-600 dark:text-gray-300 font-medium">{reminder.datetime}</p>
-                                                                {reminder.content && (
-                                                                    <p className="text-gray-500 dark:text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
-                                                                        {reminder.content}
-                                                                    </p>
+                                                            {/* Hover Tooltip for Quick Memo View */}
+                                                            <div className="ml-1 inline-block">
+                                                                <HoverCheckTooltip
+                                                                    trigger={
+                                                                        <MessageSquare size={14} className="text-gray-600 dark:text-gray-300 hover:text-blue-500 transition-colors" />
+                                                                    }
+                                                                    content={
+                                                                        <div className="space-y-2">
+                                                                            <p className="font-bold text-gray-600 dark:text-gray-300 border-b border-gray-600 pb-1">최근 상담 내역</p>
+                                                                            {c.specialMemo && Array.isArray(c.specialMemo) && c.specialMemo.filter(m => !m.content.startsWith('[상태변경]')).length > 0 ? (
+                                                                                c.specialMemo
+                                                                                    .filter(m => !m.content.startsWith('[상태변경]'))
+                                                                                    .slice(0, 3)
+                                                                                    .map((m, i) => (
+                                                                                        <div key={i} className="text-xs leading-relaxed">
+                                                                                            <span className="text-blue-300 mr-1">[{(m.createdAt || (m as any).datetime)?.split('T')[0]?.split(' ')[0] || ''}]</span>
+                                                                                            {m.content}
+                                                                                        </div>
+                                                                                    ))
+                                                                            ) : (
+                                                                                <span className="text-gray-500 italic">내역 없음</span>
+                                                                            )}
+                                                                        </div>
+                                                                    }
+                                                                />
+                                                            </div>
+
+                                                            {warnings.length > 0 && <span className="ml-2 text-red-500 text-xs" title={warnings.join(', ')}>⚠</span>}
+                                                            {memberName && (
+                                                                <div className={`text-xs mt-0.5 ${c.assignedUserId ? 'text-slate-500' : 'text-orange-500'}`}>
+                                                                    {c.assignedUserId ? `담당 ${memberName(c.assignedUserId) || '?'}` : '미배정'}
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-3.5 py-[9px] font-medium font-mono tabular-nums">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <button
+                                                                    onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)}
+                                                                    className="hover:text-[#0073ea] dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer text-[13px] text-[#323338] dark:text-foreground"
+                                                                >
+                                                                    {getDisplayPhone(c.phone, c.caseId)}
+                                                                </button>
+                                                                {isMaskingEnabled && !unmaskedCases.has(c.caseId) && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => handleUnmask(e, c.caseId)}
+                                                                        className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                                        title="마스킹 해제 (열람 기록 남김)"
+                                                                    >
+                                                                        <Eye size={12} />
+                                                                    </button>
                                                                 )}
                                                             </div>
-                                                        ))}
-                                                    </div>
-                                                }
-                                            />
-                                        ) : (overdueReminder ? null : '-')}
-                                    </td>
-                                    {viewMode !== 'active' && (
-                                        <td className={`${cellPadding} text-center`}>
-                                            {viewMode === 'trash' ? (
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <button
-                                                        onClick={(e) => onRestore(c.caseId, e)}
-                                                        className="text-green-500 hover:text-green-700 p-1.5 rounded hover:bg-green-50"
-                                                        title="복구"
-                                                    >
-                                                        <Sparkles size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => onDelete(c.caseId, e)}
-                                                        className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50"
-                                                        title="영구 삭제"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <button
-                                                        onClick={(e) => onRestore(c.caseId, e)}
-                                                        className="text-purple-600 hover:text-purple-800 p-1.5 rounded hover:bg-purple-50 dark:hover:bg-purple-900/30"
-                                                        title="활성 리드로 복원 (상담원 공개)"
-                                                    >
-                                                        <Sparkles size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => onDelete(c.caseId, e)}
-                                                        className="text-gray-500 dark:text-gray-400 hover:text-red-500 p-1.5 rounded transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                        title="휴지통으로 이동"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </td>
-                                    )}
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                                                        </td>
+                                                        <td className="px-3.5 py-[9px] relative">
+                                                            {/* monday.com Signature Full-Block Status Cell */}
+                                                            <StatusCell 
+                                                                status={c.status} 
+                                                                onStatusChange={(newStatus) => onStatusChange(c.caseId, newStatus, c.status)} 
+                                                                availableStatuses={statuses} 
+                                                            />
+                                                            {c.status === '사무장 접수' && onOpenParalegalModal && (
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); onOpenParalegalModal(c); }}
+                                                                    className="mt-1 px-2 py-0.5 rounded-[4px] text-[11px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 shadow-2xs transition-all active:scale-95"
+                                                                    title="사무장 사건 심사 & 수임 판정 열기"
+                                                                >
+                                                                    <Scale size={11} />
+                                                                    <span>사무장 심사</span>
+                                                                </button>
+                                                            )}
+
+                                                            {/* Missed Call Button (Desktop) */}
+                                                            {c.status === missedCallStatus && (
+                                                                <div className="mt-1 flex items-center gap-1">
+                                                                    <button
+                                                                        onClick={(e) => onMissedCall(e, c)}
+                                                                        className={`flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-xs font-bold border transition-all ${isOverdueMissedCall(c, missedCallStatus, missedCallIntervalTiers)
+                                                                            ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
+                                                                            : 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
+                                                                            }`}
+                                                                        title={`마지막 부재: ${safeFormat(c.lastMissedCallAt, 'yyyy-MM-dd HH:mm', '없음')}`}
+                                                                    >
+                                                                        <PhoneMissed size={10} />
+                                                                        <span>+{c.missedCallCount || 0}</span>
+                                                                    </button>
+                                                                    <span className="text-[11px] text-gray-500 tracking-tight font-mono">
+                                                                        {safeFormat(c.lastMissedCallAt, 'MM.dd HH:mm')}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-3.5 py-[9px] text-xs font-mono tabular-nums text-[#676879] dark:text-muted-foreground">
+                                                            {safeFormat(c.createdAt, 'yyyy-MM-dd')}
+                                                        </td>
+                                                        <td className="px-3.5 py-[9px] text-xs font-mono tabular-nums text-[#676879] dark:text-muted-foreground">
+                                                            {safeFormat(lastConsultDate, 'yyyy-MM-dd')}
+                                                        </td>
+                                                        <td className="px-3.5 py-[9px] text-xs font-mono tabular-nums">
+                                                            {overdueReminder && (
+                                                                <div className="mb-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] bg-red-50 text-red-700 font-semibold dark:bg-red-900/30 dark:text-red-300" title={overdueReminder.content || ''}>
+                                                                    지난 일정 {overdueReminder.datetime.slice(5)}
+                                                                </div>
+                                                            )}
+                                                            {nextReminder ? (
+                                                                <HoverCheckTooltip
+                                                                    trigger={
+                                                                        <div className="flex items-center gap-1.5 cursor-help">
+                                                                            {(() => {
+                                                                                const rType = nextReminder.type || '통화';
+                                                                                if (rType === '통화') return <Phone size={14} className="text-[#0073ea]" />;
+                                                                                if (rType === '출장미팅') return <Briefcase size={14} className="text-[#00c875]" />;
+                                                                                if (rType === '방문미팅') return <MapPin size={14} className="text-[#9d50dd]" />;
+                                                                                return <MoreHorizontal size={14} className="text-gray-600" />;
+                                                                            })()}
+                                                                            <span className="text-[#323338] dark:text-gray-300 font-medium">{nextReminder.datetime}</span>
+                                                                            {(c.reminders?.length || 0) > 1 && <span className="text-[10px] text-[#676879] dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1 rounded-[4px]">+{((c.reminders?.length || 0) - 1)}</span>}
+                                                                        </div>
+                                                                    }
+                                                                    content={
+                                                                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                                            <p className="font-bold text-gray-200 border-b border-gray-600 pb-1 sticky top-0 bg-gray-900/90">리마인더 일정</p>
+                                                                            {c.reminders?.map((reminder, idx) => (
+                                                                                <div key={idx} className="text-xs border-b border-gray-700 last:border-0 pb-1.5 mb-1.5">
+                                                                                    <p className="text-gray-600 dark:text-gray-300 font-medium">{reminder.datetime}</p>
+                                                                                    {reminder.content && (
+                                                                                        <p className="text-gray-500 dark:text-gray-400 mt-0.5 pl-1 border-l-2 border-gray-600">
+                                                                                            {reminder.content}
+                                                                                        </p>
+                                                                                    )}
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    }
+                                                                />
+                                                            ) : (overdueReminder ? null : '-')}
+                                                        </td>
+                                                        {viewMode !== 'active' && (
+                                                            <td className="px-3.5 py-[9px] text-center">
+                                                                {viewMode === 'trash' ? (
+                                                                    <div className="flex items-center justify-center gap-2">
+                                                                        <button
+                                                                            onClick={(e) => onRestore(c.caseId, e)}
+                                                                            className="text-green-500 hover:text-green-700 p-1.5 rounded-[4px] hover:bg-green-50"
+                                                                            title="복구"
+                                                                        >
+                                                                            <Sparkles size={16} />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={(e) => onDelete(c.caseId, e)}
+                                                                            className="text-red-500 hover:text-red-700 p-1.5 rounded-[4px] hover:bg-red-50"
+                                                                            title="영구 삭제"
+                                                                        >
+                                                                            <Trash2 size={16} />
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="flex items-center justify-center gap-2">
+                                                                        <button
+                                                                            onClick={(e) => onRestore(c.caseId, e)}
+                                                                            className="text-purple-600 hover:text-purple-800 p-1.5 rounded-[4px] hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                                                                            title="활성 리드로 복원 (상담원 공개)"
+                                                                        >
+                                                                            <Sparkles size={16} />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={(e) => onDelete(c.caseId, e)}
+                                                                            className="text-gray-500 dark:text-gray-400 hover:text-red-500 p-1.5 rounded-[4px] transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                                            title="휴지통으로 이동"
+                                                                        >
+                                                                            <Trash2 size={16} />
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                        )}
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+
+                                    {/* Group Summary Row with BatteryProgress */}
+                                    <div className="px-4 py-2 bg-[#f6f7fb]/70 dark:bg-card border-t border-[#d0d4e4] dark:border-border flex items-center justify-between text-xs text-[#676879] dark:text-muted-foreground">
+                                        <div className="flex items-center gap-2 font-medium">
+                                            <span>{group.title} 합계 <strong className="text-[#323338] dark:text-foreground font-mono">{group.cases.length}건</strong></span>
+                                        </div>
+                                        <div className="w-64 max-w-sm flex items-center gap-2">
+                                            <span className="text-[11px] text-[#676879] dark:text-muted-foreground shrink-0 font-medium">상태 비중</span>
+                                            <BatteryProgress items={groupStatusCounts} height={12} />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
 
             {/* Call Confirm Popup */}

@@ -21,6 +21,7 @@ import { Case, Partner, SettlementBatch } from '../../types';
 import { TeamMember, assignRoundRobin } from '../../services/team';
 import { KPICard } from '../ui/KPICard';
 import { ParalegalPipelineWidget } from './ParalegalPipelineWidget';
+import { BatteryProgress } from '../common/BatteryProgress';
 import { useToast } from '../../contexts/ToastContext';
 import { useConfirmDialog } from '../../contexts/ConfirmDialogContext';
 
@@ -110,6 +111,32 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
     });
   }, [activeCases]);
 
+  // 파이프라인 상태별 분포 계산 (monday.com 배터리 위젯용)
+  const pipelineSegments = useMemo(() => {
+    const counts: Record<string, number> = {
+      '신규 접수': 0,
+      '1차 상담': 0,
+      '적격 심사': 0,
+      '계약 완료': 0,
+      '보류/종결': 0,
+    };
+    activeCases.forEach((c) => {
+      const st = c.status || '';
+      if (st.includes('신규') || st.includes('접수')) counts['신규 접수']++;
+      else if (st.includes('상담') || st.includes('부재') || st.includes('재통화')) counts['1차 상담']++;
+      else if (st.includes('서류') || st.includes('심사') || st.includes('인계')) counts['적격 심사']++;
+      else if (st.includes('계약') || st.includes('수임') || st.includes('완료')) counts['계약 완료']++;
+      else counts['보류/종결']++;
+    });
+    return [
+      { label: '신규 접수', count: counts['신규 접수'], color: '#0073ea' },
+      { label: '1차 상담', count: counts['1차 상담'], color: '#fdab3d' },
+      { label: '적격 심사', count: counts['적격 심사'], color: '#579bfc' },
+      { label: '계약 완료', count: counts['계약 완료'], color: '#00c875' },
+      { label: '보류/기타', count: counts['보류/종결'], color: '#c4c4c4' },
+    ];
+  }, [activeCases]);
+
   // 원클릭 라운드로빈 빠른 배분 실행 함수
   const handleQuickDistribute = async () => {
     if (unassignedCases.length === 0) {
@@ -196,7 +223,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
         </div>
       )}
 
-      {/* 상단 1: 경영 핵심 KPI 4종 (매출 / DB원가 / 마진 / 미배정) */}
+      {/* 상단 1: 경영 핵심 KPI 4종 (매출 / DB원가 / 마진 / 미배정) - monday.com 상단 액센트 바 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard
           title="당월 총 수임/매출"
@@ -204,6 +231,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
           color="text-emerald-600"
           icon={DollarSign}
           subText={`수임 성사 ${thisMonthContracts.length}건`}
+          accentColor="#00c875"
         />
         <KPICard
           title="실질 영업 순마진"
@@ -211,6 +239,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
           color={netProfit >= 0 ? 'text-blue-600' : 'text-destructive'}
           icon={TrendingUp}
           subText={`마진율 ${profitMargin}% (DB원가 차감)`}
+          accentColor="#0073ea"
         />
         <KPICard
           title="미배정 대기 리드"
@@ -219,6 +248,7 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
           icon={Zap}
           subText="1클릭 균등 배분 지원"
           pulseGlow={unassignedCases.length > 0}
+          accentColor="#fdab3d"
         />
         <KPICard
           title="오늘 신규 인입"
@@ -226,11 +256,24 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
           color="text-indigo-600"
           icon={PhoneCall}
           subText={`총 보유 리드 ${activeCases.length}건`}
+          accentColor="#579bfc"
         />
       </div>
 
+      {/* monday.com 스타일 파이프라인 배터리 프로그레스 현황 */}
+      <div className="bg-card rounded-[8px] p-4 border border-[#d0d4e4] dark:border-border shadow-xs">
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-2">
+            <Layers size={15} strokeWidth={1.75} className="text-primary" />
+            <span className="text-xs font-bold text-[#323338] dark:text-foreground">전사 리드 진행 파이프라인 (총 {activeCases.length}건)</span>
+          </div>
+          <span className="text-2xs text-[#676879] dark:text-muted-foreground">실시간 상태별 비중 분포</span>
+        </div>
+        <BatteryProgress segments={pipelineSegments} height={10} showLegend={true} />
+      </div>
+
       {/* 중단 1: 당일 리드 빠른 배분 액션 패널 */}
-      <div className="bg-card rounded-xl p-5 border border-border shadow-xs">
+      <div className="bg-card rounded-[8px] p-5 border border-[#d0d4e4] dark:border-border shadow-xs">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -271,11 +314,11 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
       </div>
 
       {/* 하단: 팀원별 현황 & 상담원 생산성 보드 */}
-      <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
-        <div className="p-4 border-b border-border bg-muted/40 flex items-center justify-between">
+      <div className="bg-card rounded-[8px] border border-[#d0d4e4] dark:border-border shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-[#d0d4e4] dark:border-border bg-muted/40 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users size={16} strokeWidth={1.75} className="text-primary" />
-            <h3 className="font-semibold text-sm text-foreground">
+            <h3 className="font-semibold text-sm text-[#323338] dark:text-foreground">
               상담원별 실시간 실적 현황 ({activeAgents.length}명)
             </h3>
           </div>
@@ -289,17 +332,17 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-muted/50 text-muted-foreground font-semibold border-b border-border">
+            <thead className="h-9 bg-[#f6f7fb] dark:bg-muted/50 text-[#676879] dark:text-muted-foreground font-semibold border-b border-[#d0d4e4] dark:border-border">
               <tr>
-                <th className="py-2.5 px-4 whitespace-nowrap">상담원명</th>
-                <th className="py-2.5 px-4 whitespace-nowrap text-right">보유 배정 리드</th>
-                <th className="py-2.5 px-4 whitespace-nowrap text-right">오늘 완료 콜</th>
-                <th className="py-2.5 px-4 whitespace-nowrap text-right">당월 1차 인계</th>
-                <th className="py-2.5 px-4 whitespace-nowrap text-right">당월 수임 매출 기여액</th>
-                <th className="py-2.5 px-4 whitespace-nowrap text-center">상태</th>
+                <th className="py-2 px-4 whitespace-nowrap">상담원명</th>
+                <th className="py-2 px-4 whitespace-nowrap text-right">보유 배정 리드</th>
+                <th className="py-2 px-4 whitespace-nowrap text-right">오늘 완료 콜</th>
+                <th className="py-2 px-4 whitespace-nowrap text-right">당월 1차 인계</th>
+                <th className="py-2 px-4 whitespace-nowrap text-right">당월 수임 매출 기여액</th>
+                <th className="py-2 px-4 whitespace-nowrap text-center">상태</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-[#d0d4e4]/60 dark:divide-border">
               {activeAgents.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-muted-foreground text-xs">
@@ -323,23 +366,23 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
                     .reduce((sum, c) => sum + (c.contractFee || 0), 0);
 
                   return (
-                    <tr key={agent.userId} className="hover:bg-muted/40 transition-colors">
-                      <td className="py-3 px-4 font-semibold text-foreground whitespace-nowrap">
+                    <tr key={agent.userId} className="h-10 hover:bg-[#f6f7fb] dark:hover:bg-muted/40 transition-colors">
+                      <td className="py-2 px-4 font-semibold text-[#323338] dark:text-foreground whitespace-nowrap">
                         {agent.displayName}
                       </td>
-                      <td className="py-3 px-4 text-right font-semibold text-foreground tabular-nums whitespace-nowrap">
+                      <td className="py-2 px-4 text-right font-semibold text-[#323338] dark:text-foreground tabular-nums whitespace-nowrap">
                         {totalAssigned}건
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-blue-600 dark:text-blue-400 tabular-nums whitespace-nowrap">
+                      <td className="py-2 px-4 text-right font-bold text-blue-600 dark:text-blue-400 tabular-nums whitespace-nowrap">
                         {todayCalls}콜
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
+                      <td className="py-2 px-4 text-right font-bold text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
                         {transfers}건
                       </td>
-                      <td className="py-3 px-4 text-right font-black text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap font-mono">
+                      <td className="py-2 px-4 text-right font-black text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap font-mono">
                         ₩ {revenue.toLocaleString()}
                       </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <td className="py-2 px-4 text-center whitespace-nowrap">
                         <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                           가동 중
                         </span>

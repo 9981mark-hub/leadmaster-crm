@@ -233,7 +233,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* 4대 핵심 행동 KPI 카드 */}
+      {/* 4대 핵심 행동 KPI 카드 - monday.com 상단 액센트 바 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard
           title="오늘 내 리마인더"
@@ -242,6 +242,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
           icon={PhoneCall}
           subText="오늘 약속된 통화 건"
           pulseGlow={todayReminders.length > 0}
+          accentColor="#0073ea"
         />
         <div
           onClick={onShowOverdueModal}
@@ -254,6 +255,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
             icon={Clock}
             subText="약속 시간 초과 (즉시 조치)"
             pulseGlow={overdueReminders.length > 0}
+            accentColor="#df2f4a"
           />
         </div>
         <Link
@@ -268,6 +270,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
             icon={Flame}
             subText="부재 1~2회 (연결확률 높음)"
             pulseGlow={goldenTimeCases.length > 0}
+            accentColor="#fdab3d"
           />
         </Link>
         <Link
@@ -280,6 +283,7 @@ export const AgentDashboardView: React.FC<AgentDashboardViewProps> = ({
             color="text-emerald-600 dark:text-emerald-400"
             icon={UserCheck}
             subText="오늘 나에게 온 신규 리드"
+            accentColor="#00c875"
           />
         </Link>
       </div>

@@ -224,7 +224,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* 1. 경영 핵심 KPI 4종 */}
+      {/* 1. 경영 핵심 KPI 4종 - monday.com 상단 액센트 바 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard
           title="당월 총 수임/매출액"
@@ -232,6 +232,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
           color="text-emerald-600 dark:text-emerald-400"
           icon={DollarSign}
           subText={revenueGrowth >= 0 ? `전월 대비 +${revenueGrowth}% 증가` : `전월 대비 ${revenueGrowth}%`}
+          accentColor="#00c875"
         />
         <KPICard
           title="DB 구입 원가 합계"
@@ -239,6 +240,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
           color="text-indigo-600 dark:text-indigo-400"
           icon={Layers}
           subText={`당월 인입 ${thisMonthLeads.length}건 (건당 ₩ 3.5만원)`}
+          accentColor="#fdab3d"
         />
         <KPICard
           title="실질 영업 순마진"
@@ -246,6 +248,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
           color={netProfit >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-destructive'}
           icon={TrendingUp}
           subText={`영업 마진율 ${profitMargin}% (인프라비 차감)`}
+          accentColor="#0073ea"
         />
         <KPICard
           title="전사 수임 전환율"
@@ -253,6 +256,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
           color="text-purple-600 dark:text-purple-400"
           icon={BarChart3}
           subText={`수임 ${thisMonthContracts.length}건 / 인입 ${thisMonthLeads.length}건`}
+          accentColor="#579bfc"
         />
       </div>
 

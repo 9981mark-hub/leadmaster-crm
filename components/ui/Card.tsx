@@ -11,22 +11,30 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   padding?: string | false;
   /** glass 효과 (대시보드 KPI 등 특별한 경우만) */
   glass?: boolean;
+  /** 상단 monday 스타일 컬러 포인트 라인 (예: '#0073ea', '#00c875') */
+  topAccent?: string;
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, padding = 'p-5', glass = false, children, ...props }, ref) => (
+  ({ className, padding = 'p-5', glass = false, topAccent, children, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        'rounded-xl border shadow-sm',
+        'rounded-lg border shadow-xs transition-shadow duration-150 relative overflow-hidden',
         glass
           ? 'glass-panel'
-          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700',
+          : 'bg-white dark:bg-gray-800 border-[#d0d4e4] dark:border-gray-700',
         padding && padding,
         className,
       )}
       {...props}
     >
+      {topAccent && (
+        <div 
+          className="absolute top-0 left-0 right-0 h-[3px]" 
+          style={{ backgroundColor: topAccent }} 
+        />
+      )}
       {children}
     </div>
   ),
@@ -42,7 +50,7 @@ export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 }) => (
   <div
     className={cn(
-      'flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-gray-700',
+      'flex items-center justify-between pb-3 mb-3 border-b border-[#d0d4e4]/60 dark:border-gray-700',
       className,
     )}
     {...props}
@@ -58,7 +66,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
 }) => (
   <h3
     className={cn(
-      'text-base font-semibold text-gray-900 dark:text-white',
+      'text-[16px] font-semibold text-[#323338] dark:text-white',
       className,
     )}
     {...props}

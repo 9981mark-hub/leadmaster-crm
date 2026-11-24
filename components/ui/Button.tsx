@@ -10,28 +10,28 @@ import { Loader2 } from 'lucide-react';
  * ──────────────────────────────────────────────────────── */
 
 const buttonVariants = cva(
-  // base
-  'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]',
+  // monday.com Vibe Button Base: 70ms active scale press, 4px radius, crisp outline
+  'inline-flex items-center justify-center gap-1.5 font-medium rounded-[4px] transition-all duration-70 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.97]',
   {
     variants: {
       variant: {
         primary:
-          'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700',
+          'bg-[#0073ea] text-white hover:bg-[#0060b9] shadow-2xs focus:ring-[#0073ea]/30 dark:bg-blue-600 dark:hover:bg-blue-700',
         secondary:
-          'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-400 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700',
+          'bg-white text-[#323338] border border-[#c3c6d4] hover:bg-[#f6f7fb] hover:border-[#a0a4b8] focus:ring-[#0073ea]/20 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700',
         danger:
-          'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+          'bg-[#df2f4a] text-white hover:bg-[#ad3f51] focus:ring-[#df2f4a]/30 dark:bg-red-600 dark:hover:bg-red-700',
         success:
-          'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500',
+          'bg-[#00c875] text-white hover:bg-[#0f9b63] focus:ring-[#00c875]/30 dark:bg-emerald-600 dark:hover:bg-emerald-700',
         ghost:
-          'text-gray-600 hover:bg-gray-100 focus:ring-gray-400 dark:text-gray-300 dark:hover:bg-gray-700',
+          'text-[#676879] hover:bg-[#f0f3ff] hover:text-[#0073ea] focus:ring-gray-300 dark:text-gray-300 dark:hover:bg-gray-700',
       },
       size: {
-        sm: 'text-xs px-3 py-1.5 min-h-[32px]',
-        md: 'text-sm px-4 py-2 min-h-[36px]',
-        lg: 'text-base px-5 py-2.5 min-h-[44px]',
-        icon: 'p-2 min-h-[36px] min-w-[36px]',
-        'icon-lg': 'p-2.5 min-h-[44px] min-w-[44px]',
+        sm: 'text-xs px-2.5 py-1 min-h-[28px] rounded-[4px]',
+        md: 'text-[14px] px-3.5 py-1.5 min-h-[32px] rounded-[4px]',
+        lg: 'text-base px-5 py-2 min-h-[40px] rounded-[4px]',
+        icon: 'p-1.5 min-h-[32px] min-w-[32px] rounded-[4px]',
+        'icon-lg': 'p-2 min-h-[40px] min-w-[40px] rounded-[4px]',
       },
     },
     defaultVariants: {

@@ -70,18 +70,18 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
   if (!hasActiveFilters) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 py-1.5 px-3 rounded-xl bg-muted/40 border border-border text-xs animate-in fade-in duration-150">
-      <div className="flex items-center gap-1 text-xs font-semibold text-muted-foreground mr-1 shrink-0">
+    <div className="flex flex-wrap items-center gap-1.5 py-1 px-2.5 rounded-[4px] bg-[#f6f7fb] dark:bg-muted/40 border border-[#d0d4e4] dark:border-border text-xs animate-in fade-in duration-150">
+      <div className="flex items-center gap-1 text-xs font-semibold text-[#676879] dark:text-muted-foreground mr-1 shrink-0">
         <Filter size={12} strokeWidth={1.75} />
         <span>적용된 필터:</span>
       </div>
 
       {/* Search */}
       {search && search.trim() && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-card text-foreground border border-border font-medium shadow-2xs">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-white dark:bg-card text-[#323338] dark:text-foreground border border-[#d0d4e4] dark:border-border font-medium shadow-2xs">
           검색: "{search}"
           {onClearSearch && (
-            <button onClick={onClearSearch} className="text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={onClearSearch} className="text-[#676879] hover:text-[#323338] dark:hover:text-foreground transition-colors">
               <X size={12} strokeWidth={1.75} />
             </button>
           )}
@@ -90,10 +90,10 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
 
       {/* Status Filters */}
       {statusFilters.map(status => (
-        <span key={status} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-card text-foreground border border-border font-medium shadow-2xs">
+        <span key={status} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-white dark:bg-card text-[#323338] dark:text-foreground border border-[#d0d4e4] dark:border-border font-medium shadow-2xs">
           상태: {status}
           {onRemoveStatusFilter && (
-            <button onClick={() => onRemoveStatusFilter(status)} className="text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={() => onRemoveStatusFilter(status)} className="text-[#676879] hover:text-[#323338] dark:hover:text-foreground transition-colors">
               <X size={12} strokeWidth={1.75} />
             </button>
           )}
@@ -102,10 +102,10 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
 
       {/* Partner */}
       {partnerFilter && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-card text-foreground border border-border font-medium shadow-2xs">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-white dark:bg-card text-[#323338] dark:text-foreground border border-[#d0d4e4] dark:border-border font-medium shadow-2xs">
           거래처: {partnerName}
           {onClearPartnerFilter && (
-            <button onClick={onClearPartnerFilter} className="text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={onClearPartnerFilter} className="text-[#676879] hover:text-[#323338] dark:hover:text-foreground transition-colors">
               <X size={12} strokeWidth={1.75} />
             </button>
           )}
@@ -114,10 +114,10 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
 
       {/* Inbound Path */}
       {inboundPathFilter && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-card text-foreground border border-border font-medium shadow-2xs">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-white dark:bg-card text-[#323338] dark:text-foreground border border-[#d0d4e4] dark:border-border font-medium shadow-2xs">
           유입: {inboundPathFilter}
           {onClearInboundPathFilter && (
-            <button onClick={onClearInboundPathFilter} className="text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={onClearInboundPathFilter} className="text-[#676879] hover:text-[#323338] dark:hover:text-foreground transition-colors">
               <X size={12} strokeWidth={1.75} />
             </button>
           )}
@@ -126,7 +126,7 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
 
       {/* Date Range */}
       {(dateFilterStart || dateFilterEnd) && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-card text-foreground border border-border font-medium font-mono text-xs shadow-2xs tabular-nums">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-white dark:bg-card text-[#323338] dark:text-foreground border border-[#d0d4e4] dark:border-border font-medium font-mono text-xs shadow-2xs tabular-nums">
           기간: {dateFilterStart || '~'} ~ {dateFilterEnd || ''}
           {onClearDateFilter && (
             <button onClick={onClearDateFilter} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -138,7 +138,7 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
 
       {/* Starred */}
       {showStarredOnly && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-medium">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-medium">
           ★ 중요 건만
           {onToggleStarred && (
             <button onClick={onToggleStarred} className="hover:opacity-75 transition-opacity">
@@ -150,7 +150,7 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
 
       {/* New Leads Only */}
       {showNewOnly && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-destructive/10 text-destructive border border-destructive/20 font-medium">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-destructive/10 text-destructive border border-destructive/20 font-medium">
           신규 접수 건만
           {onToggleNewOnly && (
             <button onClick={onToggleNewOnly} className="hover:opacity-75 transition-opacity">
@@ -162,7 +162,7 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
 
       {/* Overdue Missed Calls Only */}
       {showOverdueMissedOnly && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-medium">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-medium">
           재통화 필요 건만
           {onToggleOverdueMissedOnly && (
             <button onClick={onToggleOverdueMissedOnly} className="hover:opacity-75 transition-opacity">
@@ -174,10 +174,10 @@ export const FilterChipsBar: React.FC<FilterChipsBarProps> = ({
 
       {/* Assignee */}
       {assigneeFilter && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-card text-foreground border border-border font-medium shadow-2xs">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-white dark:bg-card text-[#323338] dark:text-foreground border border-[#d0d4e4] dark:border-border font-medium shadow-2xs">
           담당: {assigneeName || assigneeFilter}
           {onClearAssigneeFilter && (
-            <button onClick={onClearAssigneeFilter} className="text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={onClearAssigneeFilter} className="text-[#676879] hover:text-[#323338] dark:hover:text-foreground transition-colors">
               <X size={12} strokeWidth={1.75} />
             </button>
           )}

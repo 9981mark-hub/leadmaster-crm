@@ -106,99 +106,102 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
   const userInitial = user?.name ? user.name.slice(0, 1) : (user?.email?.slice(0, 1).toUpperCase() || 'U');
 
   return (
-    <header className="sticky top-0 z-40 w-full h-14 bg-background/95 backdrop-blur-md border-b border-border transition-colors">
-      <div className="h-full px-3 md:px-5 flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-40 w-full h-12 bg-white/95 dark:bg-background/95 backdrop-blur-md border-b border-[#d0d4e4] dark:border-border transition-colors">
+      <div className="h-full px-3 md:px-4 flex items-center justify-between gap-3">
         
         {/* Left: Workspace Brand Pill & Breadcrumb */}
         <div className="flex items-center gap-2.5 min-w-0">
           {onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="p-1.5 -ml-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors md:hidden"
+              className="p-1.5 -ml-1 text-[#676879] dark:text-muted-foreground hover:text-[#323338] dark:hover:text-foreground hover:bg-[#dcdfec]/40 dark:hover:bg-muted rounded-[4px] transition-colors md:hidden"
               title="메뉴 열기"
             >
-              <Menu size={20} strokeWidth={1.75} />
+              <Menu size={18} strokeWidth={1.75} />
             </button>
           )}
 
-          {/* Workspace Pill */}
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-muted/60 border border-border max-w-[220px] sm:max-w-xs shrink-0 shadow-2xs">
+          {/* Workspace Pill (monday White Box Style) */}
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-[4px] bg-[#f6f7fb] dark:bg-muted/60 border border-[#d0d4e4] dark:border-border max-w-[220px] sm:max-w-xs shrink-0 shadow-2xs">
             {org?.orgLogo ? (
               <img
                 src={org.orgLogo}
                 alt="Logo"
-                className="w-5 h-5 rounded-md object-cover border border-border shrink-0"
+                className="w-4.5 h-4.5 rounded-[4px] object-cover border border-[#d0d4e4] dark:border-border shrink-0"
               />
             ) : (
-              <div className="w-5 h-5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <Building2 size={13} strokeWidth={1.75} />
+              <div className="w-4.5 h-4.5 rounded-[4px] bg-[#0073ea]/10 text-[#0073ea] dark:bg-primary/10 dark:text-primary flex items-center justify-center shrink-0">
+                <Building2 size={12} strokeWidth={1.75} />
               </div>
             )}
-            <span className="text-xs font-semibold text-foreground truncate" title={orgName}>
+            <span className="text-[12px] font-bold text-[#323338] dark:text-foreground truncate" title={orgName}>
               {orgName}
             </span>
-            <span className={`hidden sm:inline-block shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold shadow-2xs ${roleInfo.colorClass}`}>
+            <span className={`hidden sm:inline-block shrink-0 px-1.5 py-0.2 rounded-[4px] text-[10px] font-bold shadow-2xs ${roleInfo.colorClass}`}>
               {roleInfo.badgeText}
             </span>
           </div>
 
           {/* Desktop Breadcrumb */}
-          <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+          <div className="hidden lg:flex items-center gap-1.5 text-[13px] text-[#676879] dark:text-muted-foreground min-w-0">
             <span>/</span>
             <span className="font-normal whitespace-nowrap">{pageInfo.category}</span>
             <span>›</span>
-            <span className="font-semibold text-foreground truncate whitespace-nowrap">{pageInfo.title}</span>
+            <span className="font-semibold text-[#323338] dark:text-foreground truncate whitespace-nowrap">{pageInfo.title}</span>
           </div>
         </div>
 
-        {/* Center: Global Quick Search Bar */}
+        {/* Center: Global Quick Search Bar (monday 32px standard) */}
         <div className="flex-1 max-w-md mx-2 hidden sm:block">
           <button
             type="button"
             onClick={onOpenSearch}
-            className="w-full h-9 px-3 rounded-lg bg-muted/50 hover:bg-muted border border-input hover:border-primary/50 text-left text-xs text-muted-foreground flex items-center justify-between transition-colors shadow-2xs group cursor-pointer"
+            className="w-full h-8 px-3 rounded-[4px] bg-[#f6f7fb] hover:bg-white dark:bg-muted/50 dark:hover:bg-muted border border-[#c3c6d4] hover:border-[#0073ea] text-left text-[13px] text-[#676879] dark:text-muted-foreground flex items-center justify-between transition-all duration-70 shadow-2xs group cursor-pointer"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <Search size={15} strokeWidth={1.75} className="text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
+              <Search size={14} strokeWidth={1.75} className="text-[#676879] group-hover:text-[#0073ea] shrink-0 transition-colors" />
               <span className="truncate">고객명, 전화번호, 메뉴 빠른 검색...</span>
             </div>
-            <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-card border border-border text-[11px] font-mono font-semibold text-muted-foreground shrink-0 shadow-2xs">
+            <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-[4px] bg-white dark:bg-card border border-[#d0d4e4] dark:border-border text-[10px] font-mono font-semibold text-[#676879] dark:text-muted-foreground shrink-0 shadow-2xs">
               Ctrl K
             </kbd>
           </button>
         </div>
 
         {/* Right Actions: Search (Mobile Icon), Notification, Commute, Theme, Profile */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           
           {/* Mobile Search Icon Button */}
           <button
             onClick={onOpenSearch}
-            className="sm:hidden p-2 text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg transition-colors"
+            className="sm:hidden p-1.5 text-[#676879] dark:text-muted-foreground hover:bg-[#dcdfec]/40 dark:hover:bg-muted hover:text-[#323338] dark:hover:text-foreground rounded-[4px] transition-colors"
             title="빠른 검색"
           >
-            <Search size={18} strokeWidth={1.75} />
+            <Search size={17} strokeWidth={1.75} />
           </button>
 
           {/* Real-time Notification Popover (🔔) */}
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setIsNotifOpen(prev => !prev)}
-              className="relative p-2 text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg transition-colors"
+              className="relative p-1.5 text-[#676879] dark:text-muted-foreground hover:bg-[#dcdfec]/40 dark:hover:bg-muted hover:text-[#323338] dark:hover:text-foreground rounded-[4px] transition-colors active:scale-[0.97]"
               title="알림 센터"
             >
-              <Bell size={18} strokeWidth={1.75} />
+              <Bell size={17} strokeWidth={1.75} />
               {pendingTgCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                <span className="absolute top-1 right-1 flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
                 </span>
               )}
             </button>
 
             {/* Notification Dropdown Panel */}
             {isNotifOpen && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-popover text-popover-foreground border border-border shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div 
+                style={{ boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)' }}
+                className="absolute right-0 mt-2 w-80 sm:w-96 rounded-lg bg-popover text-popover-foreground border border-[#d0d4e4] dark:border-border overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150"
+              >
                 <div className="p-3.5 border-b border-border flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm text-foreground">알림 센터</span>
@@ -338,7 +341,10 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
 
             {/* Profile Dropdown Menu */}
             {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-xl bg-popover text-popover-foreground border border-border shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div 
+                style={{ boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)' }}
+                className="absolute right-0 mt-2 w-64 rounded-lg bg-popover text-popover-foreground border border-[#d0d4e4] dark:border-border overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150"
+              >
                 <div className="p-3.5 border-b border-border bg-muted/30 flex items-center gap-3">
                   {user?.picture ? (
                     <img

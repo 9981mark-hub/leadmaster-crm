@@ -226,7 +226,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
         </div>
       )}
 
-      {/* 플로어 가동 & 배정 현황 KPI */}
+      {/* 플로어 가동 & 배정 현황 KPI - monday.com 상단 액센트 바 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard
           title="활성 상담원 현황"
@@ -234,6 +234,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
           color="text-indigo-600 dark:text-indigo-400"
           icon={Users}
           subText={`전체 멤버 ${teamMembers.length}명 중`}
+          accentColor="#0073ea"
         />
         <KPICard
           title="오늘 인입된 신규 리드"
@@ -241,6 +242,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
           color="text-blue-600 dark:text-blue-400"
           icon={PhoneCall}
           subText={`총 누적 리드 ${activeCases.length}건`}
+          accentColor="#579bfc"
         />
         <KPICard
           title="미배정 대기 리드"
@@ -249,6 +251,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
           icon={Zap}
           subText="상담원 배정 즉시 필요"
           pulseGlow={unassignedCases.length > 0}
+          accentColor="#fdab3d"
         />
         <div onClick={onShowOverdueModal} className="cursor-pointer hover:scale-[1.02] transition-transform h-full">
           <KPICard
@@ -258,6 +261,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
             icon={Flame}
             subText={`골든타임 ${goldenTimeCases.length} · 지연 ${overdueRemindersCount}`}
             pulseGlow={goldenTimeCases.length + overdueRemindersCount > 0}
+            accentColor="#df2f4a"
           />
         </div>
       </div>

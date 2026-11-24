@@ -17,10 +17,10 @@
   <meta name="theme-color" content="#0f172a" />
   <!-- 🎨 프리미엄 Pretendard 웹폰트 (토스/애플 표준 한글 폰트) -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-  <!-- 🔤 숫자/영문 고정폭 웹폰트 (JetBrains Mono) -->
+  <!-- 🔤 숫자/영문 고정폭 웹폰트 (JetBrains Mono) 및 monday.com Vibe 폰트 (Figtree, Poppins) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -28,7 +28,8 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Pretendard Variable"', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', '"Helvetica Neue"', '"Segoe UI"', '"Apple SD Gothic Neo"', '"Noto Sans KR"', '"Malgun Gothic"', 'sans-serif'],
+            sans: ['Figtree', '"Pretendard Variable"', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', '"Helvetica Neue"', '"Segoe UI"', '"Apple SD Gothic Neo"', '"Noto Sans KR"', '"Malgun Gothic"', 'sans-serif'],
+            display: ['Poppins', 'Figtree', '"Pretendard Variable"', 'Pretendard', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', '"Pretendard Variable"', 'Pretendard', 'monospace'],
           },
           colors: {
@@ -148,13 +149,16 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <style>
     body {
-      font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-      background-color: #f4f5f7;
-      color: #0f172a;
+      font-family: Figtree, 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      background-color: #f6f7fb;
+      color: #323338;
       -webkit-font-smoothing: antialiased;
-      letter-spacing: -0.005em;
+      letter-spacing: -0.01em;
     }
-    html.dark body { color: #e5e7eb; }
+    html.dark body { 
+      background-color: #09090b;
+      color: #fafafa; 
+    }
     /* 키보드로 움직일 때만 보이는 포커스 */
     :focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 
