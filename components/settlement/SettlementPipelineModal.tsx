@@ -256,43 +256,43 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
     }
   };
 
-  // 상태 라벨 및 뱃지 컬러
+  // 상태 라벨 및 뱃지 컬러 (School Dark 표준)
   const getStatusBadge = (status: SettlementBatch['status']) => {
     switch (status) {
       case 'draft':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">1단계: 대사 작성 중</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-muted text-muted-foreground border border-border">1단계: 대사 작성 중</span>;
       case 'confirmed':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">1단계 완료: 수임 확인됨</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">1단계 완료: 수임 확인됨</span>;
       case 'invoiced':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">2단계 진행: 계산서 청구완료</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">2단계 진행: 계산서 청구완료</span>;
       case 'collected':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">2단계 완료: 수금 확인완료</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">2단계 완료: 수금 확인완료</span>;
       case 'paid':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">3단계 완료: 정산 마감 종결</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">3단계 완료: 정산 마감 종결</span>;
       default:
         return null;
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in overflow-y-auto">
-      <div className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-4xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden my-8 flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-4xl max-h-[90vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
         
-        {/* 1. 모달 헤더 */}
-        <div className="p-6 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-md">
-              <Building size={22} className="text-white" />
+        {/* 1. 모달 헤더 (고정) */}
+        <div className="p-5 sm:p-6 bg-card border-b border-border flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+              <Building size={22} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-black text-white">{partner.name}</h2>
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-slate-800 text-indigo-300 border border-slate-700">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-bold text-foreground">{partner.name}</h2>
+                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-muted text-muted-foreground border border-border">
                   {partner.settlementCycleDisplay || '월간 마감 (익월 10일 정산)'}
                 </span>
                 {currentBatch && getStatusBadge(currentBatch.status)}
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 정산 담당자: {partner.contactPerson || '대표/총무과'} ({partner.contactPhone || '연락처 미등록'}) · 계약 수수료율: {partner.commissionRules?.[0]?.rate ? `${partner.commissionRules[0].rate}%` : '협의 수수료'}
               </p>
             </div>
@@ -300,21 +300,21 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
 
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* 2. 회차(배치) 선택 바 */}
-        <div className="px-6 py-3 bg-slate-50 dark:bg-gray-850 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        {/* 2. 회차(배치) 선택 바 (고정) */}
+        <div className="px-5 sm:px-6 py-3 bg-muted/30 border-b border-border flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">정산 회차:</span>
+            <span className="text-xs font-bold text-muted-foreground">정산 회차:</span>
             {partnerBatches.length > 0 ? (
               <select
                 value={selectedBatchId}
                 onChange={e => setSelectedBatchId(e.target.value)}
-                className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="px-3 py-1.5 bg-card border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 {partnerBatches.map(b => (
                   <option key={b.batchId} value={b.batchId}>
@@ -323,14 +323,14 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                 ))}
               </select>
             ) : (
-              <span className="text-xs text-amber-600 font-bold">생성된 회차가 없습니다.</span>
+              <span className="text-xs text-amber-500 font-bold">생성된 회차가 없습니다.</span>
             )}
 
             {onRefreshBatch && currentBatch && (
               <button
                 type="button"
                 onClick={() => onRefreshBatch(currentBatch.batchId)}
-                className="p-1.5 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-1.5 text-muted-foreground hover:text-primary hover:bg-muted rounded-lg transition-colors cursor-pointer"
                 title="최신 고객 수임 데이터 동기화"
               >
                 <RefreshCw size={14} />
@@ -342,7 +342,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
             <button
               type="button"
               onClick={() => onGenerateBatch(partner.partnerId, new Date())}
-              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
+              className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
             >
               <Plus size={14} />
               새 정산 회차 생성
@@ -350,30 +350,30 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
           )}
         </div>
 
-        {/* 3. 3단계 상태 파이프라인 스테퍼 */}
-        <div className="px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 shrink-0">
-          <div className="grid grid-cols-3 gap-2">
+        {/* 3. 3단계 상태 파이프라인 스테퍼 (고정) */}
+        <div className="px-5 sm:px-6 py-3 bg-card border-b border-border shrink-0">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {/* Step 1 버튼 */}
             <button
               type="button"
               onClick={() => setActiveStep(1)}
-              className={`p-3 rounded-2xl border text-left transition-all ${
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                 activeStep === 1
-                  ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 ring-1 ring-blue-500'
-                  : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
+                  ? 'border-primary bg-primary/10 ring-1 ring-primary/30'
+                  : 'border-border/60 bg-muted/20 hover:bg-muted/40'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
-                <span className={`text-xs font-bold ${activeStep === 1 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>
+                <span className={`text-xs font-bold ${activeStep === 1 ? 'text-primary' : 'text-muted-foreground'}`}>
                   1단계: 수임 건 대사
                 </span>
                 {currentBatch && currentBatch.status !== 'draft' ? (
                   <CheckCircle2 size={16} className="text-emerald-500" />
                 ) : (
-                  <Clock size={16} className="text-gray-400" />
+                  <Clock size={16} className="text-muted-foreground/60" />
                 )}
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+              <p className="text-xs text-muted-foreground line-clamp-1">
                 실제 수임 딜 대조 및 금액 확정
               </p>
             </button>
@@ -382,23 +382,23 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
             <button
               type="button"
               onClick={() => setActiveStep(2)}
-              className={`p-3 rounded-2xl border text-left transition-all ${
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                 activeStep === 2
-                  ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/40 ring-1 ring-amber-500'
-                  : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
+                  ? 'border-primary bg-primary/10 ring-1 ring-primary/30'
+                  : 'border-border/60 bg-muted/20 hover:bg-muted/40'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
-                <span className={`text-xs font-bold ${activeStep === 2 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500'}`}>
+                <span className={`text-xs font-bold ${activeStep === 2 ? 'text-primary' : 'text-muted-foreground'}`}>
                   2단계: 계산서 청구 & 수금
                 </span>
                 {currentBatch && (currentBatch.status === 'collected' || currentBatch.status === 'paid') ? (
                   <CheckCircle2 size={16} className="text-emerald-500" />
                 ) : (
-                  <Clock size={16} className="text-gray-400" />
+                  <Clock size={16} className="text-muted-foreground/60" />
                 )}
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+              <p className="text-xs text-muted-foreground line-clamp-1">
                 세금계산서 발행 및 입금 확인
               </p>
             </button>
@@ -407,23 +407,23 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
             <button
               type="button"
               onClick={() => setActiveStep(3)}
-              className={`p-3 rounded-2xl border text-left transition-all ${
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                 activeStep === 3
-                  ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 ring-1 ring-emerald-500'
-                  : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
+                  ? 'border-primary bg-primary/10 ring-1 ring-primary/30'
+                  : 'border-border/60 bg-muted/20 hover:bg-muted/40'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
-                <span className={`text-xs font-bold ${activeStep === 3 ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500'}`}>
+                <span className={`text-xs font-bold ${activeStep === 3 ? 'text-primary' : 'text-muted-foreground'}`}>
                   3단계: 수당 분배 & 마감
                 </span>
                 {currentBatch && currentBatch.status === 'paid' ? (
                   <CheckCircle2 size={16} className="text-emerald-500" />
                 ) : (
-                  <Clock size={16} className="text-gray-400" />
+                  <Clock size={16} className="text-muted-foreground/60" />
                 )}
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+              <p className="text-xs text-muted-foreground line-clamp-1">
                 상담원 수당 지급 및 회차 마감
               </p>
             </button>
@@ -431,96 +431,96 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
         </div>
 
         {/* 4. 스텝별 메인 콘텐츠 본문 (스크롤 영역) */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-gray-50/50 dark:bg-gray-900/40">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1 bg-background/50">
           {!currentBatch ? (
-            <div className="bg-white dark:bg-gray-800 p-12 rounded-2xl text-center border border-gray-200 dark:border-gray-700">
-              <Calendar size={36} className="mx-auto text-gray-400 mb-3" />
-              <h3 className="text-base font-bold text-gray-800 dark:text-white mb-1">
+            <div className="bg-card p-12 rounded-xl text-center border border-border">
+              <Calendar size={36} className="mx-auto text-muted-foreground mb-3" />
+              <h3 className="text-base font-bold text-foreground mb-1">
                 현재 활성화된 정산 회차가 없습니다.
               </h3>
-              <p className="text-xs text-gray-500 mb-4">
+              <p className="text-xs text-muted-foreground mb-4">
                 상단의 <strong>[+ 새 정산 회차 생성]</strong> 버튼을 눌러 정산 마감 프로세스를 시작하세요.
               </p>
             </div>
           ) : activeStep === 1 ? (
             /* ================= Step 1: 수임 건 대사 & 확정 ================= */
-            <div className="space-y-5 animate-fade-in">
+            <div className="space-y-5 animate-in fade-in duration-150">
               {/* 상단 통계 카드 */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
-                  <span className="text-xs font-semibold text-gray-500">정산 대상 딜 건수</span>
-                  <p className="text-2xl font-black text-gray-900 dark:text-white font-mono mt-1">
+                <div className="bg-card p-4 rounded-xl border border-border shadow-2xs">
+                  <span className="text-xs font-semibold text-muted-foreground">정산 대상 딜 건수</span>
+                  <p className="text-2xl font-black text-foreground font-mono mt-1">
                     {currentBatch.dealIds.length}건
                   </p>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
-                  <span className="text-xs font-semibold text-gray-500">고객 수임료 총액</span>
+                <div className="bg-card p-4 rounded-xl border border-border shadow-2xs">
+                  <span className="text-xs font-semibold text-muted-foreground">고객 수임료 총액</span>
                   <div className="flex items-baseline gap-1.5 mt-1">
-                    <span className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono tabular-nums">
+                    <span className="text-2xl font-black text-blue-500 font-mono tabular-nums">
                       ₩ {currentBatch.totalContractFee?.toLocaleString()}
                     </span>
-                    <span className="text-xs font-semibold text-gray-500">만원</span>
+                    <span className="text-xs font-semibold text-muted-foreground">만원</span>
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
-                  <span className="text-xs font-semibold text-gray-500">우리 회사 정산 수수료</span>
+                <div className="bg-card p-4 rounded-xl border border-border shadow-2xs">
+                  <span className="text-xs font-semibold text-muted-foreground">우리 회사 정산 수수료</span>
                   <div className="flex items-baseline gap-1.5 mt-1">
-                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+                    <span className="text-2xl font-black text-primary font-mono tabular-nums">
                       ₩ {currentBatch.totalCommission?.toLocaleString()}
                     </span>
-                    <span className="text-xs font-semibold text-gray-500">만원</span>
+                    <span className="text-xs font-semibold text-muted-foreground">만원</span>
                   </div>
                 </div>
               </div>
 
               {/* 딜 목록 테이블 */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-xs">
-                <div className="px-4 py-3 bg-gray-50 dark:bg-gray-750 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                  <h4 className="font-bold text-xs text-gray-800 dark:text-white flex items-center gap-1.5">
-                    <FileText size={14} className="text-blue-600" />
+              <div className="bg-card rounded-xl border border-border overflow-hidden shadow-2xs">
+                <div className="px-4 py-3 bg-muted/30 border-b border-border flex justify-between items-center">
+                  <h4 className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                    <FileText size={14} className="text-primary" />
                     수임 건 목록 대조
                   </h4>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-muted-foreground">
                     회차 기간: {currentBatch.startDate} ~ {currentBatch.endDate}
                   </span>
                 </div>
 
                 <div className="max-h-60 overflow-y-auto">
                   {currentDeals.length === 0 ? (
-                    <div className="p-8 text-center text-xs text-gray-500">
+                    <div className="p-8 text-center text-xs text-muted-foreground">
                       해당 회차에 매칭된 수임 건이 없습니다.
                     </div>
                   ) : (
                     <table className="w-full text-xs text-left">
-                      <thead className="bg-gray-50 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 sticky top-0">
+                      <thead className="bg-muted text-muted-foreground sticky top-0 z-10 border-b border-border">
                         <tr>
                           <th className="px-4 py-2.5">고객명</th>
                           <th className="px-3 py-2.5">계약 유형</th>
                           <th className="px-3 py-2.5">분납</th>
                           <th className="px-3 py-2.5 text-right">수임료</th>
-                          <th className="px-3 py-2.5 text-right text-emerald-600 dark:text-emerald-400 font-bold">정산 수수료</th>
+                          <th className="px-3 py-2.5 text-right text-primary font-bold">정산 수수료</th>
                           <th className="px-3 py-2.5 text-center">담당 상담원</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                      <tbody className="divide-y divide-border">
                         {currentDeals.map(d => (
-                          <tr key={d.caseId} className="hover:bg-gray-50/70 dark:hover:bg-gray-700/40">
-                            <td className="px-4 py-2.5 font-bold text-gray-900 dark:text-white">
+                          <tr key={d.caseId} className="hover:bg-muted/30">
+                            <td className="px-4 py-2.5 font-bold text-foreground">
                               {d.customerName}
                             </td>
-                            <td className="px-3 py-2.5 text-gray-600 dark:text-gray-300">
+                            <td className="px-3 py-2.5 text-muted-foreground">
                               {d.contractType || d.caseType || '개인회생'}
                             </td>
-                            <td className="px-3 py-2.5 text-gray-500">
+                            <td className="px-3 py-2.5 text-muted-foreground">
                               {d.installmentMonths ? `${d.installmentMonths}회 분납` : '일시납'}
                             </td>
-                            <td className="px-3 py-2.5 text-right font-mono text-gray-800 dark:text-gray-200">
+                            <td className="px-3 py-2.5 text-right font-mono text-foreground">
                               ₩ {d.contractFee?.toLocaleString()} 만원
                             </td>
-                            <td className="px-3 py-2.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            <td className="px-3 py-2.5 text-right font-mono font-bold text-primary">
                               ₩ {Math.round((d.contractFee || 0) * 0.25).toLocaleString()} 만원
                             </td>
-                            <td className="px-3 py-2.5 text-center text-gray-500">
+                            <td className="px-3 py-2.5 text-center text-muted-foreground">
                               {d.managerName || (d as any).assignedAgent || '-'}
                             </td>
                           </tr>
@@ -532,13 +532,13 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
               </div>
 
               {/* 카톡/유선 대사 증빙 메모 */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-2">
+              <div className="bg-card p-4 rounded-xl border border-border space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     📝 거래처 확인 증빙 메모 (카톡/유선 대사 내역)
                   </label>
                   {currentBatch.confirmationEvidence?.confirmedAt && (
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                    <span className="text-xs text-primary font-bold flex items-center gap-1">
                       <Check size={13} /> {new Date(currentBatch.confirmationEvidence.confirmedAt).toLocaleDateString('ko-KR')} 확인 완료
                     </span>
                   )}
@@ -548,7 +548,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                   onChange={e => setEvidenceText(e.target.value)}
                   rows={3}
                   placeholder="예: 2026-11-20 김부장님과 15건 딜 내역 카톡으로 상호 크로스체크 완료함."
-                  className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 bg-muted/30 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
 
@@ -557,7 +557,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                 <button
                   type="button"
                   onClick={handleConfirmReconciliation}
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
+                  className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold flex items-center gap-2 shadow-2xs transition-colors cursor-pointer"
                 >
                   <CheckCircle2 size={16} />
                   수임 건 대사 확정 및 2단계 이동 ➔
@@ -566,26 +566,26 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
             </div>
           ) : activeStep === 2 ? (
             /* ================= Step 2: 세금계산서 청구 & 수금 확인 ================= */
-            <div className="space-y-5 animate-fade-in">
+            <div className="space-y-5 animate-in fade-in duration-150">
               {/* 세금계산서 정보 입력 카드 */}
-              <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-4">
-                <h4 className="font-bold text-xs text-gray-900 dark:text-white flex items-center gap-1.5">
-                  <FileText size={15} className="text-amber-600" />
+              <div className="bg-card p-5 rounded-xl border border-border space-y-4">
+                <h4 className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                  <FileText size={15} className="text-amber-500" />
                   전자세금계산서 역발행 청구 정보
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 block mb-1">발행 일자</label>
+                    <label className="text-xs text-muted-foreground block mb-1">발행 일자</label>
                     <input
                       type="date"
                       value={invoiceForm.issueDate}
                       onChange={e => setInvoiceForm({ ...invoiceForm, issueDate: e.target.value })}
-                      className="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold text-gray-900 dark:text-white"
+                      className="w-full p-2 bg-muted/30 border border-border rounded-xl text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 block mb-1">공급가액 (만원)</label>
+                    <label className="text-xs text-muted-foreground block mb-1">공급가액 (만원)</label>
                     <input
                       type="number"
                       value={invoiceForm.supplyAmount}
@@ -593,43 +593,43 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                         const sup = Number(e.target.value);
                         setInvoiceForm({ ...invoiceForm, supplyAmount: sup, vat: Math.round(sup * 0.1) });
                       }}
-                      className="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-mono font-bold text-gray-900 dark:text-white"
+                      className="w-full p-2 bg-muted/30 border border-border rounded-xl text-xs font-mono font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 block mb-1">부가가치세 10% (만원)</label>
+                    <label className="text-xs text-muted-foreground block mb-1">부가가치세 10% (만원)</label>
                     <input
                       type="number"
                       value={invoiceForm.vat}
                       onChange={e => setInvoiceForm({ ...invoiceForm, vat: Number(e.target.value) })}
-                      className="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-mono font-bold text-gray-900 dark:text-white"
+                      className="w-full p-2 bg-muted/30 border border-border rounded-xl text-xs font-mono font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 block mb-1">국세청 승인번호</label>
+                    <label className="text-xs text-muted-foreground block mb-1">국세청 승인번호</label>
                     <input
                       type="text"
                       placeholder="예: 20261120-4100..."
                       value={invoiceForm.approvalNumber}
                       onChange={e => setInvoiceForm({ ...invoiceForm, approvalNumber: e.target.value })}
-                      className="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-mono text-gray-900 dark:text-white"
+                      className="w-full p-2 bg-muted/30 border border-border rounded-xl text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center justify-between pt-2 border-t border-border">
                   <div className="text-xs">
-                    <span className="text-gray-500">청구 합계 금액: </span>
-                    <span className="font-mono font-black text-amber-600 dark:text-amber-400 text-sm">
+                    <span className="text-muted-foreground">청구 합계 금액: </span>
+                    <span className="font-mono font-black text-amber-500 dark:text-amber-400 text-sm">
                       ₩ {(Number(invoiceForm.supplyAmount) + Number(invoiceForm.vat)).toLocaleString()} 만원
                     </span>
-                    <span className="text-xs text-gray-500 ml-1">(공급가 + VAT)</span>
+                    <span className="text-xs text-muted-foreground ml-1">(공급가 + VAT)</span>
                   </div>
 
                   <button
                     type="button"
                     onClick={handleSaveInvoiceInfo}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-650 text-gray-800 dark:text-gray-200 rounded-xl text-xs font-bold transition-colors"
+                    className="px-4 py-2 bg-secondary hover:bg-muted text-foreground border border-border rounded-xl text-xs font-bold transition-colors cursor-pointer"
                   >
                     계산서 정보 임시저장
                   </button>
@@ -637,56 +637,56 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
               </div>
 
               {/* 텔레그램 / 카톡 청구 안내문 원클릭 복사 */}
-              <div className="bg-amber-50/70 dark:bg-amber-950/30 p-4 rounded-2xl border border-amber-200 dark:border-amber-800 flex items-center justify-between">
+              <div className="bg-muted/30 p-4 rounded-xl border border-border flex items-center justify-between">
                 <div>
-                  <h5 className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                  <h5 className="text-xs font-bold text-foreground">
                     📱 거래처 청구 통보 메시지
                   </h5>
-                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     로펌 실무자에게 즉시 전송할 수 있는 청구 안내 템플릿입니다.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={handleCopyInvoiceNotice}
-                  className="px-4 py-2 bg-white dark:bg-gray-800 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-bold text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 flex items-center gap-1.5 transition-colors shadow-xs"
+                  className="px-4 py-2 bg-card hover:bg-muted border border-border rounded-xl text-xs font-bold text-foreground flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
                 >
-                  {isCopiedTemplate ? <Check size={14} /> : <Copy size={14} />}
+                  {isCopiedTemplate ? <Check size={14} className="text-primary" /> : <Copy size={14} />}
                   {isCopiedTemplate ? '복사 완료' : '청구문 복사'}
                 </button>
               </div>
 
               {/* 수금 확인 섹션 */}
-              <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-3">
-                <h4 className="font-bold text-xs text-gray-900 dark:text-white flex items-center gap-1.5">
-                  <DollarSign size={15} className="text-emerald-600" />
+              <div className="bg-card p-5 rounded-xl border border-border space-y-3">
+                <h4 className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                  <DollarSign size={15} className="text-primary" />
                   거래처 입금(수금) 확인
                 </h4>
 
                 {currentBatch.collectionInfo?.collectedAt ? (
-                  <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
+                  <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                      <p className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
                         <CheckCircle2 size={15} />
                         수금 완료 확인됨 ({currentBatch.collectionInfo.collectedAt})
                       </p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
+                      <p className="text-xs text-muted-foreground mt-1 font-mono">
                         입금 확인액: ₩ {currentBatch.collectionInfo.amount?.toLocaleString()} 만원 ({currentBatch.collectionInfo.memo || '정상 입금'})
                       </p>
                     </div>
-                    <span className="text-xs font-bold px-2.5 py-1 bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-lg">
+                    <span className="text-xs font-bold px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg">
                       수금 완료
                     </span>
                   </div>
                 ) : (
-                  <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      법인 계좌에 수수료 <strong>₩ {(Number(invoiceForm.supplyAmount) + Number(invoiceForm.vat)).toLocaleString()} 만원</strong>이 입금되었는지 확인 후 수금 완료 처리를 진행하세요.
+                  <div className="p-4 rounded-xl bg-muted/30 border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">
+                      법인 계좌에 수수료 <strong className="text-foreground">₩ {(Number(invoiceForm.supplyAmount) + Number(invoiceForm.vat)).toLocaleString()} 만원</strong>이 입금되었는지 확인 후 수금 완료 처리를 진행하세요.
                     </p>
                     <button
                       type="button"
                       onClick={handleMarkCollected}
-                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition-colors shrink-0"
+                      className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors shrink-0 cursor-pointer"
                     >
                       <CheckCircle2 size={16} />
                       수금 완료 처리 및 3단계 이동 ➔
@@ -697,39 +697,39 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
             </div>
           ) : (
             /* ================= Step 3: 상담원 수당 분배 & 정산 마감 ================= */
-            <div className="space-y-5 animate-fade-in">
-              <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-4">
+            <div className="space-y-5 animate-in fade-in duration-150">
+              <div className="bg-card p-5 rounded-xl border border-border space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-xs text-gray-900 dark:text-white flex items-center gap-1.5">
-                    <Users size={15} className="text-indigo-600" />
+                  <h4 className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                    <Users size={15} className="text-primary" />
                     상담원 및 팀장 수당 분배 대장
                   </h4>
-                  <span className="text-xs text-gray-500 font-mono">
+                  <span className="text-xs text-muted-foreground font-mono">
                     회차 수금 확정액: ₩ {currentBatch.totalCommission?.toLocaleString()} 만원
                   </span>
                 </div>
 
                 {/* 기등록된 분배 목록 */}
-                <div className="divide-y divide-gray-100 dark:divide-gray-700 border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
+                <div className="divide-y divide-border border border-border rounded-xl overflow-hidden">
                   {(currentBatch.payoutItems || []).length === 0 ? (
-                    <div className="p-6 text-center text-xs text-gray-500">
+                    <div className="p-6 text-center text-xs text-muted-foreground">
                       등록된 수당 분배 내역이 없습니다. 아래 폼에서 상담원/팀장 수당을 등록하세요.
                     </div>
                   ) : (
                     (currentBatch.payoutItems || []).map(item => (
-                      <div key={item.id} className="p-3 bg-white dark:bg-gray-800 flex items-center justify-between text-xs">
+                      <div key={item.id} className="p-3 bg-card flex items-center justify-between text-xs">
                         <div>
-                          <span className="font-bold text-gray-900 dark:text-white">{item.partnerName}</span>
-                          <span className="text-gray-400 ml-2 font-mono">{item.partnerAccount}</span>
+                          <span className="font-bold text-foreground">{item.partnerName}</span>
+                          <span className="text-muted-foreground ml-2 font-mono">{item.partnerAccount}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                          <span className="font-mono font-bold text-primary">
                             ₩ {item.amount?.toLocaleString()} 만원
                           </span>
                           <button
                             type="button"
                             onClick={() => handleDeletePayoutItem(item.id)}
-                            className="p-1 text-gray-400 hover:text-rose-500 rounded transition-colors"
+                            className="p-1 text-muted-foreground hover:text-rose-500 rounded transition-colors cursor-pointer"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -740,32 +740,32 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                 </div>
 
                 {/* 수당 분배 추가 폼 */}
-                <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 grid grid-cols-1 sm:grid-cols-4 gap-2 items-center">
+                <div className="p-3 bg-muted/30 rounded-xl border border-border grid grid-cols-1 sm:grid-cols-4 gap-2 items-center">
                   <input
                     type="text"
                     placeholder="수급자명 (예: 김상담, 박팀장)"
                     value={newPayout.partnerName}
                     onChange={e => setNewPayout({ ...newPayout, partnerName: e.target.value })}
-                    className="p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-xs"
+                    className="p-2 bg-card border border-border rounded-lg text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   <input
                     type="text"
                     placeholder="계좌번호 (예: 신한 110-...)"
                     value={newPayout.partnerAccount}
                     onChange={e => setNewPayout({ ...newPayout, partnerAccount: e.target.value })}
-                    className="p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-xs"
+                    className="p-2 bg-card border border-border rounded-lg text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   <input
                     type="number"
                     placeholder="지급액 (만원)"
                     value={newPayout.amount || ''}
                     onChange={e => setNewPayout({ ...newPayout, amount: Number(e.target.value) })}
-                    className="p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-xs font-mono"
+                    className="p-2 bg-card border border-border rounded-lg text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   <button
                     type="button"
                     onClick={handleAddPayoutItem}
-                    className="py-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1"
+                    className="py-2 bg-secondary hover:bg-muted border border-border text-foreground rounded-lg text-xs font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
                   >
                     <Plus size={14} /> 추가
                   </button>
@@ -773,13 +773,13 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
               </div>
 
               {/* 최종 마감 확인 카드 */}
-              <div className="bg-emerald-50/70 dark:bg-emerald-950/30 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="bg-card p-5 rounded-xl border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
-                  <h4 className="text-xs font-black text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
-                    <ShieldCheck size={16} />
+                  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <ShieldCheck size={16} className="text-primary" />
                     정산 회차 최종 마감 (Lock & Close)
                   </h4>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     대사·수금·수당 분배가 모두 완료된 회차를 마감 처리하고 종합 손익 장부에 반영합니다.
                   </p>
                 </div>
@@ -788,7 +788,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
                   type="button"
                   onClick={handleFinishBatch}
                   disabled={currentBatch.status === 'paid'}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors shrink-0"
+                  className="px-6 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground rounded-xl text-xs font-bold flex items-center gap-2 shadow-2xs transition-colors shrink-0 cursor-pointer"
                 >
                   <CheckCircle2 size={16} />
                   {currentBatch.status === 'paid' ? '이미 최종 마감됨' : '정산 회차 최종 마감 완료'}
@@ -798,14 +798,14 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
           )}
         </div>
 
-        {/* 5. 모달 푸터 */}
-        <div className="p-4 bg-white dark:bg-gray-850 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between shrink-0">
+        {/* 5. 모달 푸터 (고정) */}
+        <div className="p-4 bg-card border-t border-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             {activeStep > 1 && (
               <button
                 type="button"
                 onClick={() => setActiveStep((activeStep - 1) as 1 | 2)}
-                className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-750 flex items-center gap-1.5 transition-colors"
+                className="px-4 py-2 border border-border rounded-xl text-xs font-bold text-foreground bg-card hover:bg-muted flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <ArrowLeft size={14} /> 이전 단계
               </button>
@@ -814,7 +814,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
               <button
                 type="button"
                 onClick={() => setActiveStep((activeStep + 1) as 2 | 3)}
-                className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-750 flex items-center gap-1.5 transition-colors"
+                className="px-4 py-2 border border-border rounded-xl text-xs font-bold text-foreground bg-card hover:bg-muted flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 다음 단계 <ArrowRight size={14} />
               </button>
@@ -824,7 +824,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity"
+            className="px-5 py-2 bg-secondary hover:bg-muted text-foreground border border-border rounded-xl text-xs font-bold transition-colors cursor-pointer"
           >
             닫기
           </button>

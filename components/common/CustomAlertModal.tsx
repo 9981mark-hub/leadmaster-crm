@@ -89,7 +89,7 @@ export default function CustomAlertModal({
               {getIcon()}
             </div>
             <div>
-              <h3 className="text-base font-bold text-foreground tracking-tight leading-snug">
+              <h3 className="text-base font-bold text-foreground tracking-tight leading-snug break-keep">
                 {title}
               </h3>
               {email && (
@@ -110,7 +110,7 @@ export default function CustomAlertModal({
         </div>
 
         {/* 본문 메시지 */}
-        <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed whitespace-pre-line bg-muted/30 p-4 rounded-xl border border-border">
+        <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed whitespace-pre-line break-keep bg-muted/30 p-4 rounded-xl border border-border">
           {message}
         </div>
 

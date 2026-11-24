@@ -54,7 +54,7 @@ export default function BatchQualityPanel() {
   const handleRetroactiveBatch = async () => {
     const ok = await confirm({
       title: '과거 고객 DB 회차 통계 변환',
-      message: '기존에 등록되어 있으나 회차(Batch)가 지정되지 않은 과거 고객 DB들을\n유입경로 및 등록 월별로 묶어 실시간 회차 통계로 변환할까요?',
+      message: '기존에 등록되어 있으나 회차가 지정되지 않은 과거 고객 DB를\n유입경로 및 등록 월별로 묶어 실시간 회차 통계로 변환할까요?',
       confirmText: '통계 변환 실행',
       cancelText: '취소',
       variant: 'default',

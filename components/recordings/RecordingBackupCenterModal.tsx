@@ -183,68 +183,68 @@ export default function RecordingBackupCenterModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs">
-      <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-4xl max-h-[90vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
         {/* 헤더 */}
-        <div className="px-6 py-4.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+        <div className="px-5 sm:px-6 py-4 border-b border-border flex items-center justify-between shrink-0 bg-card">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
               <Archive size={22} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 통화 녹음 만료 & 백업 센터
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-primary/15 text-primary border border-primary/30">
                   1년 보관 정책
                 </span>
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 1년(365일)이 지난 오디오 파일은 자동 정리되므로, 만료 30일 전 PC나 외장하드로 일괄 백업하세요.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* 정책 및 만료 통계 배너 */}
-        <div className="p-6 bg-slate-50 dark:bg-gray-800/40 border-b border-gray-100 dark:border-gray-800 space-y-4">
+        <div className="p-5 sm:p-6 bg-muted/30 border-b border-border space-y-4 shrink-0">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-gray-700 shadow-xs flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center shrink-0">
+            <div className="bg-card p-3.5 rounded-xl border border-border shadow-2xs flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center shrink-0">
                 <AlertTriangle size={18} />
               </div>
               <div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">30일 이내 만료 예정</div>
-                <div className="text-base font-bold text-amber-600 dark:text-amber-400">
+                <div className="text-xs text-muted-foreground font-medium">30일 이내 만료 예정</div>
+                <div className="text-base font-bold text-rose-500">
                   {stats.urgentCount}건 ({fmtBytes(stats.urgentBytes)})
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-gray-700 shadow-xs flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 flex items-center justify-center shrink-0">
+            <div className="bg-card p-3.5 rounded-xl border border-border shadow-2xs flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20 flex items-center justify-center shrink-0">
                 <Clock size={18} />
               </div>
               <div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">60일 이내 만료 예정</div>
-                <div className="text-base font-bold text-gray-800 dark:text-gray-100">
+                <div className="text-xs text-muted-foreground font-medium">60일 이내 만료 예정</div>
+                <div className="text-base font-bold text-foreground">
                   {stats.totalCount}건 ({fmtBytes(stats.totalBytes)})
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-gray-700 shadow-xs flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-green-50 dark:bg-green-950/60 text-green-600 flex items-center justify-center shrink-0">
+            <div className="bg-card p-3.5 rounded-xl border border-border shadow-2xs flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center shrink-0">
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">AI 요약/대화록 영구 보존</div>
-                <div className="text-xs font-semibold text-green-600 dark:text-green-400">
+                <div className="text-xs text-muted-foreground font-medium">AI 요약/대화록 영구 보존</div>
+                <div className="text-xs font-semibold text-emerald-500 dark:text-emerald-400">
                   파일 삭제 후에도 텍스트 보존
                 </div>
               </div>
@@ -254,13 +254,13 @@ export default function RecordingBackupCenterModal({
           {/* 검색 및 액션 컨트롤 */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
             <div className="relative flex-1 min-w-[240px]">
-              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="사건번호, 전화번호, 요약 검색…"
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
@@ -269,7 +269,7 @@ export default function RecordingBackupCenterModal({
                 type="button"
                 onClick={loadData}
                 disabled={loading}
-                className="p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs flex items-center gap-1 transition-colors"
+                className="p-2 rounded-xl border border-border bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground text-xs flex items-center gap-1 transition-colors cursor-pointer"
                 title="새로고침"
               >
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -279,7 +279,7 @@ export default function RecordingBackupCenterModal({
                 type="button"
                 onClick={handleDownloadZip}
                 disabled={downloadingZip || selectedIds.size === 0}
-                className="py-2 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all disabled:opacity-50"
+                className="py-2 px-4 rounded-xl bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
               >
                 {downloadingZip ? (
                   <>
@@ -300,32 +300,32 @@ export default function RecordingBackupCenterModal({
         </div>
 
         {/* 목록 테이블 */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 bg-background/50">
           {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-gray-500 dark:text-gray-400">
-              <Loader2 size={32} className="animate-spin text-amber-500" />
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+              <Loader2 size={32} className="animate-spin text-primary" />
               <span className="text-xs">만료 예정 녹음 목록을 조회하고 있습니다…</span>
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
-              <ShieldCheck size={36} className="text-green-500 mb-1" />
-              <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+            <div className="py-20 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <ShieldCheck size={36} className="text-primary mb-1" />
+              <span className="text-sm font-semibold text-foreground">
                 만료 임박 대상 녹음이 없습니다.
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-xs text-muted-foreground">
                 모든 통화 녹음이 1년 보관 정책 내에서 안전하게 유지되고 있습니다.
               </span>
             </div>
           ) : (
             <div className="space-y-2">
-              <div className="flex items-center justify-between pb-2 px-1 text-xs text-gray-500 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center justify-between pb-2 px-1 text-xs text-muted-foreground border-b border-border">
                 <button
                   type="button"
                   onClick={toggleSelectAll}
-                  className="flex items-center gap-2 font-semibold hover:text-gray-700 dark:hover:text-gray-200"
+                  className="flex items-center gap-2 font-semibold hover:text-foreground cursor-pointer"
                 >
                   {selectedIds.size === filteredItems.length ? (
-                    <CheckSquare size={16} className="text-amber-600" />
+                    <CheckSquare size={16} className="text-primary" />
                   ) : (
                     <Square size={16} />
                   )}
@@ -341,46 +341,48 @@ export default function RecordingBackupCenterModal({
                 return (
                   <div
                     key={it.id}
-                    className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                    className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
                       isSelected
-                        ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800'
-                        : 'bg-white dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                        ? 'bg-primary/10 border-primary/30'
+                        : 'bg-card border-border hover:bg-muted/30'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <button
                         type="button"
                         onClick={() => toggleSelect(it.id)}
-                        className="text-gray-500 dark:text-gray-400 hover:text-amber-600 shrink-0"
+                        className="text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
                       >
                         {isSelected ? (
-                          <CheckSquare size={18} className="text-amber-600" />
+                          <CheckSquare size={18} className="text-primary" />
                         ) : (
                           <Square size={18} />
                         )}
                       </button>
 
-                      <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-gray-700 flex items-center justify-center shrink-0 text-gray-500">
+                      <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center shrink-0">
                         <FileAudio size={16} />
                       </div>
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
+                          <span className="text-xs font-bold text-foreground">
                             {it.caseId}
                           </span>
-                          <span className="text-xs font-mono text-gray-500">
+                          <span className="text-xs font-mono text-muted-foreground">
                             {it.phone}
                           </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-muted-foreground">·</span>
+                          <span className="text-xs text-muted-foreground">
                             {it.callStartedAt?.slice(0, 16).replace('T', ' ')} ({fmtDuration(it.durationSec)})
                           </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-muted-foreground">·</span>
+                          <span className="text-xs text-muted-foreground">
                             {fmtBytes(it.sizeBytes)}
                           </span>
                         </div>
                         {it.summary && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 max-w-lg">
+                          <p className="text-xs text-muted-foreground truncate mt-0.5 max-w-lg">
                             {it.summary}
                           </p>
                         )}
@@ -389,12 +391,12 @@ export default function RecordingBackupCenterModal({
 
                     <div className="flex items-center gap-3 shrink-0">
                       {isUrgent ? (
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 flex items-center gap-1 border border-red-200 dark:border-red-800">
+                        <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center gap-1">
                           <AlertTriangle size={13} />
                           <span>D-{it.daysLeft} 만료</span>
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-md text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700">
+                        <span className="px-2 py-0.5 rounded-md text-xs font-medium text-muted-foreground bg-muted border border-border">
                           D-{it.daysLeft}
                         </span>
                       )}
@@ -402,7 +404,7 @@ export default function RecordingBackupCenterModal({
                       <button
                         type="button"
                         onClick={() => handleDownloadSingle(it)}
-                        className="p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                        className="p-2 rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
                         title="개별 다운로드"
                       >
                         <Download size={15} />
@@ -416,15 +418,15 @@ export default function RecordingBackupCenterModal({
         </div>
 
         {/* 풋터 */}
-        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/60 flex items-center justify-between text-xs text-gray-500">
+        <div className="px-6 py-4 border-t border-border bg-card flex items-center justify-between text-xs text-muted-foreground shrink-0">
           <div className="flex items-center gap-1.5">
-            <ShieldCheck size={14} className="text-green-500" />
+            <ShieldCheck size={14} className="text-primary" />
             <span>다운로드 실행 시 정보보호 및 컴플라이언스를 위해 감사 로그에 영구 기록됩니다.</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-50"
+            className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground font-bold transition-colors cursor-pointer"
           >
             닫기
           </button>
