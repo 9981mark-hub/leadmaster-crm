@@ -33,6 +33,7 @@ import { CommandPalette } from './components/CommandPalette';
 import { NoticeBanner } from './components/NoticeBanner';
 import ExpiringRecordingsBanner from './components/recordings/ExpiringRecordingsBanner';
 import RecordingBackupCenterModal from './components/recordings/RecordingBackupCenterModal';
+import { ConsultationQuickDesk } from './components/quick-tool/ConsultationQuickDesk';
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Contexts & Providers
@@ -236,6 +237,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             showToast={showToast}
           />
         )}
+
+        {/* 6. PC 전용 상담업무 퀵툴 데스크 (Alt + Q) */}
+        <ConsultationQuickDesk />
       </div>
     </div>
   );
