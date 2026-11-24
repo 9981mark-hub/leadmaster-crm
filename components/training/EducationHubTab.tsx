@@ -921,31 +921,31 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
           </div>
 
           {/* 3.4 반론 극복 & 거절 방어 화법 (Objection Guides) */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm space-y-5">
-            <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-gray-700">
-              <div className="p-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
-                <ShieldAlert className="w-5 h-5" />
+          <div className="p-5 sm:p-6 rounded-xl bg-card border border-border shadow-xs space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-border">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+                <ShieldAlert className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-lg font-black text-gray-900 dark:text-white">
+                <h2 className="text-base font-semibold text-foreground">
                   실전 반론 극복 & 거절 방어 화법 (수임료·스팸의심·신복위)
                 </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   고객의 본질적인 심리적 저항을 허물고 1차 상담 접수로 이끄는 단계별 대응 매뉴얼
                 </p>
               </div>
             </div>
 
             {/* Objection Switch Tabs */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {materials.objectionGuides.map((obj) => (
                 <button
                   key={obj.id}
                   onClick={() => setActiveObjectionId(obj.id)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     activeObjectionId === obj.id
-                      ? 'bg-rose-600 text-white shadow-md'
-                      : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                      ? 'bg-primary text-primary-foreground shadow-2xs font-bold'
+                      : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border'
                   }`}
                 >
                   {obj.title}
@@ -960,45 +960,46 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                 materials.objectionGuides[0];
               if (!obj) return null;
               return (
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   {/* Customer Quote Box */}
-                  <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-900/60 space-y-1.5">
-                    <div className="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                  <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
+                    <div className="text-xs font-semibold text-primary flex items-center gap-1.5">
                       <AlertTriangle className="w-3.5 h-3.5" />
                       고객의 전형적인 거절 발화
                     </div>
-                    <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                    <div className="text-sm font-semibold text-foreground italic">
                       "{obj.customerObjection}"
                     </div>
-                    <div className="text-xs text-rose-700 dark:text-rose-300 font-medium pt-1">
-                      💡 <strong>고객의 숨은 본심:</strong> {obj.coreIntent}
+                    <div className="text-xs text-muted-foreground bg-card/80 p-2.5 rounded-lg border border-border/60">
+                      💡 <strong className="text-foreground">고객의 숨은 본심:</strong> {obj.coreIntent}
                     </div>
                   </div>
 
                   {/* Steps */}
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     {obj.steps.map((st) => (
                       <div
                         key={st.step}
-                        className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 space-y-2"
+                        className="p-4 rounded-xl bg-card border border-border space-y-2 shadow-2xs"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">
+                          <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                             {st.stepTitle}
                           </span>
                           <button
                             onClick={() => handleCopyText(st.speech, `${obj.title} Step ${st.step}`)}
-                            className="text-xs text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-600 dark:text-indigo-400 flex items-center gap-1 font-bold"
+                            className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 font-semibold transition-colors cursor-pointer"
                           >
                             <Copy className="w-3 h-3" />
                             <span>화법 복사</span>
                           </button>
                         </div>
-                        <div className="p-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200/60 dark:border-gray-700/60 text-xs text-gray-800 dark:text-gray-200 leading-relaxed font-medium whitespace-pre-line">
+                        <div className="p-3.5 rounded-lg bg-muted/30 border border-border text-xs text-foreground leading-relaxed font-medium whitespace-pre-line">
                           {st.speech}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                          🎯 <strong>효과 및 심리:</strong> {st.psychology}
+                        <div className="text-2xs text-muted-foreground font-mono">
+                          🎯 <strong className="text-foreground/80">효과 및 심리:</strong> {st.psychology}
                         </div>
                       </div>
                     ))}
@@ -1009,24 +1010,24 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
           </div>
 
           {/* 3.5 금지사항 & 이관 기준 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Prohibited Rules */}
-            <div className="p-5 rounded-3xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 space-y-4">
-              <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-black text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Prohibited Rules (부결/기각 위험 사유 사전 차단) */}
+            <div className="p-5 rounded-xl bg-card border border-destructive/30 shadow-xs space-y-3.5">
+              <div className="flex items-center gap-2 text-destructive font-semibold text-sm border-b border-border pb-2.5">
                 <ShieldAlert className="w-4 h-4" />
-                <span>4대 절대 금지 원칙 (컴플라이언스)</span>
+                <span>4대 절대 금지 원칙 (부결/기각 위험 사전 차단)</span>
               </div>
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {materials.scriptModule.prohibitedRules.map((rule) => (
                   <div
                     key={rule.id}
-                    className="p-3 rounded-2xl bg-white dark:bg-gray-900 border border-rose-100 dark:border-rose-900/50 space-y-1"
+                    className="p-3 rounded-lg bg-destructive/5 border border-destructive/20 space-y-1"
                   >
-                    <div className="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                    <div className="text-xs font-bold text-destructive flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
                       {rule.rule}
                     </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <div className="text-xs text-muted-foreground leading-relaxed pl-3">
                       {rule.reason}
                     </div>
                   </div>
@@ -1034,25 +1035,28 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
               </div>
             </div>
 
-            {/* Transfer Criteria */}
-            <div className="p-5 rounded-3xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 space-y-4">
-              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-black text-sm">
+            {/* Transfer Criteria (긴급 보정/기각 위험 케이스 대응) */}
+            <div className="p-5 rounded-xl bg-card border border-amber-500/30 shadow-xs space-y-3.5">
+              <div className="flex items-center gap-2 text-amber-400 font-semibold text-sm border-b border-border pb-2.5">
                 <AlertTriangle className="w-4 h-4" />
-                <span>신속 컨설팅 및 타사무소 이관 기준</span>
+                <span>긴급 보정/기각 위험 케이스 및 타사무소 이관 기준</span>
               </div>
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {materials.scriptModule.transferCriteria.map((crit) => (
                   <div
                     key={crit.id}
-                    className="p-3 rounded-2xl bg-white dark:bg-gray-900 border border-amber-100 dark:border-amber-900/50 space-y-1"
+                    className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-1"
                   >
-                    <div className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center justify-between">
-                      <span>{crit.condition}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+                    <div className="text-xs font-bold text-foreground flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        {crit.condition}
+                      </span>
+                      <span className="text-2xs font-semibold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30">
                         {crit.action}
                       </span>
                     </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <div className="text-xs text-muted-foreground leading-relaxed pl-3">
                       {crit.note}
                     </div>
                   </div>
@@ -1258,7 +1262,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                 </div>
               </div>
             ) : (
-              <div className="p-12 text-center text-gray-500 dark:text-gray-400">녹취 파일이 없습니다.</div>
+              <div className="p-12 text-center text-muted-foreground text-xs">녹취 파일이 없습니다.</div>
             )}
           </div>
         </div>
@@ -1524,7 +1528,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                           <span className="w-5 h-5 rounded-md bg-primary/10 text-primary border border-primary/20 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                             A
                           </span>
-                          <div className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed font-medium space-y-2 flex-1">
+                          <div className="text-xs text-foreground leading-relaxed font-medium space-y-2 flex-1">
                             {isEditMode ? (
                               <textarea
                                 rows={3}
@@ -1537,26 +1541,26 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                                     ),
                                   })
                                 }
-                                className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-xs"
+                                className="w-full p-3 rounded-xl border border-input bg-background text-foreground text-xs focus:ring-1 focus:ring-primary focus:outline-none"
                               />
                             ) : (
                               <p className="whitespace-pre-line">{faq.answer}</p>
                             )}
 
                             {faq.highlightKeyword && (
-                              <div className="inline-block px-2.5 py-1 rounded-lg bg-purple-100/80 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300 text-xs font-bold">
+                              <div className="inline-block px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-bold shadow-2xs">
                                 💡 핵심 요약: {faq.highlightKeyword}
                               </div>
                             )}
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center justify-between pt-2 border-t border-border">
                           <div className="flex flex-wrap gap-1">
                             {faq.tags.map((t, tidx) => (
                               <span
                                 key={tidx}
-                                className="text-xs px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500"
+                                className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border font-mono"
                               >
                                 #{t}
                               </span>
@@ -1566,7 +1570,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleCopyText(faq.answer, `FAQ 답변`)}
-                              className="text-xs text-gray-500 hover:text-purple-600 flex items-center gap-1 font-bold"
+                              className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 font-semibold transition-colors cursor-pointer"
                             >
                               <Copy className="w-3 h-3" />
                               <span>답변 복사</span>
@@ -1779,8 +1783,8 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
 
               {/* Admin URL Setting (When in edit mode) */}
               {isEditMode && (
-                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700/60 space-y-1.5 mt-2">
-                  <label className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-1.5 mt-2">
+                  <label className="text-xs font-bold text-amber-400">
                     관리자용 공식 공유 노트북 URL 설정 (외부 링크 변경 시):
                   </label>
                   <input
@@ -1792,7 +1796,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                         notebookLm: { ...materials.notebookLm, sharedUrl: e.target.value },
                       })
                     }
-                    className="w-full p-2 text-xs rounded-lg border border-amber-300 dark:border-amber-600 bg-white dark:bg-gray-900"
+                    className="w-full p-2 text-xs rounded-lg border border-input bg-background text-foreground focus:ring-1 focus:ring-primary focus:outline-none font-mono"
                   />
                 </div>
               )}
