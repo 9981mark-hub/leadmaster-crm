@@ -361,7 +361,7 @@ export default function MyPage() {
 
     return (
         <PageShell title="마이페이지" icon={User} layout="wide">
-            <div className="space-y-6">
+            <div className="space-y-6 pb-28 sm:pb-36">
 
                 {/* ═══════════════════════════════════════════════════════════ */}
                 {/* ── [구간 1] 상단 올인원 콕핏 프로필 & 근태 배너 (1600px) ── */}
@@ -1087,15 +1087,15 @@ export default function MyPage() {
                             {isOwner && (
                                 <div className="mb-3 p-3 bg-muted/40 rounded-xl border border-border">
                                     <div className="flex items-center gap-1.5 text-foreground text-xs font-semibold mb-1">
-                                        <ShieldAlert size={14} className="text-muted-foreground" /> 최고 관리자 긴급 보안 통제
+                                        <ShieldAlert size={14} className="text-amber-500" /> 최고 관리자 긴급 보안 통제
                                     </div>
-                                    <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
+                                    <p className="text-xs text-muted-foreground mb-2 leading-relaxed break-keep">
                                         보안 위협 시 모든 기기의 세션을 즉시 강제 종료합니다.
                                     </p>
                                     <button
                                         type="button"
                                         onClick={handleEmergencyForceLogoutAll}
-                                        className="btn-tactile w-full py-1.5 px-3 bg-card border border-border text-foreground hover:bg-muted rounded-lg text-xs font-medium shadow-xs transition-colors"
+                                        className="btn-tactile w-full py-2 px-3 bg-card border border-border text-foreground hover:bg-muted rounded-xl text-xs font-bold shadow-2xs transition-colors cursor-pointer"
                                     >
                                         다른 모든 기기 강제 세션 해제
                                     </button>

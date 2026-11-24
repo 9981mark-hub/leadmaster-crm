@@ -77,16 +77,16 @@ export const PlatformAlertPopupModal: React.FC<PlatformAlertPopupModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className={`w-full max-w-2xl bg-card text-card-foreground rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border ${
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className={`relative w-full max-w-2xl my-auto bg-card text-card-foreground rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border ${
         totalPending > 0 ? 'border-destructive/40' : 'border-border'
       }`}>
         
         {/* Header with High-Priority Alert Styling */}
-        <div className={`px-6 py-4.5 flex items-center justify-between border-b ${
-          totalPending > 0 ? 'bg-destructive/10 border-destructive/20' : 'bg-muted/40 border-border'
+        <div className={`px-5 sm:px-6 py-4 flex items-center justify-between border-b shrink-0 ${
+          totalPending > 0 ? 'bg-destructive/10 border-destructive/20' : 'bg-card border-border'
         }`}>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3.5">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
               totalPending > 0 
                 ? 'bg-destructive/20 border border-destructive/40 text-destructive animate-pulse' 
@@ -109,7 +109,7 @@ export const PlatformAlertPopupModal: React.FC<PlatformAlertPopupModalProps> = (
                   </span>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5 font-mono">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 고객사의 라이선스 좌석 증설 요청 및 신규 회사 가입 신청을 즉시 검토·승인합니다.
               </p>
             </div>
@@ -123,7 +123,7 @@ export const PlatformAlertPopupModal: React.FC<PlatformAlertPopupModalProps> = (
         </div>
 
         {/* Tab Filters */}
-        <div className="px-6 pt-3 pb-2 border-b border-border bg-card flex items-center gap-2">
+        <div className="px-5 sm:px-6 pt-3 pb-2 border-b border-border bg-muted/20 flex items-center gap-2 shrink-0">
           <button
             onClick={() => setActiveTab('all')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
@@ -172,7 +172,7 @@ export const PlatformAlertPopupModal: React.FC<PlatformAlertPopupModalProps> = (
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto space-y-4 flex-1">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
           {totalPending === 0 ? (
             <div className="py-12 text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 text-primary mx-auto flex items-center justify-center">
@@ -180,7 +180,7 @@ export const PlatformAlertPopupModal: React.FC<PlatformAlertPopupModalProps> = (
               </div>
               <div>
                 <h4 className="text-sm font-bold text-foreground">대기 중인 긴급 요청이 없습니다</h4>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1 break-keep">
                   고객사의 모든 좌석 증설 요청과 가입 신청이 승인 처리되었습니다.
                 </p>
               </div>
@@ -353,14 +353,14 @@ export const PlatformAlertPopupModal: React.FC<PlatformAlertPopupModalProps> = (
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3.5 bg-muted/40 border-t border-border flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">
+        <div className="px-5 sm:px-6 py-3.5 bg-card border-t border-border flex items-center justify-between text-xs shrink-0">
+          <span className="text-muted-foreground break-keep">
             실시간 소켓/웹훅으로 새 요청 인입 시 자동으로 감지됩니다.
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-card hover:bg-muted text-foreground font-semibold border border-border transition-colors cursor-pointer text-xs"
+            className="px-5 py-2 rounded-xl bg-secondary hover:bg-muted text-foreground font-bold border border-border transition-colors cursor-pointer text-xs"
           >
             확인 닫기
           </button>

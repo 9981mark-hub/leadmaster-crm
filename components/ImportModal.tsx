@@ -639,10 +639,10 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className={`bg-card text-card-foreground rounded-2xl shadow-2xl border border-border w-full ${activeTab === 'sheet' ? 'max-w-5xl' : 'max-w-3xl'} max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300`}>
-                {/* Header */}
-                <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-card">
+        <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50 p-3 sm:p-5 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+            <div className={`relative bg-card text-card-foreground rounded-2xl shadow-2xl border border-border w-full ${activeTab === 'sheet' ? 'max-w-5xl' : 'max-w-3xl'} max-h-[90vh] my-auto overflow-hidden flex flex-col transition-all duration-300`}>
+                {/* Header (고정) */}
+                <div className="px-5 sm:px-6 py-4 border-b border-border flex justify-between items-center bg-card shrink-0">
                     <h2 className="text-base font-bold text-foreground flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
                             <Upload size={17} strokeWidth={1.75} />
@@ -655,7 +655,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 </div>
 
                 {/* [030] DB 거래처(공급사) & 회차 매입 비용 관제 헤더 바 */}
-                <div className="bg-muted/30 border-b border-border p-4.5 space-y-3">
+                <div className="bg-muted/30 border-b border-border p-4 sm:p-4.5 space-y-3 shrink-0">
                     {/* 1행: 거래처 타이틀 & 빠른 거래처 관리 버튼 */}
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
@@ -876,8 +876,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex border-b border-border bg-card">
+                {/* Tabs (고정) */}
+                <div className="flex border-b border-border bg-card shrink-0">
                     <button
                         onClick={() => setActiveTab('excel')}
                         className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
@@ -928,12 +928,12 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="p-6 overflow-y-auto flex-1 text-xs">
+                {/* Content (스크롤) */}
+                <div className="p-5 sm:p-6 overflow-y-auto flex-1 text-xs custom-scrollbar">
                     {activeTab === 'excel' && (
                         <div className="space-y-5">
                             {/* 고대비 사용 가이드 박스 */}
-                            <div className="bg-muted/40 p-4 rounded-xl text-xs text-foreground border border-border space-y-2">
+                            <div className="bg-muted/30 p-4 rounded-xl text-xs text-foreground border border-border space-y-2 break-keep">
                                 <h4 className="font-bold flex items-center gap-2 text-primary">
                                     <AlertCircle size={15} /> 사용 가이드
                                 </h4>

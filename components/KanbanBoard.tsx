@@ -35,12 +35,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <div className="flex overflow-x-auto pb-4 gap-4 h-[calc(100vh-200px)] items-start">
+            <div className="flex overflow-x-auto pb-8 gap-4 h-[calc(100vh-200px)] items-start">
                 {statuses.map((status) => (
-                    <div key={status} className="min-w-[280px] w-[300px] flex flex-col h-full bg-gray-50/50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 backdrop-blur-sm">
-                        <div className="p-3 font-bold text-gray-700 dark:text-gray-200 flex justify-between items-center bg-white/50 dark:bg-gray-900/50 rounded-t-xl border-b border-gray-100 dark:border-gray-700 sticky top-0 z-10">
-                            <span>{status}</span>
-                            <span className="bg-gray-200 dark:bg-gray-700 text-xs px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">
+                    <div key={status} className="min-w-[280px] w-[300px] flex flex-col h-full bg-card rounded-2xl border border-border shadow-2xs overflow-hidden">
+                        {/* 100% 불투명 솔리드 헤더 (스크롤 시 뒷 카드가 절대 비치거나 파묻히지 않음) */}
+                        <div className="p-3.5 font-bold text-foreground flex justify-between items-center bg-muted border-b border-border sticky top-0 z-10 shrink-0">
+                            <span className="text-xs sm:text-sm">{status}</span>
+                            <span className="bg-primary/10 text-primary border border-primary/20 text-xs px-2.5 py-0.5 rounded-full font-mono font-bold">
                                 {columns[status]?.length || 0}
                             </span>
                         </div>
@@ -50,7 +51,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
                                 <div
                                     {...provided.droppableProps}
                                     ref={provided.innerRef}
-                                    className={`flex-1 p-2 overflow-y-auto scrollbar-hide transition-colors ${snapshot.isDraggingOver ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}`}
+                                    className={`flex-1 p-2.5 overflow-y-auto space-y-2.5 custom-scrollbar transition-colors ${
+                                        snapshot.isDraggingOver ? 'bg-primary/5' : 'bg-background/40'
+                                    }`}
                                 >
                                     {columns[status]?.slice(0, COLUMN_LIMIT).map((c, index) => (
                                         // @ts-ignore
@@ -61,28 +64,27 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
                                                     {...provided.draggableProps}
                                                     {...provided.dragHandleProps}
                                                     style={{ ...provided.draggableProps.style }}
-                                                    className="mb-3"
                                                     onClick={() => navigate(`/case/${c.caseId}`)}
                                                 >
                                                     <motion.div
                                                         initial={false}
-                                                        animate={snapshot.isDragging ? { scale: 1.05, rotate: 2, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" } : { scale: 1, rotate: 0, boxShadow: "0px 2px 5px rgba(0,0,0,0.05)" }}
-                                                        className={`bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500 transition-colors group cursor-grab active:cursor-grabbing ${c.isNew ? 'ring-2 ring-red-500/20' : ''}`}
+                                                        animate={snapshot.isDragging ? { scale: 1.04, rotate: 1.5, boxShadow: "0px 10px 25px rgba(0,0,0,0.25)" } : { scale: 1, rotate: 0, boxShadow: "0px 1px 3px rgba(0,0,0,0.05)" }}
+                                                        className={`bg-card p-3 rounded-xl border border-border hover:border-primary/50 transition-all group cursor-grab active:cursor-grabbing text-foreground shadow-2xs ${c.isNew ? 'ring-2 ring-rose-500/30' : ''}`}
                                                     >
-                                                        <div className="flex justify-between items-start mb-2">
-                                                            <span className="font-bold text-gray-800 dark:text-gray-100">{c.customerName}</span>
-                                                            {c.isNew && <span className="text-xs bg-red-100 text-red-600 px-1.5 rounded">NEW</span>}
+                                                        <div className="flex justify-between items-start mb-1.5">
+                                                            <span className="font-bold text-xs sm:text-sm text-foreground">{c.customerName}</span>
+                                                            {c.isNew && <span className="text-2xs font-extrabold bg-rose-500/15 text-rose-500 border border-rose-500/30 px-1.5 py-0.2 rounded-md">NEW</span>}
                                                         </div>
-                                                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-1">
-                                                            <Phone size={12} className="mr-1" /> {c.phone}
+                                                        <div className="flex items-center text-xs text-muted-foreground mb-1 font-mono">
+                                                            <Phone size={12} className="mr-1 text-primary shrink-0" /> {c.phone}
                                                         </div>
-                                                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 justify-between mt-2 pt-2 border-t border-gray-50 dark:border-gray-700">
-                                                            <span>{c.caseType}</span>
-                                                            <span>{c.managerName || '-'}</span>
+                                                        <div className="flex items-center text-2xs text-muted-foreground justify-between mt-2 pt-2 border-t border-border">
+                                                            <span className="px-1.5 py-0.5 rounded bg-muted font-medium">{c.caseType}</span>
+                                                            <span className="font-medium text-foreground/80">{c.managerName || '-'}</span>
                                                         </div>
 
                                                         {c.secondaryStatus && (
-                                                            <div className="mt-2 text-xs bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 px-2 py-1 rounded text-center truncate">
+                                                            <div className="mt-2 text-2xs bg-muted/60 text-muted-foreground px-2 py-1 rounded-md text-center truncate border border-border/50">
                                                                 {c.secondaryStatus}
                                                             </div>
                                                         )}
@@ -93,7 +95,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ cases, statuses, onUpd
                                     ))}
                                     {provided.placeholder}
                                     {(columns[status]?.length || 0) > COLUMN_LIMIT && (
-                                        <div className="text-center text-xs text-gray-500 dark:text-gray-400 py-2">외 {(columns[status].length - COLUMN_LIMIT).toLocaleString()}건 — 검색·필터로 좁혀 보세요</div>
+                                        <div className="text-center text-2xs text-muted-foreground py-2 break-keep">외 {(columns[status].length - COLUMN_LIMIT).toLocaleString()}건 — 검색·필터로 좁혀 보세요</div>
                                     )}
                                 </div>
                             )}

@@ -327,19 +327,19 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
   // 배정된 캠페인이 없을 때
   if (!campaign || !allocation) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] max-w-md mx-auto text-center p-6 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl space-y-4">
-        <div className="p-4 bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-2xl">
-          <AlertCircle size={36} />
+      <div className="flex flex-col items-center justify-center min-h-[70vh] max-w-md mx-auto text-center p-8 bg-card text-card-foreground rounded-2xl border border-border shadow-2xl space-y-4">
+        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center mx-auto mb-1">
+          <AlertCircle size={32} />
         </div>
-        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+        <h3 className="text-lg font-bold text-foreground">
           진행 가능한 오토콜 캠페인이 없습니다
         </h3>
-        <p className="text-xs text-gray-500 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed break-keep">
           관리자가 오늘 날짜의 오토콜 캠페인을 생성하고 상담원을 배정해야 시작할 수 있습니다.
         </p>
         <button
           onClick={onExit}
-          className="px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl"
+          className="px-6 py-2.5 bg-secondary hover:bg-muted text-foreground border border-border text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-2xs active:scale-95"
         >
           대시보드로 돌아가기
         </button>

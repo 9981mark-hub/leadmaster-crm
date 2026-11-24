@@ -33,34 +33,36 @@ export default function StatusVisibilityModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
-                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        <EyeOff className="text-gray-500" size={20} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-3 sm:p-4 animate-in fade-in duration-200 overflow-y-auto">
+            <div className="relative bg-card text-card-foreground w-full max-w-md my-auto rounded-2xl shadow-2xl border border-border overflow-hidden flex flex-col max-h-[85vh]">
+                <div className="flex items-center justify-between p-4 border-b border-border bg-card shrink-0">
+                    <h3 className="font-bold text-foreground flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                            <EyeOff size={16} />
+                        </div>
                         보기 설정
                     </h3>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
-                        <X size={20} className="text-gray-500" />
+                    <button onClick={onClose} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer">
+                        <X size={18} />
                     </button>
                 </div>
 
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-xs text-blue-800 dark:text-blue-300">
-                    <p>💡 체크 해제된 상태는 <b>'전체 보기'</b> 목록에서 숨겨집니다.</p>
-                    <p className="mt-1 opacity-75">(단, 필터에서 해당 상태를 직접 선택하면 다시 표시됩니다.)</p>
+                <div className="p-3.5 bg-muted/30 border-b border-border text-xs text-muted-foreground shrink-0 break-keep leading-relaxed">
+                    <p className="text-foreground/90 font-medium">💡 체크 해제된 상태는 <b>'전체 보기'</b> 목록에서 숨겨집니다.</p>
+                    <p className="mt-0.5 text-muted-foreground text-2xs">(단, 필터에서 해당 상태를 직접 선택하면 다시 표시됩니다.)</p>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex gap-2 mb-3">
                         <button
                             onClick={handleSelectAll}
-                            className="flex-1 py-2 text-xs font-bold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+                            className="flex-1 py-2 text-xs font-bold bg-secondary hover:bg-muted text-foreground border border-border rounded-xl transition-colors cursor-pointer"
                         >
                             모두 보이기
                         </button>
                         <button
                             onClick={handleDeselectAll}
-                            className="flex-1 py-2 text-xs font-bold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+                            className="flex-1 py-2 text-xs font-bold bg-secondary hover:bg-muted text-foreground border border-border rounded-xl transition-colors cursor-pointer"
                         >
                             모두 숨기기
                         </button>
@@ -74,19 +76,19 @@ export default function StatusVisibilityModal({
                             return (
                                 <label
                                     key={status}
-                                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${isVisible
-                                            ? 'bg-white border-blue-200 shadow-sm ring-1 ring-blue-100 dark:bg-gray-700 dark:border-blue-500/50'
-                                            : 'bg-gray-50 border-gray-100 text-gray-500 dark:text-gray-400 dark:bg-gray-800 dark:border-gray-700'
+                                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${isVisible
+                                            ? 'bg-card border-primary/40 shadow-2xs ring-1 ring-primary/20'
+                                            : 'bg-muted/20 border-border text-muted-foreground hover:bg-muted/40'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${isVisible
-                                                ? 'bg-blue-500 border-blue-600 text-white'
-                                                : 'bg-white border-gray-300 dark:bg-gray-800 dark:border-gray-600'
+                                        <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${isVisible
+                                                ? 'bg-primary border-primary text-primary-foreground'
+                                                : 'bg-card border-border text-transparent'
                                             }`}>
                                             {isVisible && <Check size={14} strokeWidth={3} />}
                                         </div>
-                                        <span className={`font-medium ${isVisible ? 'text-gray-800 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                        <span className={`font-semibold text-xs sm:text-sm ${isVisible ? 'text-foreground' : 'text-muted-foreground'}`}>
                                             {status}
                                         </span>
                                     </div>
@@ -96,17 +98,17 @@ export default function StatusVisibilityModal({
                                         checked={isVisible}
                                         onChange={() => onToggleStatus(status)}
                                     />
-                                    {isHidden && <span className="text-xs text-red-600 dark:text-red-400 font-bold">숨김</span>}
+                                    {isHidden && <span className="text-2xs text-rose-500 font-bold px-1.5 py-0.5 bg-rose-500/10 rounded border border-rose-500/20">숨김</span>}
                                 </label>
                             );
                         })}
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex justify-end">
+                <div className="p-4 border-t border-border bg-card shrink-0 flex justify-end">
                     <button
                         onClick={onClose}
-                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+                        className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-2xs transition-all active:scale-95 cursor-pointer text-xs sm:text-sm"
                     >
                         완료
                     </button>
