@@ -123,24 +123,24 @@ export default function PricingModal({ isOpen, onClose, onSelectPlan }: PricingM
   return (
     <>
       <div 
-        className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+        className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200 overflow-y-auto"
         onClick={onClose}
       >
         <div 
-          className="w-full max-w-5xl bg-card text-card-foreground border border-border rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto"
+          className="relative w-full max-w-5xl max-h-[88vh] my-auto bg-card text-card-foreground border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           onClick={e => e.stopPropagation()}
         >
           {/* 헤더 */}
-          <div className="flex items-start justify-between border-b border-border pb-5">
+          <div className="flex items-start justify-between p-5 sm:p-6 border-b border-border bg-card shrink-0">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary mb-2">
                 <Sparkles size={13} strokeWidth={1.75} />
                 <span>투명한 볼륨 기반 올인원 요금제</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
                 상담원 규모에 맞춘 가장 합리적인 사용료
               </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 추가 모듈 비용 0원 • 다이얼러, 1년 녹음 스토리지, AI 채무분석, 정산센터까지 전 플랜 기본 포함
               </p>
             </div>
@@ -148,10 +148,14 @@ export default function PricingModal({ isOpen, onClose, onSelectPlan }: PricingM
               type="button"
               onClick={onClose}
               className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              title="창 닫기"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
+
+          {/* 스크롤 본문 */}
+          <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 custom-scrollbar text-xs">
 
           {/* ═══════════════════════════════════════════════════════════ */}
           {/* 🧮 인터랙티브 비용 시뮬레이터 카드 */}
@@ -368,14 +372,23 @@ export default function PricingModal({ isOpen, onClose, onSelectPlan }: PricingM
               })}
             </div>
           </div>
+        </div>
 
-          {/* 하단 푸터 액션 */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-border text-xs text-muted-foreground">
-            <span>도입 문의 및 대형 엔터프라이즈 상담: support@lmaster.xyz</span>
+        {/* 하단 푸터 액션 */}
+        <div className="p-4 border-t border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 text-xs text-muted-foreground">
+          <span>도입 문의 및 대형 엔터프라이즈 상담: support@lmaster.xyz</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground font-bold transition-colors cursor-pointer shadow-2xs"
+            >
+              닫기
+            </button>
             <button
               type="button"
               onClick={() => handleStartPlan('business')}
-              className="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer self-end sm:self-auto"
+              className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
             >
               <span>7일 무료 체험 신청하기</span>
               <ArrowRight size={13} />
@@ -383,6 +396,7 @@ export default function PricingModal({ isOpen, onClose, onSelectPlan }: PricingM
           </div>
         </div>
       </div>
+    </div>
 
       {/* 가입 신청 및 약관 동의 모달 */}
       <CompanySignupModal

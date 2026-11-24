@@ -276,7 +276,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
-      <div className="relative w-full max-w-4xl max-h-[90vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-4xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         
         {/* 1. 모달 헤더 (고정) */}
         <div className="p-5 sm:p-6 bg-card border-b border-border flex items-center justify-between shrink-0">
@@ -805,7 +805,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
               <button
                 type="button"
                 onClick={() => setActiveStep((activeStep - 1) as 1 | 2)}
-                className="px-4 py-2 border border-border rounded-xl text-xs font-bold text-foreground bg-card hover:bg-muted flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-4 py-2.5 border border-border rounded-xl text-xs font-bold text-foreground bg-secondary hover:bg-muted flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
               >
                 <ArrowLeft size={14} /> 이전 단계
               </button>
@@ -814,7 +814,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
               <button
                 type="button"
                 onClick={() => setActiveStep((activeStep + 1) as 2 | 3)}
-                className="px-4 py-2 border border-border rounded-xl text-xs font-bold text-foreground bg-card hover:bg-muted flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-4 py-2.5 border border-border rounded-xl text-xs font-bold text-foreground bg-secondary hover:bg-muted flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
               >
                 다음 단계 <ArrowRight size={14} />
               </button>
@@ -824,7 +824,7 @@ export const SettlementPipelineModal: React.FC<SettlementPipelineModalProps> = (
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 bg-secondary hover:bg-muted text-foreground border border-border rounded-xl text-xs font-bold transition-colors cursor-pointer"
+            className="px-5 py-2.5 bg-secondary hover:bg-muted text-foreground border border-border rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-2xs"
           >
             닫기
           </button>

@@ -213,12 +213,12 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-card text-foreground rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl border border-border overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-4xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-6 py-4.5 border-b border-border bg-muted/30">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-card shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl shadow-2xs">
+            <div className="p-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl shadow-2xs shrink-0">
               <PhoneCall size={20} />
             </div>
             <div>
@@ -235,14 +235,15 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
+            title="창 닫기"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* 본문 스크롤 영역 */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 custom-scrollbar text-xs">
           {/* 1. 캠페인 기본명 */}
           <div>
             <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
@@ -563,21 +564,21 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
         </div>
 
         {/* 푸터 액션 버튼 */}
-        <div className="px-6 py-4 bg-muted/30 border-t border-border flex items-center justify-between">
+        <div className="p-4 bg-card border-t border-border flex items-center justify-between shrink-0">
           <div className="text-xs text-muted-foreground font-mono">
             총 <span className="font-bold text-primary">{candidateCases.length}건</span>의 리드를{' '}
             <span className="font-bold text-foreground">{selectedAgentIds.length}명</span>의 상담원에게
             배정합니다.
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
+              className="px-4 py-2.5 text-xs font-bold text-foreground bg-secondary hover:bg-muted border border-border rounded-xl transition-colors cursor-pointer shadow-2xs"
             >
-              취소
+              취소 / 닫기
             </button>
             <button
               type="button"

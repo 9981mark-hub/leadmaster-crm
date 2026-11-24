@@ -75,11 +75,11 @@ export default function CustomAlertModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200 overflow-y-auto"
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4 text-foreground"
+        className="relative w-full max-w-md max-h-[88vh] my-auto bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 text-foreground flex flex-col overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* 헤더 & 아이콘 */}

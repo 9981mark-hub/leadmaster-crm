@@ -85,10 +85,10 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
     };
 
     return (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200" onClick={onClose}>
-            <div className="bg-card text-card-foreground border border-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto" onClick={onClose}>
+            <div className="relative w-full max-w-2xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground" onClick={e => e.stopPropagation()}>
                 {/* 헤더 */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/40">
+                <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-card shrink-0">
                     <h3 className="font-bold text-foreground flex items-center gap-2 text-base">
                         <Send size={18} className="text-primary" strokeWidth={2} />
                         <span>텔레그램으로 전달</span>
@@ -103,7 +103,7 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
                     </button>
                 </div>
 
-                <div className="p-6 space-y-4 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 custom-scrollbar text-xs">
                     {/* 수신처 정보 */}
                     <div className="p-4 rounded-xl bg-muted/30 border border-border space-y-1">
                         <div className="text-xs text-muted-foreground">
@@ -213,11 +213,11 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
                 </div>
 
                 {/* 푸터 */}
-                <div className="flex justify-end gap-2.5 px-6 py-4 border-t border-border bg-muted/40">
+                <div className="flex justify-end gap-2 p-4 border-t border-border bg-card shrink-0">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 rounded-lg border border-border bg-card text-foreground hover:bg-muted text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                        className="px-4 py-2.5 rounded-xl border border-border bg-secondary text-foreground hover:bg-muted text-xs font-bold shadow-2xs transition-colors cursor-pointer"
                     >
                         취소
                     </button>
@@ -225,7 +225,7 @@ export const TelegramDeliverModal: React.FC<Props> = ({ c, partner, statuses, on
                         type="button"
                         onClick={handleSend}
                         disabled={sending || !!blocker}
-                        className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 disabled:opacity-40 flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                        className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 disabled:opacity-40 flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                     >
                         {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                         <span>{needForce ? '그래도 다시 보내기' : '보내기'}</span>

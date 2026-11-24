@@ -137,34 +137,36 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-card text-foreground rounded-2xl shadow-2xl border border-border overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-lg max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/40">
+        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-card shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-2xs shrink-0">
               <Building2 size={18} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-foreground">회사(워크스페이스) 프로필 설정</h3>
-                <span className="px-2 py-0.5 rounded-md text-2xs font-mono font-medium bg-primary/10 text-primary border border-primary/20">
+                <h3 className="text-sm font-bold text-foreground">회사(워크스페이스) 프로필 설정</h3>
+                <span className="px-2 py-0.5 rounded-md text-2xs font-mono font-bold bg-primary/10 text-primary border border-primary/20">
                   대표 전용
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">사이드바 및 상단 헤더에 노출되는 공식 회사명과 대표 사진을 설정합니다.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">사이드바 및 상단 헤더에 노출되는 공식 회사명과 대표 사진을 설정합니다.</p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            title="창 닫기"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar text-xs">
           {/* Live Preview Card (사이드바 반영 형태 미리보기) */}
           <div className="space-y-1.5">
             <label className="block text-xs font-mono font-medium text-foreground">
@@ -385,17 +387,17 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-3.5 border-t border-border bg-muted/40 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
+        <div className="p-4 border-t border-border bg-card flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground hidden sm:flex">
             <ShieldCheck size={14} className="text-primary" />
             <span>전사 상담원에게 실시간 즉시 반영</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto">
             <button
               type="button"
               onClick={onClose}
               disabled={isProcessing}
-              className="px-3.5 py-1.5 text-xs font-mono font-medium rounded-md bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
             >
               취소
             </button>
@@ -403,13 +405,13 @@ export const CompanyProfileModal: React.FC<CompanyProfileModalProps> = ({
               type="button"
               onClick={handleSave}
               disabled={isProcessing}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-mono font-medium rounded-md bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs disabled:opacity-50 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-2xs disabled:opacity-50 transition-colors cursor-pointer"
             >
               {isProcessing ? (
                 <span>저장 중...</span>
               ) : (
                 <>
-                  <Check size={13} strokeWidth={2.5} />
+                  <Check size={14} strokeWidth={2.5} />
                   <span>설정 저장 및 전사 반영</span>
                 </>
               )}

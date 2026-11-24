@@ -206,14 +206,14 @@ export default function LeadUploadModal({ agents, partners, onClose, onDone }: P
   );
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3" onClick={() => !running && onClose()}>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-4xl max-h-[92vh] flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-3 border-b dark:border-gray-700">
-          <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><FileSpreadsheet size={18} className="text-green-600" /> 수신동의 DB 업로드</h3>
-          <button onClick={onClose} disabled={running} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"><X size={18} /></button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto" onClick={() => !running && onClose()}>
+      <div className="relative w-full max-w-4xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-card shrink-0">
+          <h3 className="font-bold text-foreground flex items-center gap-2"><FileSpreadsheet size={18} className="text-primary" /> 수신동의 DB 업로드</h3>
+          <button onClick={onClose} disabled={running} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer" title="창 닫기"><X size={18} /></button>
         </div>
 
-        <div className="p-5 space-y-4 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 custom-scrollbar text-xs">
           {/* 1. 파일 */}
           <div className="flex flex-wrap items-center gap-3">
             <label className="px-3 py-2 rounded-lg border border-dashed border-gray-400 cursor-pointer text-sm flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -369,12 +369,23 @@ export default function LeadUploadModal({ agents, partners, onClose, onDone }: P
           )}
         </div>
 
-        <div className="flex justify-end gap-2 px-5 py-3 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 rounded-b-xl">
-          {progress && <span className="mr-auto text-sm text-gray-500 flex items-center gap-1"><Loader2 size={14} className="animate-spin" /> {progress}</span>}
-          <button onClick={onClose} disabled={running} className="px-4 py-2 rounded border border-gray-300 bg-white text-sm">{result ? '닫기' : '취소'}</button>
+        <div className="flex justify-end gap-2 p-4 border-t border-border bg-card shrink-0">
+          {progress && <span className="mr-auto text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> {progress}</span>}
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={running}
+            className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+          >
+            {result ? '닫기' : '취소'}
+          </button>
           {!result && (
-            <button onClick={run} disabled={running || !existing || toInsert.length === 0}
-              className="px-4 py-2 rounded bg-green-600 text-white font-bold text-sm disabled:opacity-40 flex items-center gap-1">
+            <button
+              type="button"
+              onClick={run}
+              disabled={running || !existing || toInsert.length === 0}
+              className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs disabled:opacity-40 flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+            >
               {running ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} {existing ? `${toInsert.length.toLocaleString()}건 넣기` : '중복 확인 후 넣기'}
             </button>
           )}

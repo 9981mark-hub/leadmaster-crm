@@ -96,10 +96,10 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-card text-card-foreground rounded-2xl shadow-2xl border border-border overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-lg max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-border flex items-center justify-between bg-card">
+        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-card shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
               <Building2 size={18} strokeWidth={1.75} />
@@ -116,13 +116,14 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            title="창 닫기"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-3.5 text-xs">
+        {/* Form Body (Scrollable) */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 custom-scrollbar text-xs">
           {/* 사업자등록번호 */}
           <div>
             <label className="block text-2xs font-semibold text-muted-foreground mb-1">
@@ -135,7 +136,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
                 value={businessNumber}
                 onChange={e => setBusinessNumber(e.target.value)}
                 placeholder="예: 123-45-67890"
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-input bg-background text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
+                className="w-full pl-9 pr-3 py-2 rounded-xl border border-input bg-background text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
               />
             </div>
           </div>
@@ -152,7 +153,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
                 onChange={e => setCompanyName(e.target.value)}
                 required
                 placeholder="예: 리드마스터 파트너스"
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
+                className="w-full px-3 py-2 rounded-xl border border-input bg-background text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
               />
             </div>
             <div>
@@ -165,7 +166,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
                 onChange={e => setRepresentativeName(e.target.value)}
                 required
                 placeholder="예: 홍길동"
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
+                className="w-full px-3 py-2 rounded-xl border border-input bg-background text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
               />
             </div>
           </div>
@@ -183,7 +184,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
                 onChange={e => setTaxInvoiceEmail(e.target.value)}
                 required
                 placeholder="예: accounting@company.com"
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-input bg-background text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
+                className="w-full pl-9 pr-3 py-2 rounded-xl border border-input bg-background text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
               />
             </div>
             <p className="text-2xs text-muted-foreground mt-1">입금 완료 시 해당 메일로 국세청 전자세금계산서가 자동 발송됩니다.</p>
@@ -201,7 +202,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
                 value={businessAddress}
                 onChange={e => setBusinessAddress(e.target.value)}
                 placeholder="예: 서울특별시 강남구 테헤란로 152, 10층"
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
+                className="w-full pl-9 pr-3 py-2 rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
               />
             </div>
           </div>
@@ -217,7 +218,7 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
                 value={businessType}
                 onChange={e => setBusinessType(e.target.value)}
                 placeholder="예: 서비스업"
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
+                className="w-full px-3 py-2 rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
               />
             </div>
             <div>
@@ -229,25 +230,25 @@ export const TaxInfoEditModal: React.FC<TaxInfoEditModalProps> = ({
                 value={businessItem}
                 onChange={e => setBusinessItem(e.target.value)}
                 placeholder="예: 콜영업 및 마케팅대행"
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
+                className="w-full px-3 py-2 rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors text-xs"
               />
             </div>
           </div>
 
           {/* Footer Buttons */}
-          <div className="pt-3 flex items-center justify-end gap-2 border-t border-border">
+          <div className="pt-4 flex items-center justify-end gap-2 border-t border-border">
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted font-medium transition-colors cursor-pointer text-xs"
+              className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-xs"
+              className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-xs"
             >
               {saving ? '저장 중...' : '정보 저장하기'}
             </button>

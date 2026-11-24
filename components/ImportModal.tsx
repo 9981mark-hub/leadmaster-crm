@@ -640,7 +640,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
 
     return (
         <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50 p-3 sm:p-5 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
-            <div className={`relative bg-card text-card-foreground rounded-2xl shadow-2xl border border-border w-full ${activeTab === 'sheet' ? 'max-w-5xl' : 'max-w-3xl'} max-h-[90vh] my-auto overflow-hidden flex flex-col transition-all duration-300`}>
+            <div className={`relative bg-card text-card-foreground rounded-2xl shadow-2xl border border-border w-full ${activeTab === 'sheet' ? 'max-w-5xl' : 'max-w-3xl'} max-h-[88vh] my-auto overflow-hidden flex flex-col transition-all duration-300`}>
                 {/* Header (고정) */}
                 <div className="px-5 sm:px-6 py-4 border-b border-border flex justify-between items-center bg-card shrink-0">
                     <h2 className="text-base font-bold text-foreground flex items-center gap-2.5">

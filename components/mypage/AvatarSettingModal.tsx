@@ -148,29 +148,31 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
   const isGoogleAvailable = !!googlePicture;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-lg max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-150 dark:border-gray-700/80 flex items-center justify-between bg-gray-50/70 dark:bg-gray-900/40">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-card shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-primary/10 border border-primary/20 text-primary shrink-0">
               <Camera size={18} />
             </div>
             <div>
-              <h3 className="text-sm font-black text-gray-900 dark:text-gray-100">대표 프로필 이미지 설정</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">마이페이지 및 상단 헤더에 노출되는 내 프로필 사진을 변경합니다.</p>
+              <h3 className="text-sm font-bold text-foreground">대표 프로필 이미지 설정</h3>
+              <p className="text-xs text-muted-foreground">마이페이지 및 상단 헤더에 노출되는 내 프로필 사진을 변경합니다.</p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            title="창 닫기"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar text-xs">
           {/* Live Preview Display */}
           <div className="flex flex-col items-center justify-center p-4 bg-linear-to-b from-gray-50 to-white dark:from-gray-850 dark:to-gray-800 rounded-2xl border border-gray-150 dark:border-gray-700/60">
             <div className="relative">
@@ -386,12 +388,12 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-gray-150 dark:border-gray-700/80 bg-gray-50/70 dark:bg-gray-900/40 flex items-center justify-end gap-2.5">
+        <div className="p-4 border-t border-border bg-card flex items-center justify-end gap-2 shrink-0">
           <button
             type="button"
             onClick={onClose}
             disabled={isProcessing}
-            className="px-4 py-2 text-xs font-bold rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors"
+            className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
           >
             취소
           </button>
@@ -399,13 +401,13 @@ export const AvatarSettingModal: React.FC<AvatarSettingModalProps> = ({
             type="button"
             onClick={handleSave}
             disabled={isProcessing}
-            className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 disabled:opacity-50 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs disabled:opacity-50 transition-all cursor-pointer"
           >
             {isProcessing ? (
               <span>저장 중...</span>
             ) : (
               <>
-                <Check size={14} strokeWidth={3} />
+                <Check size={14} strokeWidth={2.5} />
                 <span>이 사진으로 대표이미지 저장</span>
               </>
             )}

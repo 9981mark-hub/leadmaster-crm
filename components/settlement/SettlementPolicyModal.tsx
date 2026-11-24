@@ -75,16 +75,16 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-card text-card-foreground rounded-2xl w-full max-w-2xl shadow-2xl border border-border overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-2xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-card">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-card shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
               <Settings2 size={20} strokeWidth={1.75} />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                 <span>정산 정책 & 수수료 분배 마스터 설정</span>
                 <span className="text-2xs font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 tracking-tight">
                   v4.5
@@ -96,15 +96,17 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
+            title="창 닫기"
           >
             <X size={18} strokeWidth={1.75} />
           </button>
         </div>
 
         {/* 본문 폼 */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 custom-scrollbar text-xs">
           {policySource !== 'saved' && (
             <div className={`rounded-xl border px-4 py-3 text-xs leading-relaxed ${tableMissing ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'bg-amber-500/10 border-amber-500/20 text-amber-500'}`}>
               <span className="font-bold">{tableMissing ? '서버 업데이트 필요' : '기본값(저장 안 됨)'}</span>
@@ -415,16 +417,16 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
         </form>
 
         {/* 푸터 액션 버튼 */}
-        <div className="px-6 py-4 bg-muted/20 border-t border-border flex items-center justify-between">
-          <div className="text-2xs text-muted-foreground">
+        <div className="p-4 bg-card border-t border-border flex items-center justify-between shrink-0">
+          <div className="text-2xs text-muted-foreground hidden sm:block">
             * 저장 즉시 전체 정산서 및 경영 손익(P&L)에 실시간 자동 반영됩니다.
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
             >
               취소
             </button>
@@ -432,7 +434,7 @@ export const SettlementPolicyModal: React.FC<SettlementPolicyModalProps> = ({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || tableMissing}
-              className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg text-xs shadow-xs flex items-center gap-2 disabled:opacity-50 transition-all cursor-pointer"
+              className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl text-xs shadow-2xs flex items-center gap-2 disabled:opacity-50 transition-all cursor-pointer"
             >
               {isSubmitting ? (
                 <>

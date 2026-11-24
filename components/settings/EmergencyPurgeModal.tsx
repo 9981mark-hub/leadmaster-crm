@@ -130,53 +130,55 @@ export const EmergencyPurgeModal: React.FC<EmergencyPurgeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-gray-900 border-2 border-rose-600/70 text-gray-100 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-2xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border-2 border-destructive/70 shadow-2xl overflow-hidden text-card-foreground">
         
         {/* 상단 붉은 경고 헤더 */}
-        <div className="bg-rose-100/80 dark:bg-rose-950/80 px-6 py-4 border-b border-rose-200/60 dark:border-rose-800/60 flex items-center justify-between">
+        <div className="bg-destructive/10 px-5 py-4 border-b border-destructive/20 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <span className="p-2 rounded-xl bg-rose-600 text-white animate-pulse">
-              <Skull size={22} />
+            <span className="p-2 rounded-xl bg-destructive text-destructive-foreground animate-pulse">
+              <Skull size={20} />
             </span>
             <div>
-              <h2 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                 회사 데이터 긴급 영구 파기 (Emergency Kill-Switch)
               </h2>
-              <p className="text-xs text-rose-300">
+              <p className="text-xs text-destructive/80">
                 {orgName} · 최고 책임자(Owner) 전용 비상 권한
               </p>
             </div>
           </div>
           {step !== 5 && (
             <button
+              type="button"
               onClick={onClose}
               disabled={isPurging}
-              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-white rounded-lg hover:bg-rose-900/40 transition-colors disabled:opacity-30"
+              className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors disabled:opacity-30 cursor-pointer"
+              title="창 닫기"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           )}
         </div>
 
         {/* 단계별 스텝 바 (5단계 완료 화면 제외) */}
         {step !== 5 && (
-          <div className="bg-gray-100 dark:bg-gray-950 px-6 py-2 border-b border-gray-800 flex items-center justify-between text-xs">
+          <div className="bg-secondary/40 px-5 py-2.5 border-b border-border flex items-center justify-between text-xs shrink-0">
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded font-bold ${step === 1 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400'}`}>1. 영향도 확인</span>
-              <span className="text-gray-600">→</span>
-              <span className={`px-2 py-0.5 rounded font-bold ${step === 2 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400'}`}>2. 비상 백업</span>
-              <span className="text-gray-600">→</span>
-              <span className={`px-2 py-0.5 rounded font-bold ${step === 3 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400'}`}>3. 대표자 인증</span>
-              <span className="text-gray-600">→</span>
-              <span className={`px-2 py-0.5 rounded font-bold ${step === 4 ? 'bg-rose-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400'}`}>4. 영구 파기</span>
+              <span className={`px-2 py-0.5 rounded font-bold ${step === 1 ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground'}`}>1. 영향도 확인</span>
+              <span className="text-muted-foreground/60">→</span>
+              <span className={`px-2 py-0.5 rounded font-bold ${step === 2 ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground'}`}>2. 비상 백업</span>
+              <span className="text-muted-foreground/60">→</span>
+              <span className={`px-2 py-0.5 rounded font-bold ${step === 3 ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground'}`}>3. 대표자 인증</span>
+              <span className="text-muted-foreground/60">→</span>
+              <span className={`px-2 py-0.5 rounded font-bold ${step === 4 ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground'}`}>4. 영구 파기</span>
             </div>
-            <span className="text-rose-600 dark:text-rose-400 font-mono font-bold">Step {step}/4</span>
+            <span className="text-destructive font-mono font-bold">Step {step}/4</span>
           </div>
         )}
 
         {/* 본문 컨텐츠 */}
-        <div className="p-6 space-y-5 overflow-y-auto max-h-[70vh]">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar text-xs">
 
           {/* STEP 1: 영향도 확인 */}
           {step === 1 && (

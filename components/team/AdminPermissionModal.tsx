@@ -145,43 +145,44 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-scale-in"
+        className="relative w-full max-w-2xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 모달 헤더 */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-gray-700 bg-gradient-to-r from-slate-50 to-indigo-50/40 dark:from-gray-800 dark:to-gray-800 flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-border bg-card flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
               <ShieldCheck size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-base text-slate-800 dark:text-white">
+                <h3 className="font-bold text-base text-foreground">
                   중간 관리자 권한 설정
                 </h3>
-                <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
+                <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-primary/15 text-primary border border-primary/20">
                   {member.displayName} ({member.email})
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 신뢰도와 역량에 맞게 팀 관리 기능과 정산·손익 지표를 단계별로 안전하게 위임합니다.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            title="창 닫기"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* 모달 본문 (스크롤) */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar text-xs">
           {/* 1. 3단계 티어 프리셋 선택 바 */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -1022,19 +1023,19 @@ export const AdminPermissionModal: React.FC<AdminPermissionModalProps> = ({
         </div>
 
         {/* 모달 푸터 버튼 */}
-        <div className="p-4 border-t border-slate-200 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-800/80 flex items-center justify-end gap-2">
+        <div className="p-4 border-t border-border bg-card flex items-center justify-end gap-2 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-gray-700 transition-colors"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-foreground bg-secondary hover:bg-muted border border-border transition-colors cursor-pointer shadow-2xs"
           >
-            취소
+            취소 / 닫기
           </button>
           <button
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex items-center gap-1.5 transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
           >
             <Check size={14} />
             {saving ? '권한 저장 중...' : '권한 저장 및 즉시 적용'}

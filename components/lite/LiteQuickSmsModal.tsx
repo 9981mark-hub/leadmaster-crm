@@ -114,112 +114,110 @@ export const LiteQuickSmsModal: React.FC<Props> = ({
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col"
-        >
-          {/* 헤더 */}
-          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/80 dark:bg-gray-800/60">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center">
-                <MessageSquare size={16} />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 dark:text-white text-sm">
-                  1-Click 안내 문자 발송
-                </h3>
-                <p className="text-xs text-gray-500 font-mono">
-                  {c.customerName} ({c.phone})
-                </p>
-              </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto" onClick={onClose}>
+      <div
+        className="relative w-full max-w-md max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* 헤더 */}
+        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-card shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+              <MessageSquare size={16} />
             </div>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          {/* 바디 */}
-          <div className="p-4 space-y-3.5 flex-1 overflow-y-auto">
-            
-            {/* 템플릿 선택 버튼 목록 */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-600 dark:text-gray-400">
-                발송할 템플릿 선택:
-              </label>
-              <div className="grid grid-cols-3 gap-1.5">
-                {TEMPLATES.map(tpl => {
-                  const isSelected = selectedTemplateId === tpl.id;
-                  return (
-                    <button
-                      key={tpl.id}
-                      type="button"
-                      onClick={() => handleSelectTemplate(tpl)}
-                      className={`p-2 rounded-xl text-left border transition-all text-xs font-bold flex flex-col gap-0.5 ${
-                        isSelected
-                          ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-600 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/30'
-                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{tpl.badge}</span>
-                      <span className="truncate">{tpl.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 문자 내용 미리보기 & 편집 */}
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                  문자 내용 미리보기 (수정 가능):
-                </label>
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors"
-                >
-                  {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-                  <span>{copied ? '복사됨' : '복사'}</span>
-                </button>
-              </div>
-              <textarea
-                rows={6}
-                value={customText}
-                onChange={(e) => setCustomText(e.target.value)}
-                className="w-full text-xs p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed font-sans"
-              />
+              <h3 className="font-bold text-foreground text-sm">
+                1-Click 안내 문자 발송
+              </h3>
+              <p className="text-xs text-muted-foreground font-mono">
+                {c.customerName} ({c.phone})
+              </p>
             </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            title="창 닫기"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
+        {/* 바디 */}
+        <div className="p-4 sm:p-5 space-y-4 flex-1 overflow-y-auto custom-scrollbar text-xs">
+          
+          {/* 템플릿 선택 버튼 목록 */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-foreground">
+              발송할 템플릿 선택:
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {TEMPLATES.map(tpl => {
+                const isSelected = selectedTemplateId === tpl.id;
+                return (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => handleSelectTemplate(tpl)}
+                    className={`p-2.5 rounded-xl text-left border transition-all text-xs font-bold flex flex-col gap-0.5 cursor-pointer ${
+                      isSelected
+                        ? 'bg-primary/10 border-primary text-primary ring-1 ring-primary/30 shadow-2xs'
+                        : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                    }`}
+                  >
+                    <span className="text-2xs text-muted-foreground">{tpl.badge}</span>
+                    <span className="truncate">{tpl.title}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* 하단 액션 버튼 */}
-          <div className="p-3.5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/40 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2.5 px-3 rounded-xl border border-gray-300 dark:border-gray-600 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              닫기
-            </button>
-            <button
-              type="button"
-              onClick={handleSendSms}
-              className="flex-2 flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md hover:shadow-lg active:scale-95 transition-all"
-            >
-              <Smartphone size={14} />
-              <span>스마트폰 문자로 즉시 발송</span>
-            </button>
+          {/* 문자 내용 미리보기 & 편집 */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-foreground">
+                문자 내용 미리보기 (수정 가능):
+              </label>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="flex items-center gap-1 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                {copied ? <Check size={12} className="text-primary" /> : <Copy size={12} />}
+                <span>{copied ? '복사됨' : '복사'}</span>
+              </button>
+            </div>
+            <textarea
+              rows={6}
+              value={customText}
+              onChange={(e) => setCustomText(e.target.value)}
+              className="w-full text-xs p-3 rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed font-sans resize-none"
+            />
           </div>
-        </motion.div>
+
+        </div>
+
+        {/* 하단 액션 버튼 */}
+        <div className="p-4 border-t border-border bg-card flex items-center justify-end gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+          >
+            닫기
+          </button>
+          <button
+            type="button"
+            onClick={handleSendSms}
+            className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            <Smartphone size={14} />
+            <span>스마트폰 문자로 즉시 발송</span>
+          </button>
+        </div>
       </div>
-    </AnimatePresence>
+    </div>
   );
 };

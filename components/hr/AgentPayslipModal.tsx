@@ -122,41 +122,42 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
+                className="relative w-full max-w-2xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground"
             >
                 {/* 헤더 */}
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-slate-50 dark:bg-gray-800/80 no-print">
+                <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-card shrink-0 no-print">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold shrink-0">
                             <FileText size={20} />
                         </div>
                         <div>
-                            <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                                 <span>{calculation.displayName} 님</span>
-                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-semibold">
+                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/20 font-semibold">
                                     {year}년 {month}월 급여명세서
                                 </span>
                             </h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                            <p className="text-xs text-muted-foreground mt-0.5">
                                 출근 {calculation.attendanceDays}일 • 수임 완료 {calculation.contractCount}건 달성
                             </p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                        title="창 닫기"
                     >
-                        <X size={20} />
+                        <X size={18} />
                     </button>
                 </div>
 
                 {/* 명세서 카드 본문 (인쇄 영역) */}
-                <div className="p-6 overflow-y-auto space-y-5 print:p-0">
+                <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar text-xs print:p-0">
                     {/* 실지급액 메인 카드 */}
                     <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-50 to-emerald-50 dark:from-gray-750 dark:to-gray-750 border border-emerald-200 dark:border-emerald-800/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
@@ -297,25 +298,25 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
                         복사된 양식은 카카오톡 또는 문자로 1초 전송 가능합니다.
                     </span>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                         <button
                             type="button"
                             onClick={handlePrint}
-                            className="px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 flex items-center gap-1"
+                            className="px-3.5 py-2 rounded-xl border border-border bg-secondary hover:bg-muted text-xs font-bold text-foreground flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
                         >
                             <Printer size={13} /> 인쇄
                         </button>
                         <button
                             type="button"
                             onClick={handleDownloadExcel}
-                            className="px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 flex items-center gap-1"
+                            className="px-3.5 py-2 rounded-xl border border-border bg-secondary hover:bg-muted text-xs font-bold text-foreground flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
                         >
                             <Download size={13} /> 엑셀
                         </button>
                         <button
                             type="button"
                             onClick={handleCopy}
-                            className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-sm flex items-center gap-1.5 transition-all"
+                            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
                         >
                             {copied ? (
                                 <>
@@ -328,6 +329,13 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
                                     <span>카카오톡 양식 복사</span>
                                 </>
                             )}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                        >
+                            닫기
                         </button>
                     </div>
                 </div>

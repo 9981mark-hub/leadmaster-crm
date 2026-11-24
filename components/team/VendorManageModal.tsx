@@ -155,11 +155,11 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card text-card-foreground rounded-2xl w-full max-w-4xl shadow-2xl border border-border flex flex-col max-h-[92vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-4xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border bg-card">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-card shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
               <Building2 size={20} strokeWidth={1.75} />
@@ -179,13 +179,14 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
           <button
             onClick={onClose}
             className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
+            title="창 닫기"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs custom-scrollbar">
           
           {/* Left/Form: 등록/수정 패널 (5 cols) */}
           <div className="lg:col-span-5 bg-muted/30 p-5 rounded-xl border border-border flex flex-col">
@@ -509,10 +510,10 @@ export const VendorManageModal: React.FC<VendorManageModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border bg-card flex justify-end">
+        <div className="p-4 border-t border-border bg-card flex justify-end shrink-0">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground border border-border text-xs font-semibold transition-colors cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-secondary hover:bg-muted text-foreground border border-border text-xs font-bold transition-colors cursor-pointer shadow-2xs"
           >
             닫기
           </button>

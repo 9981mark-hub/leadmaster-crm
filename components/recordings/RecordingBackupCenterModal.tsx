@@ -184,7 +184,7 @@ export default function RecordingBackupCenterModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
-      <div className="relative w-full max-w-4xl max-h-[90vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-4xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         {/* 헤더 */}
         <div className="px-5 sm:px-6 py-4 border-b border-border flex items-center justify-between shrink-0 bg-card">
           <div className="flex items-center gap-3.5">
@@ -418,15 +418,15 @@ export default function RecordingBackupCenterModal({
         </div>
 
         {/* 풋터 */}
-        <div className="px-6 py-4 border-t border-border bg-card flex items-center justify-between text-xs text-muted-foreground shrink-0">
-          <div className="flex items-center gap-1.5">
+        <div className="p-4 border-t border-border bg-card flex items-center justify-between text-xs text-muted-foreground shrink-0">
+          <div className="flex items-center gap-1.5 hidden sm:flex">
             <ShieldCheck size={14} className="text-primary" />
             <span>다운로드 실행 시 정보보호 및 컴플라이언스를 위해 감사 로그에 영구 기록됩니다.</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground font-bold transition-colors cursor-pointer"
+            className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs ml-auto"
           >
             닫기
           </button>

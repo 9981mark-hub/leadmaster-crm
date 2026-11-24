@@ -183,9 +183,10 @@ export default function CompanySignupModal({
         onClick={handleClose}
       >
         <div 
-          className="relative w-full max-w-xl bg-card border border-border text-foreground rounded-2xl p-6 sm:p-7 shadow-2xl space-y-5 max-h-[90vh] my-auto overflow-y-auto"
+          className="relative w-full max-w-xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border text-foreground shadow-2xl overflow-hidden"
           onClick={e => e.stopPropagation()}
         >
+          <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-5 custom-scrollbar text-xs">
           {step === 2 ? (
             /* ═══════════════════════════════════════════════════════════ */
             /* 2단계: 신청 완료, 공식 입금 계좌 안내 및 세금계산서 입력 */
@@ -513,6 +514,7 @@ export default function CompanySignupModal({
               </form>
             </>
           )}
+          </div>
         </div>
       </div>
 

@@ -264,34 +264,35 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl overflow-hidden flex flex-col max-h-[92vh]"
+                className="relative w-full max-w-2xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground"
             >
                 {/* 헤더 */}
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-white dark:from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between">
+                <div className="p-4 sm:p-5 border-b border-border bg-card shrink-0 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
                             <Scale size={20} />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h3 className="font-extrabold text-base tracking-tight">사무장 사건 심사 & 진행 관리</h3>
-                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-400/20 text-indigo-300 border border-indigo-400/30">
+                                <h3 className="font-extrabold text-base tracking-tight text-foreground">사무장 사건 심사 & 진행 관리</h3>
+                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-primary/15 text-primary border border-primary/20">
                                     사무장 전용 관제
                                 </span>
                             </div>
-                            <p className="text-xs text-indigo-200/80 mt-0.5">
+                            <p className="text-xs text-muted-foreground mt-0.5">
                                 인계 사건 직접 진행 · 연락안받음 재시도 · 수임 계약 완료 및 기각 종결
                             </p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-gray-500 dark:text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                        className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                        title="창 닫기"
                     >
                         <X size={18} />
                     </button>
@@ -714,28 +715,28 @@ export const ParalegalDecisionModal: React.FC<ParalegalDecisionModalProps> = ({
                 </div>
 
                 {/* 하단 버튼 바 */}
-                <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 flex items-center justify-between">
+                <div className="p-4 border-t border-border bg-card flex items-center justify-between shrink-0">
                     <button
                         type="button"
                         onClick={onClose}
                         disabled={submitting}
-                        className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-gray-700 transition-colors"
+                        className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
                     >
-                        취소
+                        취소 / 닫기
                     </button>
 
                     <button
                         type="button"
                         onClick={handleSubmit}
                         disabled={submitting}
-                        className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg flex items-center gap-1.5 transition-all active:scale-95 ${
+                        className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-2xs flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer ${
                             activeTab === 'contract'
-                                ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
+                                ? 'bg-emerald-600 hover:bg-emerald-700'
                                 : activeTab === 'progress'
-                                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/30'
+                                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                                     : activeTab === 'missed'
-                                        ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/30'
-                                        : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
+                                        ? 'bg-amber-600 hover:bg-amber-700'
+                                        : 'bg-rose-600 hover:bg-rose-700'
                         }`}
                     >
                         {submitting ? (

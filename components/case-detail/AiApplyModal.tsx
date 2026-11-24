@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, X, Sparkles } from 'lucide-react';
 import { Case, MemoItem, AssetItem, CreditLoanItem } from '../../types';
 import { ExtractedInfo, fmtManwon } from '../../services/recordings';
 
@@ -243,10 +243,10 @@ export function buildCandidates(c: Case, e: ExtractedInfo, opts: ApplyOptions = 
 }
 
 const KIND_BADGE: Record<Kind, { text: string; cls: string }> = {
-  add: { text: '추가', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  change: { text: '변경', cls: 'bg-amber-50 text-amber-800 border-amber-200' },
-  remove: { text: '없어짐?', cls: 'bg-red-50 text-red-700 border-red-200' },
-  memo: { text: '메모', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
+  add: { text: '추가', cls: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
+  change: { text: '변경', cls: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+  remove: { text: '없어짐?', cls: 'bg-destructive/10 text-destructive border-destructive/20' },
+  memo: { text: '메모', cls: 'bg-muted text-muted-foreground border-border' },
 };
 
 export function AiApplyModal({ c, extracted, memo, preferNew, sourceLabel = 'AI 정리', title = 'AI 정리 → 상담 정보에 반영', subtitle, warning, onClose, onApply, onApplied }: {
@@ -269,59 +269,123 @@ export function AiApplyModal({ c, extracted, memo, preferNew, sourceLabel = 'AI 
   const counts = cands.reduce((m, x) => { m[x.kind] = (m[x.kind] || 0) + 1; return m; }, {} as Record<Kind, number>);
   const toggle = (k: string) => setOn(prev => ({ ...prev, [k]: !prev[k] }));
   return (
-    <div className="fixed inset-0 bg-black/50 z-[110] flex items-center justify-center p-3" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="px-5 py-3 border-b dark:border-gray-700">
-          <h3 className="font-bold text-gray-800 dark:text-white">{title}</h3>
-          <p className="text-xs text-gray-500 mt-0.5">{subtitle || 'AI가 뽑은 값입니다. 맞는 것만 체크하세요.'}</p>
-          <p className="text-xs text-gray-500 mt-0.5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto" onClick={onClose}>
+      <div className="relative w-full max-w-2xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground" onClick={e => e.stopPropagation()}>
+        {/* 1. 고정 헤더 */}
+        <div className="p-4 sm:p-5 border-b border-border bg-card flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+              <Sparkles size={20} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-foreground">{title}</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">{subtitle || 'AI가 뽑은 값입니다. 맞는 항목만 체크하세요.'}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            title="창 닫기"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* 2. 안내 및 뱃지 바 */}
+        <div className="px-5 py-3 bg-muted/20 border-b border-border text-xs shrink-0 space-y-1.5">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             {preferNew ? '가장 최근 통화라 바뀐 값도 기본으로 체크했습니다.' : '이미 값이 있는 칸은 기본으로 체크하지 않았습니다.'}
-            {' '}채무·재산은 기존 항목과 이름·종류로 맞춰 금액만 바꾸고, 이번에 안 나온 항목은 지우지 않습니다.
+            {' '}채무·재산은 기존 항목과 매칭하여 금액만 갱신하며, 언급되지 않은 기존 항목은 삭제되지 않습니다.
           </p>
-          <div className="flex gap-1.5 mt-1.5 text-xs">
+          <div className="flex gap-1.5 text-2xs font-semibold">
             {(['add', 'change', 'remove'] as Kind[]).filter(k => counts[k]).map(k => (
-              <span key={k} className={`px-1.5 py-0.5 rounded border ${KIND_BADGE[k].cls}`}>{KIND_BADGE[k].text} {counts[k]}</span>
+              <span key={k} className={`px-2 py-0.5 rounded-md border ${KIND_BADGE[k].cls}`}>{KIND_BADGE[k].text} {counts[k]}</span>
             ))}
           </div>
-          {warning && <p className="text-xs text-amber-700 mt-1">{warning}</p>}
+          {warning && <p className="text-xs text-amber-500 font-medium mt-1">{warning}</p>}
         </div>
-        <div className="overflow-y-auto">
-          <table className="w-full text-sm">
-            <thead className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/40"><tr><th className="w-10" /><th className="text-left px-2 py-1.5">항목</th><th className="text-left px-2">지금</th><th className="text-left px-2">AI</th></tr></thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+
+        {/* 3. 스크롤 본문 (테이블) */}
+        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar text-xs">
+          <table className="w-full text-xs">
+            <thead className="text-muted-foreground bg-muted/40 font-semibold border-b border-border">
+              <tr>
+                <th className="w-10 py-2 text-center" />
+                <th className="text-left px-3 py-2">항목</th>
+                <th className="text-left px-3 py-2">현재 정보</th>
+                <th className="text-left px-3 py-2">AI 추출 정보</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
               {cands.map(x => (
-                <tr key={x.key} className={`cursor-pointer ${on[x.key] ? (x.kind === 'remove' ? 'bg-red-50/60 dark:bg-red-900/10' : 'bg-blue-50/50 dark:bg-blue-900/10') : ''}`} onClick={() => toggle(x.key)}>
-                  <td className="text-center"><input type="checkbox" checked={!!on[x.key]} onChange={() => toggle(x.key)} onClick={e => e.stopPropagation()} /></td>
-                  <td className="px-2 py-1.5 font-medium text-gray-700 dark:text-gray-200">
-                    <span className={`mr-1.5 text-xs px-1 py-0.5 rounded border ${KIND_BADGE[x.kind].cls}`}>{KIND_BADGE[x.kind].text}</span>{x.label}
+                <tr
+                  key={x.key}
+                  className={`cursor-pointer transition-colors ${on[x.key] ? (x.kind === 'remove' ? 'bg-destructive/10' : 'bg-primary/10') : 'hover:bg-muted/30'}`}
+                  onClick={() => toggle(x.key)}
+                >
+                  <td className="text-center py-2.5">
+                    <input
+                      type="checkbox"
+                      checked={!!on[x.key]}
+                      onChange={() => toggle(x.key)}
+                      onClick={e => e.stopPropagation()}
+                      className="cursor-pointer accent-primary"
+                    />
                   </td>
-                  <td className="px-2 text-gray-500 dark:text-gray-400">{x.current}</td>
-                  <td className={`px-2 ${x.kind === 'remove' ? 'text-red-600 text-xs' : 'text-gray-800 dark:text-gray-100'}`}>{x.next}</td>
+                  <td className="px-3 py-2.5 font-bold text-foreground">
+                    <span className={`mr-1.5 text-2xs px-1.5 py-0.5 rounded border ${KIND_BADGE[x.kind].cls}`}>{KIND_BADGE[x.kind].text}</span>{x.label}
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{x.current}</td>
+                  <td className={`px-3 py-2.5 font-semibold ${x.kind === 'remove' ? 'text-destructive text-xs' : 'text-foreground'}`}>{x.next}</td>
                 </tr>
               ))}
-              {cands.length === 0 && <tr><td colSpan={4} className="px-5 py-6 text-center text-gray-500 dark:text-gray-400">바뀐 값이 없습니다. 지금 상담 정보와 같습니다.</td></tr>}
+              {cands.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-5 py-8 text-center text-muted-foreground">
+                    바뀐 값이 없습니다. 현재 상담 정보와 동일합니다.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
-        <div className="px-5 py-3 border-t dark:border-gray-700 flex items-center justify-end gap-2">
-          <span className="mr-auto text-xs text-gray-500 dark:text-gray-400">반영하면 바뀐 내용이 상담 메모에 기록됩니다.</span>
-          <button onClick={onClose} className="px-4 py-2 rounded border border-gray-300 text-sm">취소</button>
-          <button disabled={count === 0} onClick={() => {
-            const chosen = cands.filter(x => on[x.key]);
-            const u: Partial<Case> = {};
-            chosen.forEach(x => x.apply(u));
-            // 변경 기록 메모 (바뀐 칸만)
-            const lines = chosen.map(x => x.log).filter(Boolean) as string[];
-            if (lines.length) {
-              const d = new Date();
-              const when = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-              const m: MemoItem = { id: `${Date.now()}c`, createdAt: d.toISOString(), content: `[${sourceLabel} 기준 정보 변경 · ${when} 반영]\n${lines.map(l => `- ${l}`).join('\n')}`.slice(0, 4000) };
-              u.specialMemo = [m, ...((u.specialMemo as MemoItem[]) || c.specialMemo || [])];
-            }
-            onApply(u);
-            onApplied?.();
-            onClose();
-          }} className="px-4 py-2 rounded bg-blue-600 text-white text-sm font-bold disabled:opacity-40 flex items-center gap-1"><Check size={14} /> {count}개 반영</button>
+
+        {/* 4. 고정 푸터 */}
+        <div className="p-4 border-t border-border bg-card flex items-center justify-between gap-2 shrink-0">
+          <span className="text-2xs text-muted-foreground hidden sm:block">반영 시 바뀐 내용이 상담 메모에 자동 기록됩니다.</span>
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              disabled={count === 0}
+              onClick={() => {
+                const chosen = cands.filter(x => on[x.key]);
+                const u: Partial<Case> = {};
+                chosen.forEach(x => x.apply(u));
+                // 변경 기록 메모 (바뀐 칸만)
+                const lines = chosen.map(x => x.log).filter(Boolean) as string[];
+                if (lines.length) {
+                  const d = new Date();
+                  const when = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                  const m: MemoItem = { id: `${Date.now()}c`, createdAt: d.toISOString(), content: `[${sourceLabel} 기준 정보 변경 · ${when} 반영]\n${lines.map(l => `- ${l}`).join('\n')}`.slice(0, 4000) };
+                  u.specialMemo = [m, ...((u.specialMemo as MemoItem[]) || c.specialMemo || [])];
+                }
+                onApply(u);
+                onApplied?.();
+                onClose();
+              }}
+              className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold disabled:opacity-40 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            >
+              <Check size={14} /> {count}개 반영
+            </button>
+          </div>
         </div>
       </div>
     </div>

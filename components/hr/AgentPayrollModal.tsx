@@ -96,15 +96,15 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
             <motion.div
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.96 }}
-                className="bg-card text-card-foreground rounded-2xl shadow-2xl border border-border w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden"
+                className="relative w-full max-w-xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground"
             >
                 {/* 헤더 */}
-                <div className="p-5 border-b border-border flex items-center justify-between bg-muted/40">
+                <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-card shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold shrink-0 shadow-2xs">
                             <DollarSign size={20} strokeWidth={1.75} />
@@ -112,7 +112,7 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                         <div>
                             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                                 <span>{agentName}</span>
-                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-semibold">
+                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/20 font-semibold">
                                     급여 / 인센티브 맞춤 설정
                                 </span>
                             </h3>
@@ -124,13 +124,14 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                     <button
                         onClick={onClose}
                         className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                        title="창 닫기"
                     >
-                        <X size={20} />
+                        <X size={18} />
                     </button>
                 </div>
 
                 {/* 폼 본문 */}
-                <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 text-xs">
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 custom-scrollbar text-xs">
                     {/* 1. 급여 모델 선택 */}
                     <div>
                         <label className="text-xs font-bold text-foreground block mb-2">
@@ -380,18 +381,18 @@ export const AgentPayrollModal: React.FC<AgentPayrollModalProps> = ({
                     </div>
 
                     {/* 액션 버튼 */}
-                    <div className="pt-3 border-t border-border flex justify-end gap-2">
+                    <div className="pt-4 border-t border-border flex justify-end gap-2 shrink-0">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2.5 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                            className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
                         >
-                            취소
+                            취소 / 닫기
                         </button>
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-xs flex items-center gap-1.5 disabled:opacity-50 transition-colors cursor-pointer"
+                            className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-2xs flex items-center gap-1.5 disabled:opacity-50 transition-colors cursor-pointer"
                         >
                             <Save size={14} /> 설정 저장
                         </button>

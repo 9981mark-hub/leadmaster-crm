@@ -173,13 +173,13 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/75 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-card text-card-foreground w-full max-w-6xl max-h-[92vh] rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-6xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         
         {/* 상단 헤더 */}
-        <div className="px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-3 bg-muted/40">
+        <div className="p-4 sm:p-5 border-b border-border flex flex-wrap items-center justify-between gap-3 bg-card shrink-0">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+            <span className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-2xs shrink-0">
               <PhoneCall size={20} />
             </span>
             <div>
@@ -221,15 +221,16 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
                 navigate(`/cases/${item.caseId}`);
                 onClose();
               }}
-              className="px-3.5 py-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg flex items-center gap-1.5 transition-colors border border-primary/20 shadow-2xs cursor-pointer"
+              className="px-3.5 py-1.5 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-xl flex items-center gap-1.5 transition-colors border border-primary/20 shadow-2xs cursor-pointer"
             >
               <ExternalLink size={14} /> 고객 상세 열기
             </button>
             <button
               onClick={onClose}
               className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
+              title="창 닫기"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
         </div>
@@ -446,13 +447,13 @@ export const TeamCallDetailModal: React.FC<TeamCallDetailModalProps> = ({ item, 
         </div>
 
         {/* 모달 하단 닫기 바 */}
-        <div className="px-6 py-3 border-t border-border bg-muted/40 flex items-center justify-between">
+        <div className="p-4 border-t border-border bg-card flex items-center justify-between shrink-0">
           <span className="text-2xs text-muted-foreground font-mono">
             * 통화 녹음과 AI 대화록은 개인정보보호법에 의거하여 회사 안전 비공개 저장소에 암호화 보관됩니다.
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-foreground bg-card hover:bg-muted border border-border rounded-lg transition-colors cursor-pointer shadow-2xs"
+            className="px-4 py-2.5 text-xs font-bold text-foreground bg-secondary hover:bg-muted border border-border rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
             닫기
           </button>

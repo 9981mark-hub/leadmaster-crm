@@ -82,10 +82,10 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-card text-card-foreground rounded-2xl shadow-2xl border border-border overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-lg max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-border flex items-center justify-between bg-card">
+        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-card shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
               <Users size={18} strokeWidth={1.75} />
@@ -102,13 +102,14 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            title="창 닫기"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-5 space-y-4 text-xs">
+        {/* Content (Scrollable Body) */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 custom-scrollbar text-xs">
           {/* Current Status Box */}
           <div className="p-4 rounded-xl bg-muted/40 border border-border flex items-center justify-between">
             <div>
@@ -191,25 +192,25 @@ export const SeatExpansionModal: React.FC<SeatExpansionModalProps> = ({
             <span>긴급 문의: support@lmaster.xyz</span>
             <span className="text-primary font-semibold">운영팀 24시간 실시간 승인</span>
           </div>
+        </div>
 
-          {/* Buttons */}
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted font-medium transition-colors cursor-pointer text-xs"
-            >
-              닫기
-            </button>
-            <button
-              type="button"
-              onClick={handleSendRequest}
-              disabled={submitting}
-              className="px-5 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-xs"
-            >
-              <Send size={13} /> {submitting ? '접수 중...' : '증설 신청 접수'}
-            </button>
-          </div>
+        {/* Footer (Fixed) */}
+        <div className="p-4 border-t border-border bg-card flex items-center justify-end gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+          >
+            취소 / 닫기
+          </button>
+          <button
+            type="button"
+            onClick={handleSendRequest}
+            disabled={submitting}
+            className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-xs"
+          >
+            <Send size={13} /> {submitting ? '접수 중...' : '증설 신청 접수'}
+          </button>
         </div>
       </div>
     </div>

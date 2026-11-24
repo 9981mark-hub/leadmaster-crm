@@ -94,10 +94,10 @@ export const AgentCustomIncentiveModal: React.FC<AgentCustomIncentiveModalProps>
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-fadeIn">
-      <div className="bg-card text-card-foreground rounded-2xl max-w-xl w-full shadow-2xl border border-border overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         {/* Modal Header */}
-        <div className="p-5 border-b border-border flex items-center justify-between bg-muted/40">
+        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-card shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold shrink-0 shadow-2xs">
               <DollarSign size={18} strokeWidth={1.75} />
@@ -107,7 +107,7 @@ export const AgentCustomIncentiveModal: React.FC<AgentCustomIncentiveModalProps>
                 <h3 className="font-bold text-base text-foreground">
                   상담원 맞춤 인센티브 설정
                 </h3>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/20">
                   {agent.role === 'owner' ? '대표' : agent.role === 'admin' ? '관리자' : '상담원'}
                 </span>
               </div>
@@ -120,13 +120,14 @@ export const AgentCustomIncentiveModal: React.FC<AgentCustomIncentiveModalProps>
             type="button"
             onClick={onClose}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
+            title="창 닫기"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Modal Body Form */}
-        <form onSubmit={handleSave} className="p-5 overflow-y-auto space-y-5 flex-1 text-xs">
+        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 custom-scrollbar text-xs">
           {/* 1. Policy Mode Selector (전사 기본 준용 vs 개별 맞춤) */}
           <div className="p-4 rounded-xl border border-border bg-muted/30 space-y-3">
             <label className="font-bold text-foreground block">
@@ -315,17 +316,17 @@ export const AgentCustomIncentiveModal: React.FC<AgentCustomIncentiveModalProps>
           </div>
 
           {/* Modal Footer */}
-          <div className="pt-4 border-t border-border flex items-center justify-end gap-2">
+          <div className="pt-4 border-t border-border flex items-center justify-end gap-2 shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-foreground bg-secondary hover:bg-muted border border-border transition-colors cursor-pointer shadow-2xs"
             >
-              취소
+              취소 / 닫기
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold text-primary-foreground bg-primary hover:bg-primary/90 shadow-xs transition-colors cursor-pointer"
+              className="px-5 py-2.5 rounded-xl text-xs font-bold text-primary-foreground bg-primary hover:bg-primary/90 shadow-2xs transition-colors cursor-pointer"
             >
               맞춤 인센티브 저장
             </button>

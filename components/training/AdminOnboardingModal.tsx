@@ -101,22 +101,22 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-5xl bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-5xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
         {/* 모달 상단 헤더 */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-900 to-slate-900 text-white flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-border bg-card flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-400/30">
-              <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary shrink-0">
+              <Users className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black tracking-tight text-white flex items-center gap-2">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                 <span>신입 온보딩 패스트트랙 전사 관제 보드</span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-gray-950 text-xs font-black">
+                <span className="px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/20 text-xs font-bold">
                   관리자 전용
                 </span>
               </h2>
-              <p className="text-xs text-indigo-200/80">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 신입 상담원들의 9단계 자율 훈련 진척도를 확인하고, 완주 시 실전 콜 발신 권한을 원클릭으로 부여합니다.
               </p>
             </div>
@@ -124,7 +124,8 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
           <button
             onClick={onClose}
-            className="p-2 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            title="창 닫기"
           >
             <X className="w-5 h-5" />
           </button>
@@ -404,13 +405,13 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
         </div>
 
         {/* 모달 하단 닫기 바 */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex items-center justify-between">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="p-4 border-t border-border bg-card flex items-center justify-between shrink-0">
+          <div className="text-xs text-muted-foreground">
             실전 승인 시 CTI 전화 발신 및 인입 DB 배정이 자동으로 가동됩니다.
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 text-xs font-bold transition-all"
+            className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
           >
             닫기
           </button>

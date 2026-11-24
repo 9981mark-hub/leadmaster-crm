@@ -89,22 +89,22 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-            <div className="bg-card text-foreground rounded-2xl shadow-2xl border border-border w-full max-w-2xl flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+            <div className="relative w-full max-w-2xl max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
                 
                 {/* Header */}
-                <div className="flex items-center justify-between p-5 border-b border-border bg-muted/30">
+                <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-card shrink-0">
                     <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                         <Download size={18} className="text-primary" />
                         데이터 내보내기 (Excel)
                     </h2>
-                    <button onClick={onClose} className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                        <X size={20} />
+                    <button onClick={onClose} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer" title="창 닫기">
+                        <X size={18} />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className="p-6 space-y-6 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar text-xs">
                     
                     {/* 1. 추출 대상 */}
                     <div className="space-y-3">
@@ -213,16 +213,16 @@ export const ExportCaseModal: React.FC<ExportCaseModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-border flex justify-end gap-2.5 bg-muted/30 rounded-b-2xl">
+                <div className="p-4 border-t border-border flex justify-end gap-2 bg-card shrink-0">
                     <button 
                         onClick={onClose}
-                        className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
+                        className="px-4 py-2.5 text-xs font-bold text-foreground bg-secondary hover:bg-muted border border-border rounded-xl transition-colors cursor-pointer shadow-2xs"
                     >
-                        취소
+                        취소 / 닫기
                     </button>
                     <button 
                         onClick={handleExport}
-                        className="px-4 py-2 text-xs font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                        className="px-5 py-2.5 text-xs font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                     >
                         <Download size={14} />
                         다운로드 실행

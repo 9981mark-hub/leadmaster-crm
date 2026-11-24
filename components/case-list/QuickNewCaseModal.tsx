@@ -139,14 +139,14 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto"
             onKeyDown={onKeyDown}
         >
-            <div className="bg-card text-card-foreground rounded-2xl max-w-lg w-full shadow-2xl border border-border overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="relative w-full max-w-lg max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
                 {/* Modal Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/40">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold">
+                <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-card shrink-0">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold shrink-0">
                             <Plus size={18} strokeWidth={1.75} />
                         </div>
                         <div>
@@ -160,14 +160,15 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        title="창 닫기"
                     >
                         <X size={18} strokeWidth={1.75} />
                     </button>
                 </div>
 
                 {/* Modal Body */}
-                <div className="p-6 overflow-y-auto space-y-4 text-xs">
+                <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 custom-scrollbar text-xs">
                     {/* Phone & Name */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
@@ -281,10 +282,10 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                                     key={t}
                                     type="button"
                                     onClick={() => setCaseType(t)}
-                                    className={`h-9 rounded-xl text-xs font-semibold border transition-colors ${
+                                    className={`h-9 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
                                         caseType === t
-                                            ? 'bg-blue-600 text-white border-blue-600'
-                                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50'
+                                            ? 'bg-primary text-primary-foreground border-primary shadow-2xs font-bold'
+                                            : 'bg-secondary text-foreground border-border hover:bg-muted'
                                     }`}
                                 >
                                     {t}
@@ -295,7 +296,7 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
 
                     {/* Additional Notes (Collapsible) */}
                     <details className="group pt-1">
-                        <summary className="cursor-pointer text-xs font-bold text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 select-none">
+                        <summary className="cursor-pointer text-xs font-bold text-muted-foreground hover:text-foreground select-none">
                             + 사전 정보 / 첫 통화 메모 (선택사항)
                         </summary>
                         <div className="mt-2.5 space-y-2">
@@ -304,30 +305,34 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                                 value={preInfo}
                                 onChange={e => setPreInfo(e.target.value)}
                                 placeholder="광고 신청서 내용 또는 인입 경로 특이사항"
-                                className="w-full p-2.5 text-xs bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl outline-none"
+                                className="w-full p-2.5 text-xs bg-background border border-input rounded-xl outline-none text-foreground focus:ring-1 focus:ring-primary focus:border-primary transition-colors resize-none"
                             />
                             <textarea
                                 rows={2}
                                 value={memo}
                                 onChange={e => setMemo(e.target.value)}
                                 placeholder="첫 통화 메모"
-                                className="w-full p-2.5 text-xs bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl outline-none"
+                                className="w-full p-2.5 text-xs bg-background border border-input rounded-xl outline-none text-foreground focus:ring-1 focus:ring-primary focus:border-primary transition-colors resize-none"
                             />
                         </div>
                     </details>
                 </div>
 
                 {/* Modal Footer */}
-                <div className="flex items-center justify-between px-6 py-4 bg-muted/40 border-t border-border">
-                    <span className="text-xs text-muted-foreground hidden sm:inline">
-                        단축키: Ctrl + Enter = 등록 후 즉시 열기
-                    </span>
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <div className="flex items-center justify-between p-4 bg-card border-t border-border shrink-0">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground font-bold text-xs transition-colors cursor-pointer shadow-2xs"
+                    >
+                        닫기
+                    </button>
+                    <div className="flex items-center gap-2">
                         <button
                             type="button"
                             onClick={() => submit('another')}
                             disabled={saving}
-                            className="px-3.5 py-2.5 rounded-xl border border-border text-foreground font-semibold text-xs hover:bg-muted transition-colors disabled:opacity-50"
+                            className="px-3.5 py-2.5 rounded-xl border border-border bg-secondary text-foreground font-bold text-xs hover:bg-muted transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
                         >
                             + 등록 후 계속 입력
                         </button>
@@ -335,7 +340,7 @@ export const QuickNewCaseModal: React.FC<QuickNewCaseModalProps> = ({
                             type="button"
                             onClick={() => submit('open')}
                             disabled={saving}
-                            className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                            className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-2xs transition-colors flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                         >
                             {saving ? <Loader2 size={14} className="animate-spin" /> : <PhoneCall size={14} strokeWidth={1.75} />}
                             등록하고 상담 시작

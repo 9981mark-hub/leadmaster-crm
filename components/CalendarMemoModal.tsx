@@ -98,29 +98,29 @@ export default function CalendarMemoModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-background/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+            <div className="relative w-full max-w-md max-h-[88vh] my-auto flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden text-card-foreground">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
-                    <h2 className="text-lg font-bold text-gray-800 dark:text-white">
+                <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border bg-card shrink-0">
+                    <h2 className="text-base font-bold text-foreground">
                         {editingMemo ? '메모 수정' : '새 메모'}
                     </h2>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 transition-colors">
-                        <X size={20} />
+                    <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer" title="창 닫기">
+                        <X size={18} />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-4 space-y-4">
+                <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 custom-scrollbar text-xs">
                     {/* Title */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">제목 *</label>
+                        <label className="block text-xs font-semibold text-foreground mb-1">제목 *</label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="일정 제목을 입력하세요"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                            className="w-full px-3 py-2 border border-input bg-background text-foreground placeholder:text-muted-foreground rounded-xl focus:ring-1 focus:ring-primary outline-none transition-colors text-xs"
                             autoFocus
                         />
                     </div>
@@ -128,23 +128,23 @@ export default function CalendarMemoModal({
                     {/* Date and Repeat */}
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">날짜</label>
+                            <label className="block text-xs font-semibold text-foreground mb-1">날짜</label>
                             <input
                                 type="date"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-xl focus:ring-1 focus:ring-primary outline-none transition-colors text-xs font-mono"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">반복 설정</label>
+                            <label className="block text-xs font-semibold text-foreground mb-1">반복 설정</label>
                             <select
                                 value={repeatType}
                                 onChange={(e) => setRepeatType(e.target.value as any)}
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-xl focus:ring-1 focus:ring-primary outline-none transition-colors text-xs"
                             >
                                 {REPEAT_OPTIONS.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    <option key={opt.value} value={opt.value} className="bg-card text-foreground">{opt.label}</option>
                                 ))}
                             </select>
                         </div>
@@ -152,55 +152,57 @@ export default function CalendarMemoModal({
 
                     {/* All Day Toggle */}
                     <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">종일</span>
+                        <span className="text-xs font-semibold text-foreground">종일</span>
                         <button
+                            type="button"
                             onClick={() => setIsAllDay(!isAllDay)}
-                            className={`w-12 h-6 rounded-full transition-colors ${isAllDay ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+                            className={`w-11 h-6 rounded-full transition-colors cursor-pointer relative p-0.5 ${isAllDay ? 'bg-primary' : 'bg-muted'}`}
                         >
-                            <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${isAllDay ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                            <div className={`w-5 h-5 bg-white rounded-full shadow-xs transform transition-transform ${isAllDay ? 'translate-x-5' : 'translate-x-0'}`} />
                         </button>
                     </div>
 
                     {/* Time (if not all day) */}
                     {!isAllDay && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                <Clock size={14} className="inline mr-1" />
+                            <label className="block text-xs font-semibold text-foreground mb-1">
+                                <Clock size={13} className="inline mr-1 text-muted-foreground" />
                                 시간
                             </label>
                             <input
                                 type="time"
                                 value={time}
                                 onChange={(e) => setTime(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-xl focus:ring-1 focus:ring-primary outline-none transition-colors text-xs font-mono"
                             />
                         </div>
                     )}
 
                     {/* Content */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">메모 내용</label>
+                        <label className="block text-xs font-semibold text-foreground mb-1">메모 내용</label>
                         <textarea
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
-                            placeholder="상세 내용 (선택)"
+                            placeholder="상세 내용을 입력하세요 (선택)"
                             rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none outline-none transition-colors"
+                            className="w-full px-3 py-2 border border-input bg-background text-foreground placeholder:text-muted-foreground rounded-xl focus:ring-1 focus:ring-primary resize-none outline-none transition-colors text-xs"
                         />
                     </div>
 
                     {/* Color */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            <Palette size={14} className="inline mr-1" />
-                            색상
+                        <label className="block text-xs font-semibold text-foreground mb-2">
+                            <Palette size={13} className="inline mr-1 text-muted-foreground" />
+                            라벨 색상
                         </label>
                         <div className="flex gap-2">
                             {COLORS.map((c) => (
                                 <button
                                     key={c.value}
+                                    type="button"
                                     onClick={() => setColor(c.value)}
-                                    className={`w-8 h-8 rounded-full ${c.className} ${color === c.value ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-800' : ''}`}
+                                    className={`w-7 h-7 rounded-full ${c.className} ${color === c.value ? 'ring-2 ring-offset-2 ring-primary ring-offset-background scale-110' : 'opacity-80 hover:opacity-100'} transition-all cursor-pointer`}
                                     title={c.label}
                                 />
                             ))}
@@ -208,17 +210,18 @@ export default function CalendarMemoModal({
                     </div>
 
                     {/* Notification */}
-                    <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-3">
+                    <div className="bg-secondary/40 border border-border rounded-xl p-3.5 space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                                <Bell size={14} />
+                            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                <Bell size={13} className="text-primary" />
                                 알림 설정
                             </span>
                             <button
+                                type="button"
                                 onClick={() => setHasNotification(!hasNotification)}
-                                className={`w-12 h-6 rounded-full transition-colors ${hasNotification ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+                                className={`w-11 h-6 rounded-full transition-colors cursor-pointer relative p-0.5 ${hasNotification ? 'bg-primary' : 'bg-muted'}`}
                             >
-                                <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${hasNotification ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                                <div className={`w-5 h-5 bg-white rounded-full shadow-xs transform transition-transform ${hasNotification ? 'translate-x-5' : 'translate-x-0'}`} />
                             </button>
                         </div>
 
@@ -227,10 +230,10 @@ export default function CalendarMemoModal({
                                 <select
                                     value={notifyMinutesBefore}
                                     onChange={(e) => setNotifyMinutesBefore(Number(e.target.value))}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm outline-none"
+                                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-xl focus:ring-1 focus:ring-primary outline-none transition-colors text-xs"
                                 >
                                     {NOTIFY_OPTIONS.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        <option key={opt.value} value={opt.value} className="bg-card text-foreground">{opt.label}</option>
                                     ))}
                                 </select>
                             </div>
@@ -239,25 +242,28 @@ export default function CalendarMemoModal({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex gap-2">
+                <div className="p-4 border-t border-border bg-card flex items-center justify-end gap-2 shrink-0">
                     {editingMemo && onDelete && (
                         <button
+                            type="button"
                             onClick={onDelete}
-                            className="flex-1 py-2 px-4 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-lg font-medium hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors"
+                            className="mr-auto px-4 py-2.5 bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                         >
                             삭제
                         </button>
                     )}
                     <button
+                        type="button"
                         onClick={onClose}
-                        className="flex-1 py-2 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        className="px-4 py-2.5 rounded-xl border border-border bg-secondary hover:bg-muted text-foreground text-xs font-bold transition-colors cursor-pointer shadow-2xs"
                     >
-                        취소
+                        취소 / 닫기
                     </button>
                     <button
+                        type="button"
                         onClick={handleSave}
                         disabled={!title.trim()}
-                        className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 dark:disabled:bg-gray-700 dark:disabled:text-gray-500 disabled:cursor-not-allowed"
+                        className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-2xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         저장
                     </button>
