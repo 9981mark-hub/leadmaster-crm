@@ -278,12 +278,10 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [openDropdownId]);
 
-    if (cases.length === 0) {
-        return <div className="p-8 text-center text-gray-500 dark:text-gray-400 flex-1 flex items-center justify-center">검색 결과가 없습니다.</div>;
-    }
-
-    // 4대 monday.com Vibe 그룹 분할
+    // 4대 monday.com Vibe 그룹 분할 (React Hooks 규칙: early return 전에 무조건 호출)
     const caseGroups = useMemo(() => {
+        if (!cases || cases.length === 0) return [];
+
         if (viewMode !== 'active') {
             return [
                 {
@@ -352,6 +350,20 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     const toggleGroupCollapse = (groupId: string) => {
         setCollapsedGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
     };
+
+    // 모든 훅이 호출된 후 빈 데이터 처리 (React Error #300 방지)
+    if (cases.length === 0) {
+        return (
+            <div className="bg-card rounded-[8px] border border-[#d0d4e4] dark:border-border p-12 text-center text-[#676879] dark:text-gray-400 flex-1 flex flex-col items-center justify-center min-h-[300px]">
+                <p className="text-sm font-semibold">
+                    {viewMode === 'archived' ? '보관함에 보관된 리드가 없습니다.' : viewMode === 'trash' ? '휴지통이 비어 있습니다.' : '검색 결과가 없습니다.'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                    {viewMode === 'archived' ? '관리자에 의해 보관 처리된 고객 DB가 여기에 표시됩니다.' : viewMode === 'trash' ? '삭제된 케이스가 없습니다.' : '필터 조건을 변경하거나 검색어를 지워보세요.'}
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-card rounded-xl shadow-xs border border-border min-h-[500px] flex flex-col overflow-hidden">
