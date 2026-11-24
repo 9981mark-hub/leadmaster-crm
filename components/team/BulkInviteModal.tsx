@@ -251,7 +251,7 @@ export default function BulkInviteModal({
           {parsedEntries.length > 0 && (
             <div className="border border-border rounded-xl overflow-hidden max-h-56 overflow-y-auto bg-card shadow-2xs">
               <table className="w-full text-xs text-left">
-                <thead className="bg-muted/40 text-muted-foreground font-mono text-2xs uppercase sticky top-0 border-b border-border">
+                <thead className="bg-muted text-muted-foreground font-mono text-2xs uppercase sticky top-0 z-10 border-b border-border">
                   <tr>
                     <th className="p-2.5">상태</th>
                     <th className="p-2.5">이름</th>

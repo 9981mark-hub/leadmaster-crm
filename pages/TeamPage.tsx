@@ -647,17 +647,17 @@ export default function TeamPage() {
             {/* 테이블 */}
             <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <table className="w-full text-xs">
-                <thead className="bg-muted/50 border-b border-border text-muted-foreground sticky top-0 z-10 font-mono">
+                <thead className="bg-muted text-muted-foreground font-mono">
                   <tr>
-                    <th className="px-4 py-2.5 w-10 text-center">
+                    <th className="sticky top-0 z-10 bg-muted px-4 py-2.5 w-10 text-center border-b border-border">
                       <input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} className="rounded border-input text-primary focus:ring-primary cursor-pointer" />
                     </th>
-                    <th className="text-left px-3 py-2.5 font-semibold">고객명</th>
-                    <th className="text-left px-3 py-2.5 font-semibold">연락처</th>
-                    <th className="text-left px-3 py-2.5 font-semibold">상태</th>
-                    <th className="text-left px-3 py-2.5 font-semibold">유입경로</th>
-                    <th className="text-left px-3 py-2.5 font-semibold">등록일</th>
-                    <th className="text-left px-3 py-2.5 font-semibold">담당자</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-3 py-2.5 font-semibold border-b border-border">고객명</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-3 py-2.5 font-semibold border-b border-border">연락처</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-3 py-2.5 font-semibold border-b border-border">상태</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-3 py-2.5 font-semibold border-b border-border">유입경로</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-3 py-2.5 font-semibold border-b border-border">등록일</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-3 py-2.5 font-semibold border-b border-border">담당자</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -708,13 +708,13 @@ export default function TeamPage() {
             </div>
             <div className="max-h-72 overflow-y-auto">
               <table className="w-full text-xs">
-                <thead className="bg-muted/50 border-b border-border text-muted-foreground sticky top-0 z-10 font-mono">
+                <thead className="bg-muted text-muted-foreground font-mono">
                   <tr>
-                    <th className="text-left px-4 py-2 font-semibold whitespace-nowrap">일시</th>
-                    <th className="text-left px-3 py-2 font-semibold">대상 고객</th>
-                    <th className="text-left px-3 py-2 font-semibold whitespace-nowrap">배정 경로</th>
-                    <th className="text-left px-3 py-2 font-semibold">사유</th>
-                    <th className="text-left px-4 py-2 font-semibold">처리자 · 메모</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-4 py-2.5 font-semibold whitespace-nowrap border-b border-border">일시</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-3 py-2.5 font-semibold border-b border-border">대상 고객</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-3 py-2.5 font-semibold whitespace-nowrap border-b border-border">배정 경로</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-3 py-2.5 font-semibold border-b border-border">사유</th>
+                    <th className="sticky top-0 z-10 bg-muted text-left px-4 py-2.5 font-semibold border-b border-border">처리자 · 메모</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">

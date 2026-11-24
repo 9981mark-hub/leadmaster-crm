@@ -973,7 +973,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                                     </div>
                                     <div className="max-h-48 overflow-y-auto">
                                         <table className="w-full text-xs text-left">
-                                            <thead className="bg-muted/30 sticky top-0 border-b border-border text-muted-foreground">
+                                            <thead className="bg-muted sticky top-0 z-10 border-b border-border text-muted-foreground">
                                                 <tr>
                                                     <th className="p-2 font-semibold">고객명</th>
                                                     <th className="p-2 font-semibold">연락처</th>

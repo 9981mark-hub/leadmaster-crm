@@ -188,18 +188,18 @@ export default function AccessLogPanel({ orgId, members, cases }: Props) {
             <span className="text-xs text-gray-500 tabular-nums">{rows.length.toLocaleString()}건{hasMore ? '+' : ''}</span>
           </div>
 
-          <div className="overflow-x-auto max-h-[520px] overflow-y-auto border-t border-gray-100 dark:border-gray-700">
+          <div className="overflow-x-auto max-h-[520px] overflow-y-auto border-t border-border">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs sticky top-0">
+              <thead className="bg-muted text-muted-foreground text-xs sticky top-0 z-10 border-b border-border font-mono">
                 <tr>
-                  <th className="text-left px-5 py-2 whitespace-nowrap">시각</th>
-                  <th className="text-left px-3 py-2">사람</th>
-                  <th className="text-left px-3 py-2">행동</th>
-                  <th className="text-left px-3 py-2">리드</th>
-                  <th className="text-left px-3 py-2">건수 · 파일</th>
+                  <th className="text-left px-5 py-2.5 whitespace-nowrap">시각</th>
+                  <th className="text-left px-3 py-2.5">사람</th>
+                  <th className="text-left px-3 py-2.5">행동</th>
+                  <th className="text-left px-3 py-2.5">리드</th>
+                  <th className="text-left px-3 py-2.5">건수 · 파일</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              <tbody className="divide-y divide-border">
                 {rows.map(r => (
                   <tr key={r.id}>
                     <td className="px-5 py-1.5 text-gray-500 whitespace-nowrap tabular-nums">{fmtKst(r.createdAt)}</td>

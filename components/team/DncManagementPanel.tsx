@@ -169,7 +169,7 @@ export default function DncManagementPanel() {
       {/* DNC Table */}
       <div className="overflow-x-auto max-h-[460px] overflow-y-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 text-xs uppercase tracking-wider sticky top-0">
+          <thead className="bg-muted text-muted-foreground text-xs uppercase tracking-wider sticky top-0 z-10 border-b border-border font-mono">
             <tr>
               <th className="px-5 py-2.5">차단 번호</th>
               <th className="px-3 py-2.5">차단 사유</th>

@@ -347,7 +347,7 @@ export default function ExcelBatchModal({ isOpen, onClose, onCreated }: ExcelBat
                 <div className="border border-border rounded-xl overflow-hidden bg-card shadow-2xs">
                   <div className="overflow-x-auto max-h-60">
                     <table className="w-full text-xs text-left">
-                      <thead className="text-2xs text-muted-foreground bg-muted/40 sticky top-0 z-10 border-b border-border font-mono uppercase">
+                      <thead className="text-2xs text-muted-foreground bg-muted sticky top-0 z-10 border-b border-border font-mono uppercase">
                         <tr>
                           <th className="p-3 w-12 text-center">
                             <button type="button" onClick={toggleAll} className="text-muted-foreground hover:text-foreground cursor-pointer">

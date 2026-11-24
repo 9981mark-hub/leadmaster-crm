@@ -254,8 +254,8 @@ export const AgentPayslipModal: React.FC<AgentPayslipModalProps> = ({
                         </div>
                         <div className="max-h-48 overflow-y-auto">
                             <table className="w-full text-left text-xs">
-                                <thead className="bg-gray-50/50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 sticky top-0">
-                                    <tr className="border-b border-gray-100 dark:border-gray-700">
+                                <thead className="bg-muted text-muted-foreground sticky top-0 z-10 font-mono">
+                                    <tr className="border-b border-border">
                                         <th className="py-2 px-3">#</th>
                                         <th className="py-2 px-3">고객명</th>
                                         <th className="py-2 px-3">사건종류</th>
