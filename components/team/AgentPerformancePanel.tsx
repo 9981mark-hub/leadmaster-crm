@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Award, PhoneCall, Clock, Send, Calendar, DollarSign, Settings,
   RefreshCw, Trophy, Download, Plus, Trash2, CheckCircle2,
-  HelpCircle, Layers, Info, Check, Sparkles
+  HelpCircle, Layers, Info, Check, Sparkles, X
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import {
@@ -636,32 +636,43 @@ export default function AgentPerformancePanel() {
       {/* 5. 인센티브(성과급) 종류 및 정산 지급일 설정 모달 */}
       {showSettingsModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-card border border-border text-card-foreground rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="bg-card border border-border text-card-foreground rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/40">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary shadow-2xs">
-                  <Settings size={18} strokeWidth={1.75} />
+            <div className="px-6 py-5 border-b border-border bg-muted/30 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary shadow-2xs">
+                    <Settings size={18} strokeWidth={1.75} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base text-foreground whitespace-nowrap">
+                      인센티브 및 정산 설정
+                    </h3>
+                    <p className="text-2xs text-muted-foreground mt-0.5">
+                      계약 종류별 금액/비율(최대 10개)과 회사 맞춤 정산 주기를 지정합니다.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-base text-foreground whitespace-nowrap">
-                    인센티브 및 정산 설정
-                  </h3>
-                  <p className="text-2xs text-muted-foreground mt-0.5">
-                    계약 종류별 금액/비율(최대 10개)과 회사 맞춤 정산 주기를 지정합니다.
-                  </p>
-                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowSettingsModal(false)}
+                  className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
+                  title="닫기"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
-              {/* Tab Selector (4개 탭) */}
-              <div className="flex bg-muted/60 border border-border p-0.5 rounded-lg text-xs font-semibold gap-1 flex-wrap">
+              {/* Tab Selector (4개 탭 수평 균등 그리드 배치) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 bg-muted/60 border border-border p-1 rounded-xl text-xs font-semibold gap-1">
                 <button
                   type="button"
                   onClick={() => setActiveModalTab('types')}
-                  className={`px-3 py-1.5 rounded-md text-2xs transition-colors cursor-pointer ${
+                  className={`px-3 py-2 rounded-lg text-2xs transition-all cursor-pointer text-center whitespace-nowrap ${
                     activeModalTab === 'types'
                       ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
-                      : 'text-muted-foreground hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
                   }`}
                 >
                   1. 계약별 기본 인센티브
@@ -669,10 +680,10 @@ export default function AgentPerformancePanel() {
                 <button
                   type="button"
                   onClick={() => setActiveModalTab('overriding')}
-                  className={`px-3 py-1.5 rounded-md text-2xs transition-colors cursor-pointer ${
+                  className={`px-3 py-2 rounded-lg text-2xs transition-all cursor-pointer text-center whitespace-nowrap ${
                     activeModalTab === 'overriding'
                       ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
-                      : 'text-muted-foreground hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
                   }`}
                 >
                   2. 👔 관리자 오버라이딩
@@ -680,10 +691,10 @@ export default function AgentPerformancePanel() {
                 <button
                   type="button"
                   onClick={() => setActiveModalTab('sliding')}
-                  className={`px-3 py-1.5 rounded-md text-2xs transition-colors cursor-pointer ${
+                  className={`px-3 py-2 rounded-lg text-2xs transition-all cursor-pointer text-center whitespace-nowrap ${
                     activeModalTab === 'sliding'
                       ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
-                      : 'text-muted-foreground hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
                   }`}
                 >
                   3. 🚀 성과구간 추가보너스
@@ -691,10 +702,10 @@ export default function AgentPerformancePanel() {
                 <button
                   type="button"
                   onClick={() => setActiveModalTab('schedule')}
-                  className={`px-3 py-1.5 rounded-md text-2xs transition-colors cursor-pointer ${
+                  className={`px-3 py-2 rounded-lg text-2xs transition-all cursor-pointer text-center whitespace-nowrap ${
                     activeModalTab === 'schedule'
                       ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
-                      : 'text-muted-foreground hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
                   }`}
                 >
                   4. 📅 정산일 & 지급주기
