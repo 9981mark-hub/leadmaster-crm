@@ -29,6 +29,28 @@ import {
 
 type LiteTab = 'all' | 'today' | 'new' | 'missed';
 
+const getStatusBorderColor = (status: string) => {
+  const s = (status || '').replace(/\s+/g, '');
+  if (s.includes('재통화') || s.includes('재컨택')) return 'border-l-[#ffcb00]';
+  if (s.includes('부재')) return 'border-l-[#ff642e]';
+  if (s.includes('사무장') || s.includes('접수완료')) return 'border-l-[#00a2ae]';
+  if (s.includes('신규') || s.includes('배정')) return 'border-l-[#0073ea]';
+  if (s.includes('진행불가') || s.includes('기각') || s.includes('취소')) return 'border-l-[#e2445c]';
+  if (s.includes('계약') || s.includes('수임')) return 'border-l-[#00c875]';
+  return 'border-l-border';
+};
+
+const getStatusBadgeStyle = (status: string) => {
+  const s = (status || '').replace(/\s+/g, '');
+  if (s.includes('재통화') || s.includes('재컨택')) return 'bg-[#ffcb00] text-[#323338]';
+  if (s.includes('부재')) return 'bg-[#ff642e] text-white';
+  if (s.includes('사무장') || s.includes('접수완료')) return 'bg-[#00a2ae] text-white';
+  if (s.includes('신규') || s.includes('배정')) return 'bg-[#0073ea] text-white';
+  if (s.includes('진행불가') || s.includes('기각') || s.includes('취소')) return 'bg-[#e2445c] text-white';
+  if (s.includes('계약') || s.includes('수임')) return 'bg-[#00c875] text-white';
+  return 'bg-muted text-muted-foreground';
+};
+
 export default function LiteCallPage() {
   const navigate = useNavigate();
   const { org, isAdmin, user } = useAuth();
@@ -558,43 +580,55 @@ export default function LiteCallPage() {
           <div className="flex gap-1.5">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1.5 rounded-[6px] text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'all'
-                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  ? 'bg-primary/10 text-primary border border-primary/25 shadow-2xs'
                   : 'bg-muted/40 text-muted-foreground hover:text-foreground border border-transparent'
               }`}
             >
-              전체 {tabCounts.all}
+              <span>전체</span>
+              <span className={`text-[10px] font-mono px-1 py-0.2 rounded-[4px] ${activeTab === 'all' ? 'bg-primary/20 text-primary font-bold' : 'bg-muted text-muted-foreground'}`}>
+                {tabCounts.all}
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('today')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1.5 rounded-[6px] text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'today'
-                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  ? 'bg-primary/10 text-primary border border-primary/25 shadow-2xs'
                   : 'bg-muted/40 text-muted-foreground hover:text-foreground border border-transparent'
               }`}
             >
-              오늘 할 일 {tabCounts.today}
+              <span>오늘 할 일</span>
+              <span className={`text-[10px] font-mono px-1 py-0.2 rounded-[4px] ${activeTab === 'today' ? 'bg-primary/20 text-primary font-bold' : 'bg-muted text-muted-foreground'}`}>
+                {tabCounts.today}
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('new')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1.5 rounded-[6px] text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'new'
-                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  ? 'bg-primary/10 text-primary border border-primary/25 shadow-2xs'
                   : 'bg-muted/40 text-muted-foreground hover:text-foreground border border-transparent'
               }`}
             >
-              신규 {tabCounts.new}
+              <span>신규</span>
+              <span className={`text-[10px] font-mono px-1 py-0.2 rounded-[4px] ${activeTab === 'new' ? 'bg-primary/20 text-primary font-bold' : 'bg-muted text-muted-foreground'}`}>
+                {tabCounts.new}
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('missed')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1.5 rounded-[6px] text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'missed'
-                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  ? 'bg-primary/10 text-primary border border-primary/25 shadow-2xs'
                   : 'bg-muted/40 text-muted-foreground hover:text-foreground border border-transparent'
               }`}
             >
-              부재콜 {tabCounts.missed}
+              <span>부재콜</span>
+              <span className={`text-[10px] font-mono px-1 py-0.2 rounded-[4px] ${activeTab === 'missed' ? 'bg-primary/20 text-primary font-bold' : 'bg-muted text-muted-foreground'}`}>
+                {tabCounts.missed}
+              </span>
             </button>
           </div>
 
@@ -602,9 +636,9 @@ export default function LiteCallPage() {
           {org?.userId && (
             <button
               onClick={() => setOnlyMyLeads(!onlyMyLeads)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors whitespace-nowrap shrink-0 ${
+              className={`px-2.5 py-1 rounded-[6px] text-xs font-semibold border transition-colors whitespace-nowrap shrink-0 ${
                 onlyMyLeads
-                  ? 'bg-primary/10 border-primary/20 text-primary'
+                  ? 'bg-primary/10 border-primary/25 text-primary'
                   : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
@@ -623,51 +657,43 @@ export default function LiteCallPage() {
             <p className="text-xs text-gray-500 dark:text-gray-400">콜 리스트를 불러오고 있습니다...</p>
           </div>
         ) : filteredCases.length === 0 ? (
-          <div className="py-20 text-center space-y-3 bg-white dark:bg-gray-800/40 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 p-6">
+          <div className="py-20 text-center space-y-3 bg-card rounded-[8px] border border-dashed border-border p-6">
             <CheckCircle2 size={36} className="text-emerald-500 mx-auto" />
-            <h3 className="font-bold text-gray-700 dark:text-gray-200 text-sm">
+            <h3 className="font-bold text-foreground text-sm">
               진행할 리드가 없습니다!
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               {search ? '검색 결과가 없습니다.' : '현재 필터 조건에 해당하는 고객이 모두 처리되었습니다.'}
             </p>
           </div>
         ) : (
           filteredCases.map((c) => {
             const partner = partners.find(p => p.partnerId === c.partnerId);
-            const isMissed = c.status === '부재' || (c.missedCallCount || 0) > 0;
-            const isNew = c.isNew || c.status === '신규접수';
 
             return (
               <div
                 key={c.caseId}
-                className="bg-card text-card-foreground rounded-xl p-4 shadow-xs border border-border transition-all"
+                className={`bg-card text-card-foreground rounded-[8px] p-3.5 shadow-xs border border-border border-l-4 ${getStatusBorderColor(c.status)} hover:border-[#0073ea]/40 hover:shadow-xs transition-all duration-150`}
               >
-                {/* 1행: 상태 뱃지 & 유입경로 & 등록일 */}
+                {/* 1행: 상태 뱃지 & 부재 횟수 & 사건 유형 & 등록일 */}
                 <div className="flex items-center justify-between text-xs mb-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`px-2 py-0.5 rounded-md font-semibold text-xs border ${
-                      isNew 
-                        ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
-                        : isMissed
-                          ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                          : 'bg-primary/10 text-primary border-primary/20'
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded-[4px] font-bold text-[11px] tracking-tight ${getStatusBadgeStyle(c.status)}`}>
                       {c.status}
                     </span>
 
                     {c.missedCallCount && c.missedCallCount > 0 ? (
-                      <span className="px-1.5 py-0.5 rounded text-xs bg-rose-500/10 text-rose-500 font-semibold border border-rose-500/20">
+                      <span className="px-1.5 py-0.5 rounded-[4px] text-[11px] bg-[#ff642e]/10 text-[#ff642e] font-semibold border border-[#ff642e]/20 font-mono">
                         부재 {c.missedCallCount}회
                       </span>
                     ) : null}
 
-                    <span className="text-xs font-semibold text-muted-foreground">
+                    <span className="text-[11px] font-semibold text-muted-foreground">
                       {c.caseType || '개인회생'}
                     </span>
                   </div>
 
-                  <span className="text-xs text-muted-foreground font-mono">
+                  <span className="text-[11px] text-muted-foreground font-mono">
                     {c.createdAt ? c.createdAt.split('T')[0] : ''}
                   </span>
                 </div>
@@ -675,7 +701,7 @@ export default function LiteCallPage() {
                 {/* 2행: 고객명 & 프로필 & 전화번호 */}
                 <div className="flex items-baseline justify-between mb-2">
                   <div>
-                    <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                    <h3 className="text-[15px] font-bold text-foreground flex items-center gap-1.5">
                       <span>{c.customerName}</span>
                       {c.gender && (
                         <span className="text-xs text-muted-foreground font-normal">
@@ -690,84 +716,83 @@ export default function LiteCallPage() {
                     </p>
                   </div>
 
-                  <span className="text-base font-bold font-mono tabular-nums text-foreground">
+                  <span className="text-[15px] font-bold font-mono tracking-tight tabular-nums text-primary">
                     {c.phone}
                   </span>
                 </div>
 
                 {/* 3행: 사전 정보 또는 최근 메모 미리보기 */}
                 {c.preInfo && (
-                  <div className="bg-muted/40 p-2.5 rounded-lg text-xs text-muted-foreground mb-3 border border-border line-clamp-2">
+                  <div className="bg-[#f8f9fc] dark:bg-muted/40 p-2.5 rounded-[6px] text-xs text-foreground/85 mb-2.5 border-l-2 border-[#0073ea] border border-y-border border-r-border line-clamp-2">
                     <span className="font-semibold text-primary mr-1">[사전정보]</span>
                     {c.preInfo}
                   </div>
                 )}
 
-                {/* 4행: 빅 터치 액션 버튼 바 */}
                 {/* 카드별 인라인 탕감 계산기 (펼쳐졌을 때) */}
                 {expandedCalcCaseId === c.caseId && (
-                  <div className="mb-3">
+                  <div className="mb-2.5">
                     <LiteDebtReliefCalculator c={c} />
                   </div>
                 )}
 
                 {/* 카드 빠른 보조 툴 (3초 탕감 계산 / 1-Click 문자) */}
-                <div className="flex items-center justify-between text-xs pt-1 pb-2 border-t border-border mb-1">
+                <div className="flex items-center justify-between text-xs pt-1.5 pb-2 border-t border-border/70 mb-1.5">
                   <button
                     type="button"
                     onClick={() => setExpandedCalcCaseId(expandedCalcCaseId === c.caseId ? null : c.caseId)}
-                    className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                    className="flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
                   >
-                    <Calculator size={13} strokeWidth={1.75} className="text-primary" />
+                    <Calculator size={13} strokeWidth={2} className="text-primary" />
                     <span>{expandedCalcCaseId === c.caseId ? '계산기 접기 ▲' : '⚡ 이 고객 탕감 계산 ▼'}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setSmsTargetCase(c)}
-                    className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline"
+                    className="flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   >
                     <MessageSquare size={13} strokeWidth={1.75} />
                     <span>📩 1-Click 문자</span>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-12 gap-2 pt-1">
-                  
-                  {/* Primary: 큰 원터치 전화 걸기 버튼 */}
+                {/* 4행: 균형 잡힌 38px 컴팩트 인라인 액션 툴바 */}
+                <div className="flex items-center gap-1.5 pt-0.5">
+                  {/* 1. Primary: 38px 높이의 균형 잡힌 통화 발신 버튼 (50% 너비) */}
                   <button
                     type="button"
                     onClick={() => handleDial(c)}
-                    className="col-span-8 flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm shadow-xs active:scale-[0.98] transition-all"
+                    className="flex-[2] h-[38px] flex items-center justify-center gap-1.5 px-3 rounded-[6px] bg-[#0073ea] hover:bg-[#0060c0] text-white font-semibold text-xs tracking-tight shadow-2xs active:scale-[0.98] transition-all duration-75 cursor-pointer"
+                    title="원터치 전화 발신"
                   >
-                    <Phone size={16} strokeWidth={1.75} className="fill-current" />
+                    <Phone size={14} strokeWidth={2} className="fill-current" />
                     <span>전화 걸기 ({c.phone.slice(-4)})</span>
                   </button>
 
-                  {/* Secondary: 원터치 부재 처리 */}
+                  {/* 2. Secondary: 인라인 가로형 부재 처리 (+1) (25% 너비) */}
                   <button
                     type="button"
                     onClick={(e) => handleQuickMissedCall(c, e)}
-                    className="col-span-2 flex flex-col items-center justify-center p-2 rounded-lg bg-muted/40 hover:bg-muted text-foreground border border-border text-xs font-semibold active:scale-[0.98] transition-all"
+                    className="flex-1 h-[38px] flex items-center justify-center gap-1.5 px-2.5 rounded-[6px] bg-muted/40 hover:bg-[#ff642e]/10 hover:border-[#ff642e]/40 hover:text-[#ff642e] text-foreground border border-border text-xs font-semibold active:scale-[0.98] transition-all duration-75 cursor-pointer"
                     title="부재 카운트 +1 및 상태 '부재'로 자동 갱신"
                   >
-                    <PhoneOff size={15} strokeWidth={1.75} className="text-muted-foreground" />
-                    <span className="mt-0.5">부재</span>
+                    <PhoneOff size={13} strokeWidth={1.75} />
+                    <span>부재</span>
                   </button>
 
-                  {/* Tertiary: 상담 결과 및 텔레그램 전달 시트 열기 */}
+                  {/* 3. Tertiary: 인라인 가로형 상담 결과 & 텔레그램 전달 (25% 너비) */}
                   <button
                     type="button"
                     onClick={() => {
                       setActiveCase(c);
                       setPostCallOpen(true);
                     }}
-                    className="col-span-2 flex flex-col items-center justify-center p-2 rounded-lg bg-muted/40 hover:bg-muted text-foreground border border-border text-xs font-semibold active:scale-[0.98] transition-all"
+                    className="flex-1 h-[38px] flex items-center justify-center gap-1.5 px-2.5 rounded-[6px] bg-muted/40 hover:bg-[#00a2ae]/10 hover:border-[#00a2ae]/40 hover:text-[#00a2ae] text-foreground border border-border text-xs font-semibold active:scale-[0.98] transition-all duration-75 cursor-pointer"
                     title="상담 요약문 확인 및 텔레그램 전달"
                   >
-                    <Send size={15} strokeWidth={1.75} className="text-muted-foreground" />
-                    <span className="mt-0.5">전달</span>
+                    <Send size={13} strokeWidth={1.75} />
+                    <span>전달</span>
                   </button>
-
                 </div>
 
               </div>
