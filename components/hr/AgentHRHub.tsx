@@ -272,8 +272,8 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                             <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 tracking-wider uppercase">실시간 근태 전광판</span>
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                         </div>
-                        <div className="text-sm font-extrabold text-slate-100">
-                            총 {summaryKPI.totalMembers}명 중 출근 {summaryKPI.workingCount + summaryKPI.awayCount + summaryKPI.mealCount}명
+                        <div className="text-sm font-extrabold text-slate-900 dark:text-slate-100">
+                            총 <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{summaryKPI.totalMembers}</span>명 중 출근 <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">{summaryKPI.workingCount + summaryKPI.awayCount + summaryKPI.mealCount}</span>명
                         </div>
                     </div>
                 </div>
@@ -284,7 +284,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         type="button"
                         onClick={() => setStatusFilter('all')}
                         className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-                            statusFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-700'
+                            statusFilter === 'all' ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }`}
                     >
                         전체 ({summaryKPI.totalMembers})
@@ -293,7 +293,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         type="button"
                         onClick={() => setStatusFilter('working')}
                         className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
-                            statusFilter === 'working' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 hover:bg-slate-700'
+                            statusFilter === 'working' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }`}
                     >
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -303,7 +303,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         type="button"
                         onClick={() => setStatusFilter('away')}
                         className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
-                            statusFilter === 'away' ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-amber-600 dark:text-amber-400 hover:bg-slate-700'
+                            statusFilter === 'away' ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-amber-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }`}
                     >
                         <span className="w-2 h-2 rounded-full bg-amber-400" />
@@ -313,7 +313,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         type="button"
                         onClick={() => setStatusFilter('meal')}
                         className={`btn-tactile px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
-                            statusFilter === 'meal' ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-orange-600 dark:text-orange-400 hover:bg-slate-700'
+                            statusFilter === 'meal' ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-orange-600 dark:text-orange-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }`}
                     >
                         <span className="w-2 h-2 rounded-full bg-orange-400" />
@@ -323,7 +323,7 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                         type="button"
                         onClick={() => setStatusFilter('off')}
                         className={`btn-tactile px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all ${
-                            statusFilter === 'off' ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-700'
+                            statusFilter === 'off' ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }`}
                     >
                         <span className="w-2 h-2 rounded-full bg-slate-500" />
