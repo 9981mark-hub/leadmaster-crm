@@ -655,7 +655,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                 </div>
 
                 {/* [030] DB 거래처(공급사) & 회차 매입 비용 관제 헤더 바 */}
-                <div className="bg-muted/30 border-b border-border p-4 sm:p-4.5 space-y-3 shrink-0">
+                <div className="bg-muted/30 border-b border-border p-4 sm:p-5 space-y-3 shrink-0">
                     {/* 1행: 거래처 타이틀 & 빠른 거래처 관리 버튼 */}
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">

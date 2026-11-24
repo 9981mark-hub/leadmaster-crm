@@ -259,20 +259,20 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
           </div>
 
           {/* 2. 대상 리드 필터링 & 추출 미리보기 */}
-          <div className="p-4.5 bg-muted/30 rounded-2xl border border-border space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="p-5 sm:p-6 bg-muted/30 rounded-2xl border border-border space-y-5">
+            <div className="flex items-center justify-between pb-1">
               <span className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                 <Filter size={14} className="text-primary" />
                 2. 타깃 리드 필터링 (Target DB)
               </span>
-              <span className="text-xs font-semibold font-mono px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full">
+              <span className="text-xs font-semibold font-mono px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full shadow-2xs">
                 추출 대상: 총 {candidateCases.length.toLocaleString()}건
               </span>
             </div>
 
             {/* 상태 선택 */}
-            <div>
-              <span className="text-xs font-medium text-muted-foreground block mb-2">
+            <div className="space-y-2.5">
+              <span className="text-xs font-medium text-muted-foreground block">
                 포함할 고객 상태:
               </span>
               <div className="flex flex-wrap gap-2">
@@ -289,7 +289,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                       key={st.id}
                       type="button"
                       onClick={() => handleStatusToggle(st.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
                         active
                           ? 'bg-primary text-primary-foreground border-primary shadow-2xs'
                           : 'bg-card text-muted-foreground border-border hover:text-foreground hover:bg-muted'
@@ -305,8 +305,8 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
 
             {/* 회차 선택 */}
             {availableBatches.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">
                     대상 회차 (선택 안 할 시 전체 회차):
                   </span>
@@ -314,13 +314,13 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setSelectedBatches([])}
-                      className="text-xs text-primary hover:underline font-mono"
+                      className="text-xs text-primary hover:underline font-mono cursor-pointer"
                     >
                       전체 회차로 초기화
                     </button>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1">
+                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1 custom-scrollbar">
                   {availableBatches.map(bName => {
                     const active = selectedBatches.includes(bName);
                     return (
@@ -328,7 +328,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                         key={bName}
                         type="button"
                         onClick={() => handleBatchToggle(bName)}
-                        className={`px-2.5 py-1 rounded-md text-xs border transition-all font-mono ${
+                        className={`px-2.5 py-1 rounded-md text-xs border transition-all font-mono cursor-pointer ${
                           active
                             ? 'bg-primary text-primary-foreground border-primary font-bold shadow-2xs'
                             : 'bg-card text-muted-foreground border-border hover:text-foreground hover:bg-muted'
@@ -343,23 +343,23 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
             )}
 
             {/* 제외 조건 */}
-            <div className="flex flex-wrap items-center gap-6 pt-2 border-t border-border text-xs text-muted-foreground">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
+            <div className="pt-4 mt-1 border-t border-border flex flex-wrap items-center gap-6 text-xs text-muted-foreground">
+              <label className="flex items-center gap-2 cursor-pointer select-none hover:text-foreground transition-colors py-0.5">
                 <input
                   type="checkbox"
                   checked={excludeRecentHours > 0}
                   onChange={e => setExcludeRecentHours(e.target.checked ? 2 : 0)}
-                  className="rounded text-primary accent-primary"
+                  className="rounded text-primary accent-primary cursor-pointer"
                 />
                 <span>최근 2시간 이내 통화 시도 건 제외</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer select-none">
+              <label className="flex items-center gap-2 cursor-pointer select-none hover:text-foreground transition-colors py-0.5">
                 <input
                   type="checkbox"
                   checked={excludeDnc}
                   onChange={e => setExcludeDnc(e.target.checked)}
-                  className="rounded text-primary accent-primary"
+                  className="rounded text-primary accent-primary cursor-pointer"
                 />
                 <span>수신거부(DNC) 및 종결 리드 제외</span>
               </label>
@@ -457,15 +457,15 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
           </div>
 
           {/* 4. 오토콜 발신 속도 및 강제성 파라미터 (Pacing & Wrap-up) */}
-          <div className="p-4.5 bg-muted/30 rounded-2xl border border-border space-y-4">
-            <span className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <div className="p-5 sm:p-6 bg-muted/30 rounded-2xl border border-border space-y-5">
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5 pb-1">
               <Zap size={14} className="text-primary" />
               4. 발신 속도 및 강제성 통제 (Pacing & Zero-Click Settings)
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* 링 타임아웃 */}
-              <div className="bg-card p-3 rounded-xl border border-border">
+              <div className="bg-card p-3.5 rounded-xl border border-border">
                 <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1 mb-1.5">
                   <Clock size={13} className="text-primary" />
                   신호 대기 (Ring Limit)
@@ -484,7 +484,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
               </div>
 
               {/* 휴식 갭 */}
-              <div className="bg-card p-3 rounded-xl border border-border">
+              <div className="bg-card p-3.5 rounded-xl border border-border">
                 <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1 mb-1.5">
                   <Clock size={13} className="text-primary" />
                   콜 간격 휴식 (Gap)
@@ -503,7 +503,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
               </div>
 
               {/* 후처리 제한시간 */}
-              <div className="bg-card p-3 rounded-xl border border-border">
+              <div className="bg-card p-3.5 rounded-xl border border-border">
                 <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1 mb-1.5">
                   <Clock size={13} className="text-primary" />
                   후처리 제한 (Wrap-up)
@@ -523,7 +523,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
             </div>
 
             {/* 핵심 스위치: 듀얼 SIM & 강제 발신 */}
-            <div className="pt-2 border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div className="pt-4 mt-1 border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <label className="flex items-start gap-2.5 cursor-pointer select-none bg-card p-3 rounded-xl border border-border">
                 <input
                   type="checkbox"
