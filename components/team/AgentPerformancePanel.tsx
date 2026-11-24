@@ -636,7 +636,7 @@ export default function AgentPerformancePanel() {
       {/* 5. 인센티브(성과급) 종류 및 정산 지급일 설정 모달 */}
       {showSettingsModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="bg-card border border-border text-card-foreground rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
             <div className="p-6 border-b border-border flex items-center justify-between bg-muted/40">
               <div className="flex items-center gap-3">
@@ -644,8 +644,8 @@ export default function AgentPerformancePanel() {
                   <Settings size={18} strokeWidth={1.75} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-foreground">
-                    인센티브 다원화 및 정산 지급일 설정
+                  <h3 className="font-bold text-base text-foreground whitespace-nowrap">
+                    인센티브 및 정산 설정
                   </h3>
                   <p className="text-2xs text-muted-foreground mt-0.5">
                     계약 종류별 금액/비율(최대 10개)과 회사 맞춤 정산 주기를 지정합니다.
