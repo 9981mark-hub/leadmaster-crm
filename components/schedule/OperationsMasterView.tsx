@@ -40,7 +40,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
     const activeCases = cases.filter(c => c.status !== '휴지통' && !c.deletedAt);
     const nowStr = format(new Date(), 'yyyy-MM-dd HH:mm');
 
-    const fieldMeetings: { caseData: Case; reminder: ReminderItem; team: string }[] = [];
+    const callReminders: { caseData: Case; reminder: ReminderItem; team: string }[] = [];
     const depositPromises: { caseData: Case; reminder: ReminderItem; team: string }[] = [];
     
     // 팀별 Overdue 집계
@@ -59,11 +59,10 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
 
         // 오늘 일정
         if (dateStr === todayStr) {
-          if (r.type === '출장미팅' || r.type === '방문미팅') {
-            fieldMeetings.push({ caseData: c, reminder: r, team });
-          }
           if (r.type === '입금') {
             depositPromises.push({ caseData: c, reminder: r, team });
+          } else {
+            callReminders.push({ caseData: c, reminder: r, team });
           }
         }
 
@@ -80,19 +79,13 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
     const depositTotalAmount = depositPromises.reduce((sum, item) => sum + (item.caseData.contractFee || 0), 0);
 
     return {
-      fieldMeetings: fieldMeetings.sort((a, b) => (a.reminder.datetime || '').localeCompare(b.reminder.datetime || '')),
+      callReminders: callReminders.sort((a, b) => (a.reminder.datetime || '').localeCompare(b.reminder.datetime || '')),
       depositPromises: depositPromises.sort((a, b) => (a.reminder.datetime || '').localeCompare(b.reminder.datetime || '')),
       teamOverdueMap,
       totalOverdue,
       depositTotalAmount
     };
   }, [cases, todayStr]);
-
-  // 필터링된 대면 미팅
-  const filteredMeetings = useMemo(() => {
-    if (selectedTeamFilter === 'all') return operationsData.fieldMeetings;
-    return operationsData.fieldMeetings.filter(m => m.team === selectedTeamFilter);
-  }, [operationsData.fieldMeetings, selectedTeamFilter]);
 
   // 팀장 독려 알림 핸들러
   const handleNudgeTeam = (teamName: string, overdueCount: number) => {
@@ -115,7 +108,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
               <span className="text-2xs text-muted-foreground font-medium">{todayFormatted}</span>
             </div>
             <h3 className="text-sm font-semibold text-foreground mt-1">
-              센터 전사 외근(방문/출장), 팀별 지연 콜 병목 모니터링 및 실무 파이프라인
+              센터 팀별 당일 콜 리마인더 및 지연 콜 병목 모니터링 실무 파이프라인
             </h3>
           </div>
         </div>
@@ -178,22 +171,21 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
         <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1">
             <span className="flex items-center gap-1.5 text-foreground">
-              <MapPin size={14} strokeWidth={1.75} className="text-muted-foreground" />
-              오늘 대면 미팅
+              <PhoneForwarded size={14} strokeWidth={1.75} className="text-primary" />
+              오늘 통화 예약
             </span>
-            <span className="text-2xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border tracking-tight">
-              외근·방문
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight">
+              당일 콜
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
             <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
-              {operationsData.fieldMeetings.length}
+              {operationsData.callReminders.length}
             </span>
             <span className="text-xs text-muted-foreground">건</span>
           </div>
           <div className="text-2xs text-muted-foreground mt-2 font-normal">
-            출장 {operationsData.fieldMeetings.filter(m => m.reminder.type === '출장미팅').length}건 / 
-            방문 {operationsData.fieldMeetings.filter(m => m.reminder.type === '방문미팅').length}건
+            재통화 및 고객 상담 예약 건
           </div>
         </div>
 
@@ -244,72 +236,7 @@ export const OperationsMasterView: React.FC<OperationsMasterViewProps> = ({
         </div>
       </div>
 
-      {/* 2단: 오늘 전사 외근/방문 미팅 현황판 */}
-      <div className="bg-card border border-border rounded-xl p-5 shadow-xs">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground">
-              <MapPin size={16} strokeWidth={1.75} />
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-foreground">오늘 전사 외근(출장/방문) 미팅 통합 현황판</h4>
-              <p className="text-xs text-muted-foreground">외근 나간 상담원 위치 및 계약 체결 대면 일정을 확인하세요.</p>
-            </div>
-          </div>
-          <span className="text-2xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border tracking-tight">
-            총 {filteredMeetings.length}건
-          </span>
-        </div>
-
-        {filteredMeetings.length === 0 ? (
-          <div className="py-12 text-center text-muted-foreground text-xs font-normal">
-            오늘 예정된 출장 또는 방문 대면 미팅이 없습니다.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {filteredMeetings.map(({ caseData, reminder, team }) => {
-              const time = reminder.datetime?.split(' ')[1] || '시간미정';
-              const isOut = reminder.type === '출장미팅';
-              return (
-                <div
-                  key={reminder.id}
-                  onClick={() => navigate(`/cases/${caseData.caseId}`)}
-                  className="p-3 rounded-lg bg-muted/40 border border-border hover:border-primary/40 hover:bg-muted/70 transition-all cursor-pointer flex items-center justify-between group"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="px-2 py-0.5 rounded text-2xs font-semibold bg-muted text-foreground border border-border tracking-tight">
-                      {reminder.type}
-                    </span>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
-                          {caseData.customerName || '고객명 미상'}
-                        </span>
-                        <span className="text-2xs text-muted-foreground">
-                          [{team}] {caseData.assignee || '미지정'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                        {reminder.content || '상세 메모 없음'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-right">
-                    <div className="text-xs font-medium text-primary flex items-center gap-1">
-                      <Clock size={12} strokeWidth={1.75} />
-                      {time}
-                    </div>
-                    <ArrowUpRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* 3단: 팀별 지연(Overdue) 리마인더 병목 감지 및 독려 패널 */}
+      {/* 2단: 팀별 지연(Overdue) 리마인더 병목 감지 및 독려 패널 */}
       <div className="bg-card border border-border rounded-xl p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
           <div className="flex items-center gap-2">

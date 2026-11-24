@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { 
-  Users, DollarSign, MapPin, Clock, Phone, AlertTriangle, 
+  Users, DollarSign, MapPin, Clock, Phone, PhoneForwarded, AlertTriangle, 
   ArrowUpRight, CheckCircle2, MessageSquare, Handshake,
   Calendar, ShieldCheck, Sparkles, ChevronRight
 } from 'lucide-react';
@@ -50,7 +50,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
   // 3. 팀 오늘 핵심 일정 집계
   const teamTodayData = useMemo(() => {
     const depositPromises: { caseData: Case; reminder: ReminderItem }[] = [];
-    const fieldMeetings: { caseData: Case; reminder: ReminderItem }[] = [];
+    const callReminders: { caseData: Case; reminder: ReminderItem }[] = [];
     const closerRequests: { caseData: Case; reminder: ReminderItem }[] = [];
     let overdueCount = 0;
     const nowStr = format(new Date(), 'yyyy-MM-dd HH:mm');
@@ -74,11 +74,10 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
 
           if (r.type === '입금') {
             depositPromises.push({ caseData: c, reminder: r });
+          } else {
+            callReminders.push({ caseData: c, reminder: r });
           }
-          if (r.type === '출장미팅' || r.type === '방문미팅') {
-            fieldMeetings.push({ caseData: c, reminder: r });
-          }
-          // 클로징 동행 요청 (메모에 '동행', '3자', '팀장' 포함 시)
+          // 클로징 지원 요청 (메모에 '동행', '3자', '팀장', '클로징' 포함 시)
           if (
             (r.content && (r.content.includes('동행') || r.content.includes('3자') || r.content.includes('팀장') || r.content.includes('클로징')))
           ) {
@@ -100,7 +99,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
 
     return {
       depositPromises,
-      fieldMeetings,
+      callReminders,
       closerRequests,
       overdueCount,
       memberTimelineMap
@@ -123,7 +122,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">[{currentTeamName}] · {todayFormatted}</span>
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1">
-              우리 팀원들의 당일 핵심 계약 건(입금·대면)과 클로징 동행 서포트 캘린더
+              우리 팀원들의 당일 핵심 계약 건(입금)과 3자 통화 클로징 서포트 캘린더
             </h3>
           </div>
         </div>
@@ -158,18 +157,18 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
         <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">
             <span className="flex items-center gap-1.5">
-              <MapPin size={14} className="text-purple-600 dark:text-purple-400" />
-              팀 대면 미팅
+              <PhoneForwarded size={14} className="text-indigo-600 dark:text-indigo-400" />
+              팀 당일 통화 예약
             </span>
-            <span className="text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/50">
-              외근·방문
+            <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-100 dark:bg-indigo-950 px-2 py-0.5 rounded border border-indigo-200/50 dark:border-indigo-800/50">
+              당일 콜
             </span>
           </div>
-          <div className="text-xl font-black text-purple-300">
-            {teamTodayData.fieldMeetings.length}건
+          <div className="text-xl font-black text-indigo-600 dark:text-indigo-400">
+            {teamTodayData.callReminders.length}건
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            출장/센터방문 계약 체결 건
+            재통화 및 고객 상담 예약 건
           </div>
         </div>
 
@@ -177,7 +176,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">
             <span className="flex items-center gap-1.5">
               <Handshake size={14} className="text-amber-600 dark:text-amber-400" />
-              클로징 동행 서포트
+              3자 통화 클로징 지원
             </span>
             <span className="text-xs text-amber-600 dark:text-amber-400 font-bold bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded border border-amber-200/50 dark:border-amber-800/50">
               팀장 지원
@@ -187,7 +186,7 @@ export const TeamSupervisionView: React.FC<TeamSupervisionViewProps> = ({
             {teamTodayData.closerRequests.length}건
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            3자 통화 및 외근 동행 요청
+            3자 통화 및 상담 지원 요청
           </div>
         </div>
 

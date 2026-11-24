@@ -4,7 +4,7 @@ import { format, isToday, parseISO, differenceInDays } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { 
   Building, DollarSign, Users, Database, CreditCard, 
-  AlertTriangle, Calendar, Clock, MapPin, Phone, 
+  AlertTriangle, Calendar, Clock, MapPin, Phone, PhoneForwarded,
   ChevronRight, CheckCircle2, AlertCircle, ArrowUpRight,
   TrendingUp, FileText, ShieldAlert, Sparkles
 } from 'lucide-react';
@@ -82,9 +82,9 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
     };
   }, [cases, partners, batches]);
 
-  // 2. 오늘 센터 현장 운영 & 영업 집중 관제 (외근/방문/입금약속)
+  // 2. 오늘 센터 현장 운영 & 콜 영업 집중 관제 (통화/입금약속)
   const todayOperations = useMemo(() => {
-    const fieldMeetings: { caseData: Case; reminder: ReminderItem }[] = [];
+    const callReminders: { caseData: Case; reminder: ReminderItem }[] = [];
     const depositPromises: { caseData: Case; reminder: ReminderItem }[] = [];
     let todayTotalReminders = 0;
     let overdueRemindersCount = 0;
@@ -100,11 +100,10 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
         // 당일 일정
         if (dateStr === todayStr) {
           todayTotalReminders++;
-          if (r.type === '출장미팅' || r.type === '방문미팅') {
-            fieldMeetings.push({ caseData: c, reminder: r });
-          }
           if (r.type === '입금') {
             depositPromises.push({ caseData: c, reminder: r });
+          } else {
+            callReminders.push({ caseData: c, reminder: r });
           }
         }
 
@@ -116,7 +115,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
     });
 
     return {
-      fieldMeetings: fieldMeetings.sort((a, b) => (a.reminder.datetime || '').localeCompare(b.reminder.datetime || '')),
+      callReminders: callReminders.sort((a, b) => (a.reminder.datetime || '').localeCompare(b.reminder.datetime || '')),
       depositPromises: depositPromises.sort((a, b) => (a.reminder.datetime || '').localeCompare(b.reminder.datetime || '')),
       todayTotalReminders,
       overdueRemindersCount
@@ -182,7 +181,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
               <span className="text-2xs text-muted-foreground font-medium">{todayFormatted}</span>
             </div>
             <h3 className="text-sm font-semibold text-foreground mt-1">
-              자금 흐름(수임료·인센티브·DB)과 당일 현장 영업(외근·입금·미처리) 원스톱 관제
+              자금 흐름(수임료·인센티브·DB)과 당일 콜 영업(입금·미처리) 원스톱 관제
             </h3>
           </div>
         </div>
@@ -253,25 +252,25 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
           </div>
         </div>
 
-        {/* 당일 외근/대면 미팅 현황 */}
+        {/* 당일 통화 예약 (리마인더) 현황 */}
         <div className="p-4 rounded-xl bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium mb-1.5">
             <span className="flex items-center gap-1.5 text-foreground">
-              <MapPin size={14} strokeWidth={1.75} className="text-muted-foreground" />
-              오늘 대면 미팅 (외근/방문)
+              <PhoneForwarded size={14} strokeWidth={1.75} className="text-primary" />
+              오늘 통화 예약
             </span>
-            <span className="text-2xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border tracking-tight">
-              클로징 중요
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 tracking-tight">
+              당일 콜
             </span>
           </div>
           <div className="flex items-baseline gap-1 mt-1">
             <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
-              {todayOperations.fieldMeetings.length}
+              {todayOperations.callReminders.length}
             </span>
             <span className="text-xs text-muted-foreground">건</span>
           </div>
           <div className="text-2xs text-muted-foreground mt-2 font-normal">
-            출장 {todayOperations.fieldMeetings.filter(m => m.reminder.type === '출장미팅').length}건 / 방문 {todayOperations.fieldMeetings.filter(m => m.reminder.type === '방문미팅').length}건
+            재통화 및 고객 상담 예약 건
           </div>
         </div>
 
@@ -305,35 +304,34 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
 
       </div>
 
-      {/* 2단: 오늘 센터 현장 영업 & 외근/입금약속 실시간 관제판 (2열 분할) */}
+      {/* 2단: 오늘 센터 현장 영업 & 콜/입금약속 실시간 관제판 (2열 분할) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
-        {/* 좌측: 오늘 외근/방문 미팅 현황판 (클로징 동행 및 현장 관제) */}
+        {/* 좌측: 오늘 예정된 고객 통화 리마인더 현황판 */}
         <div className="bg-card border border-border rounded-xl p-5 shadow-xs">
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground">
-                <MapPin size={16} strokeWidth={1.75} />
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <PhoneForwarded size={16} strokeWidth={1.75} />
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-foreground">오늘 대면 미팅 현황 (출장·센터방문)</h4>
-                <p className="text-xs text-muted-foreground">외근 나간 상담원과 클로징 미팅 일정을 확인하세요.</p>
+                <h4 className="text-sm font-semibold text-foreground">오늘 고객 통화 리마인더 현황</h4>
+                <p className="text-xs text-muted-foreground">오늘 예정된 재통화 및 상담 예약 콜 목록입니다.</p>
               </div>
             </div>
-            <span className="text-2xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border tracking-tight">
-              총 {todayOperations.fieldMeetings.length}건
+            <span className="text-2xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 tracking-tight">
+              총 {todayOperations.callReminders.length}건
             </span>
           </div>
 
-          {todayOperations.fieldMeetings.length === 0 ? (
+          {todayOperations.callReminders.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground text-xs font-normal">
-              오늘 예정된 출장 또는 센터 방문 대면 미팅이 없습니다.
+              오늘 예정된 고객 통화 예약 일정이 없습니다.
             </div>
           ) : (
             <div className="space-y-2">
-              {todayOperations.fieldMeetings.map(({ caseData, reminder }) => {
+              {todayOperations.callReminders.map(({ caseData, reminder }) => {
                 const time = reminder.datetime?.split(' ')[1] || '시간미정';
-                const isOut = reminder.type === '출장미팅';
                 return (
                   <div
                     key={reminder.id}
@@ -341,7 +339,7 @@ export const ExecutiveHybridAllInOneView: React.FC<ExecutiveHybridAllInOneViewPr
                     className="p-3 rounded-lg bg-muted/40 border border-border hover:border-primary/40 hover:bg-muted/70 transition-all cursor-pointer flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded text-2xs font-semibold bg-muted text-foreground border border-border tracking-tight">
+                      <span className="px-2 py-0.5 rounded text-2xs font-semibold bg-primary/10 text-primary border border-primary/20 tracking-tight">
                         {reminder.type}
                       </span>
                       <div>

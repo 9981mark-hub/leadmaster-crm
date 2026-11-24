@@ -21,7 +21,7 @@ type SortOption = 'time_asc' | 'createdAt_desc' | 'updatedAt_desc';
 
 const DROP_OFF_STATUSES = ['고객취소', '진행불가'];
 const DROP_OFF_REASONS = ['비용 부담', '타 사무소 선택', '연락 두절', '자격 미달', '본인 의사 취소', '시기 미정', '기타'];
-const ALL_TYPES = ['통화', '출장미팅', '방문미팅', '입금', '문자', '기타'];
+const ALL_TYPES = ['통화', '재통화', '입금', '문자', '기타'];
 
 // 유입경로 추출 헬퍼
 export const resolveInboundPath = (caseData: Case): string => {
