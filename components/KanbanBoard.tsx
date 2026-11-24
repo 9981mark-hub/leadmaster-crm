@@ -11,13 +11,16 @@ interface KanbanBoardProps {
     onUpdateStatus: (caseId: string, newStatus: string) => void;
 }
 
-// monday.com 상태별 시그니처 색상 매핑
+// monday.com 상태별 시그니처 색상 매핑 (재통화/부재/사무장 명확 구분)
 const getStatusColor = (st: string) => {
-    if (st.includes('신규') || st.includes('접수')) return '#0073ea';
-    if (st.includes('상담') || st.includes('부재') || st.includes('재통화')) return '#fdab3d';
-    if (st.includes('적격') || st.includes('심사') || st.includes('서류') || st.includes('인계')) return '#579bfc';
-    if (st.includes('수임') || st.includes('계약') || st.includes('완료')) return '#00c875';
-    if (st.includes('보류') || st.includes('취소') || st.includes('종결') || st.includes('실패')) return '#df2f4a';
+    if (st.includes('수임') || st.includes('계약') || st.includes('완료') || st.includes('입금')) return '#00c875';
+    if (st.includes('불가') || st.includes('취소') || st.includes('종결') || st.includes('거절') || st.includes('부적격')) return '#df2f4a';
+    if (st.includes('사무장') || st.includes('인계') || st.includes('법무')) return '#00a2ae';
+    if (st.includes('부재')) return '#ff642e';
+    if (st.includes('재통화') || st.includes('재컨택') || st.includes('예약')) return '#ffcb00';
+    if (st.includes('상담') || st.includes('진행')) return '#fdab3d';
+    if (st.includes('신규') || st.includes('접수') || st.includes('배정')) return '#0073ea';
+    if (st.includes('적격') || st.includes('심사') || st.includes('서류')) return '#579bfc';
     return '#a25ddc';
 };
 

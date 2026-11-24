@@ -300,31 +300,37 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                 id: 'new',
                 title: '신규 접수 리드',
                 color: '#0073ea',
-                cases: cases.filter(c => c.isNew || ['신규접수', '접수', '배정대기'].includes(c.status)),
+                cases: cases.filter(c => c.isNew || ['신규', '접수', '배정대기', '광고'].some(k => (c.status || '').includes(k))),
             },
             {
                 id: 'working',
-                title: '1차 상담 진행 중',
+                title: '1차 상담 & 재통화/부재 관리',
                 color: '#fdab3d',
-                cases: cases.filter(c => !c.isNew && ['상담진행', '상담진행중', '진행중', '1차상담', '재통화요', '재통화', '부재중', '사무장 접수'].includes(c.status)),
+                cases: cases.filter(c => !c.isNew && ['상담', '재통화', '재컨택', '부재', '진행', '통화예약'].some(k => (c.status || '').includes(k)) && !['사무장', '적격', '심사', '계약', '수임', '불가', '취소'].some(k => (c.status || '').includes(k))),
+            },
+            {
+                id: 'paralegal',
+                title: '사무장 접수 & 법무팀 인계',
+                color: '#00a2ae',
+                cases: cases.filter(c => !c.isNew && ['사무장', '인계', '법무'].some(k => (c.status || '').includes(k))),
             },
             {
                 id: 'qualified',
                 title: '적격 심사 & 계약 준비',
                 color: '#579bfc',
-                cases: cases.filter(c => !c.isNew && ['적격심사', '1차적격', '심사중', '계약서작성', '서류보완요청'].includes(c.status)),
+                cases: cases.filter(c => !c.isNew && ['적격', '심사', '계약서작성', '서류보완'].some(k => (c.status || '').includes(k)) && !['계약 완료', '계약완료', '수임'].some(k => (c.status || '').includes(k))),
             },
             {
                 id: 'done',
                 title: '계약 / 수임 완료',
                 color: '#00c875',
-                cases: cases.filter(c => ['계약완료', '수임완료', '완료', '계약 완료'].includes(c.status)),
+                cases: cases.filter(c => ['계약완료', '수임완료', '완료', '계약 완료', '수임 완료', '입금완료'].some(k => (c.status || '').includes(k))),
             },
             {
                 id: 'stuck',
                 title: '보류 / 취소 / 종결',
                 color: '#df2f4a',
-                cases: cases.filter(c => ['진행불가', '고객취소', '거절', '부적격'].includes(c.status)),
+                cases: cases.filter(c => ['진행불가', '고객취소', '거절', '부적격'].some(k => (c.status || '').includes(k))),
             },
         ];
 

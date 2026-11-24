@@ -10,7 +10,7 @@ export interface StatusCellProps {
   availableStatuses?: string[];
 }
 
-interface StatusConfig {
+export interface StatusConfig {
   label: string;
   bg: string;
   hoverBg: string;
@@ -19,53 +19,136 @@ interface StatusConfig {
 
 // monday.com Vibe 6대 시그니처 색상 매핑
 export const MONDAY_STATUS_MAP: Record<string, StatusConfig> = {
-  // 완료 계열
+  // 1. 완료 계열 (Green: #00c875)
   '계약완료': { label: '계약완료', bg: '#00c875', hoverBg: '#0f9b63', textColor: '#ffffff' },
+  '계약 완료': { label: '계약 완료', bg: '#00c875', hoverBg: '#0f9b63', textColor: '#ffffff' },
   '수임완료': { label: '수임완료', bg: '#00c875', hoverBg: '#0f9b63', textColor: '#ffffff' },
+  '수임 완료': { label: '수임 완료', bg: '#00c875', hoverBg: '#0f9b63', textColor: '#ffffff' },
+  '1차 입금완료': { label: '1차 입금완료', bg: '#00c875', hoverBg: '#0f9b63', textColor: '#ffffff' },
+  '2차 입금완료': { label: '2차 입금완료', bg: '#00c875', hoverBg: '#0f9b63', textColor: '#ffffff' },
   '완료': { label: '완료', bg: '#00c875', hoverBg: '#0f9b63', textColor: '#ffffff' },
 
-  // 진행/상담 계열
+  // 2. 신규/접수 계열 (Blue: #0073ea)
+  '신규접수': { label: '신규접수', bg: '#0073ea', hoverBg: '#0060b9', textColor: '#ffffff' },
+  '신규 접수': { label: '신규 접수', bg: '#0073ea', hoverBg: '#0060b9', textColor: '#ffffff' },
+  '신규': { label: '신규', bg: '#0073ea', hoverBg: '#0060b9', textColor: '#ffffff' },
+  '접수': { label: '접수', bg: '#0073ea', hoverBg: '#0060b9', textColor: '#ffffff' },
+  '배정대기': { label: '배정대기', bg: '#0073ea', hoverBg: '#0060b9', textColor: '#ffffff' },
+  '광고유입': { label: '광고유입', bg: '#0073ea', hoverBg: '#0060b9', textColor: '#ffffff' },
+
+  // 3. 1차 상담 진행 계열 (Orange: #fdab3d)
   '상담진행': { label: '상담진행', bg: '#fdab3d', hoverBg: '#c0873c', textColor: '#ffffff' },
   '상담진행중': { label: '상담진행중', bg: '#fdab3d', hoverBg: '#c0873c', textColor: '#ffffff' },
+  '상담중': { label: '상담중', bg: '#fdab3d', hoverBg: '#c0873c', textColor: '#ffffff' },
   '진행중': { label: '진행중', bg: '#fdab3d', hoverBg: '#c0873c', textColor: '#ffffff' },
   '1차상담': { label: '1차상담', bg: '#fdab3d', hoverBg: '#c0873c', textColor: '#ffffff' },
 
-  // 이슈/거절/보류 계열
+  // 4. 재통화/재컨택 예약 계열 (Sunny Yellow: #ffcb00, textColor: #323338) - ★ 노란색 명확 구분
+  '재통화 예정': { label: '재통화 예정', bg: '#ffcb00', hoverBg: '#e5b700', textColor: '#323338' },
+  '재통화예정': { label: '재통화예정', bg: '#ffcb00', hoverBg: '#e5b700', textColor: '#323338' },
+  '재컨택 예정': { label: '재컨택 예정', bg: '#ffcb00', hoverBg: '#e5b700', textColor: '#323338' },
+  '재컨택예정': { label: '재컨택예정', bg: '#ffcb00', hoverBg: '#e5b700', textColor: '#323338' },
+  '재통화요': { label: '재통화요', bg: '#ffcb00', hoverBg: '#e5b700', textColor: '#323338' },
+  '재통화': { label: '재통화', bg: '#ffcb00', hoverBg: '#e5b700', textColor: '#323338' },
+  '통화예약': { label: '통화예약', bg: '#ffcb00', hoverBg: '#e5b700', textColor: '#323338' },
+  '대기': { label: '대기', bg: '#ffcb00', hoverBg: '#e5b700', textColor: '#323338' },
+
+  // 5. 부재 계열 (Coral Tangerine: #ff642e, textColor: #ffffff) - ★ 코랄 주황 명확 구분
+  '부재': { label: '부재', bg: '#ff642e', hoverBg: '#e65100', textColor: '#ffffff' },
+  '부재중': { label: '부재중', bg: '#ff642e', hoverBg: '#e65100', textColor: '#ffffff' },
+  '부재 1차': { label: '부재 1차', bg: '#ff642e', hoverBg: '#e65100', textColor: '#ffffff' },
+  '부재 2차': { label: '부재 2차', bg: '#ff642e', hoverBg: '#e65100', textColor: '#ffffff' },
+  '부재 3차': { label: '부재 3차', bg: '#ff642e', hoverBg: '#e65100', textColor: '#ffffff' },
+  '지속부재': { label: '지속부재', bg: '#ff642e', hoverBg: '#e65100', textColor: '#ffffff' },
+
+  // 6. 사무장 접수 / 법무법인 인계 계열 (Deep Teal: #00a2ae, textColor: #ffffff) - ★ 청록 틸 명확 구분
+  '사무장 접수': { label: '사무장 접수', bg: '#00a2ae', hoverBg: '#00828c', textColor: '#ffffff' },
+  '사무장접수': { label: '사무장접수', bg: '#00a2ae', hoverBg: '#00828c', textColor: '#ffffff' },
+  '사무장 인계': { label: '사무장 인계', bg: '#00a2ae', hoverBg: '#00828c', textColor: '#ffffff' },
+  '사무장인계': { label: '사무장인계', bg: '#00a2ae', hoverBg: '#00828c', textColor: '#ffffff' },
+  '법무팀인계': { label: '법무팀인계', bg: '#00a2ae', hoverBg: '#00828c', textColor: '#ffffff' },
+
+  // 7. 심사/적격 계열 (Sky Blue: #579bfc)
+  '적격심사': { label: '적격심사', bg: '#579bfc', hoverBg: '#4c7cc1', textColor: '#ffffff' },
+  '적격 심사': { label: '적격 심사', bg: '#579bfc', hoverBg: '#4c7cc1', textColor: '#ffffff' },
+  '1차적격': { label: '1차적격', bg: '#579bfc', hoverBg: '#4c7cc1', textColor: '#ffffff' },
+  '심사중': { label: '심사중', bg: '#579bfc', hoverBg: '#4c7cc1', textColor: '#ffffff' },
+  '계약서작성': { label: '계약서작성', bg: '#579bfc', hoverBg: '#4c7cc1', textColor: '#ffffff' },
+  '서류보완요청': { label: '서류보완요청', bg: '#579bfc', hoverBg: '#4c7cc1', textColor: '#ffffff' },
+
+  // 8. 거절/종결/불가 계열 (Crimson Red: #df2f4a)
   '진행불가': { label: '진행불가', bg: '#df2f4a', hoverBg: '#ad3f51', textColor: '#ffffff' },
   '고객취소': { label: '고객취소', bg: '#df2f4a', hoverBg: '#ad3f51', textColor: '#ffffff' },
   '거절': { label: '거절', bg: '#df2f4a', hoverBg: '#ad3f51', textColor: '#ffffff' },
   '부적격': { label: '부적격', bg: '#df2f4a', hoverBg: '#ad3f51', textColor: '#ffffff' },
 
-  // 신규/접수 계열
-  '신규접수': { label: '신규접수', bg: '#0073ea', hoverBg: '#0060b9', textColor: '#ffffff' },
-  '접수': { label: '접수', bg: '#0073ea', hoverBg: '#0060b9', textColor: '#ffffff' },
-  '배정대기': { label: '배정대기', bg: '#0073ea', hoverBg: '#0060b9', textColor: '#ffffff' },
-
-  // 대기/재연락 계열
-  '재통화요': { label: '재통화요', bg: '#ffcb00', hoverBg: '#eaaa15', textColor: '#323338' },
-  '재통화': { label: '재통화', bg: '#ffcb00', hoverBg: '#eaaa15', textColor: '#323338' },
-  '부재중': { label: '부재중', bg: '#faa1f1', hoverBg: '#be80ba', textColor: '#ffffff' },
-  '대기': { label: '대기', bg: '#ffcb00', hoverBg: '#eaaa15', textColor: '#323338' },
-
-  // 심사/적격 계열
-  '적격심사': { label: '적격심사', bg: '#579bfc', hoverBg: '#4c7cc1', textColor: '#ffffff' },
-  '1차적격': { label: '1차적격', bg: '#579bfc', hoverBg: '#4c7cc1', textColor: '#ffffff' },
-  '심사중': { label: '심사중', bg: '#579bfc', hoverBg: '#4c7cc1', textColor: '#ffffff' },
+  // 9. 장기관리 계열 (Purple: #a25ddc)
+  '장기관리중': { label: '장기관리중', bg: '#a25ddc', hoverBg: '#8546b8', textColor: '#ffffff' },
+  '장기관리': { label: '장기관리', bg: '#a25ddc', hoverBg: '#8546b8', textColor: '#ffffff' },
   '단순문의': { label: '단순문의', bg: '#9d50dd', hoverBg: '#7d45b0', textColor: '#ffffff' },
 };
 
 const DEFAULT_STATUS_CONFIG: StatusConfig = {
   label: '미정',
-  bg: '#c4c4c4',
-  hoverBg: '#a8a8a8',
+  bg: '#676879',
+  hoverBg: '#50515e',
   textColor: '#ffffff',
+};
+
+// 지능형 상태 색상 판별 함수 (공백 무시 및 키워드 매칭 지원)
+export const getStatusConfig = (status: string | undefined): StatusConfig => {
+  if (!status) return { ...DEFAULT_STATUS_CONFIG, label: '미정' };
+  const raw = status.trim();
+  const normalized = raw.replace(/\s+/g, '');
+
+  // 1. 직접 매칭 (원문)
+  if (MONDAY_STATUS_MAP[raw]) return MONDAY_STATUS_MAP[raw];
+
+  // 2. 공백 제거 매칭
+  if (MONDAY_STATUS_MAP[normalized]) return MONDAY_STATUS_MAP[normalized];
+
+  // 3. 지능형 키워드 매칭 (공백이나 변형이 있어도 안전하게 색상 복원)
+  if (normalized.includes('계약') || normalized.includes('수임') || normalized.includes('입금완료')) {
+    return { label: raw, bg: '#00c875', hoverBg: '#0f9b63', textColor: '#ffffff' };
+  }
+  if (normalized.includes('불가') || normalized.includes('취소') || normalized.includes('거절') || normalized.includes('부적격')) {
+    return { label: raw, bg: '#df2f4a', hoverBg: '#ad3f51', textColor: '#ffffff' };
+  }
+  if (normalized.includes('사무장') || normalized.includes('이관') || normalized.includes('인계') || normalized.includes('법무')) {
+    return { label: raw, bg: '#00a2ae', hoverBg: '#00828c', textColor: '#ffffff' };
+  }
+  if (normalized.includes('부재')) {
+    return { label: raw, bg: '#ff642e', hoverBg: '#e65100', textColor: '#ffffff' };
+  }
+  if (normalized.includes('재통화') || normalized.includes('재컨택') || normalized.includes('통화예약') || normalized.includes('예약')) {
+    return { label: raw, bg: '#ffcb00', hoverBg: '#e5b700', textColor: '#323338' };
+  }
+  if (normalized.includes('상담') || normalized.includes('통화중') || normalized.includes('진행')) {
+    return { label: raw, bg: '#fdab3d', hoverBg: '#c0873c', textColor: '#ffffff' };
+  }
+  if (normalized.includes('신규') || normalized.includes('접수') || normalized.includes('배정') || normalized.includes('광고')) {
+    return { label: raw, bg: '#0073ea', hoverBg: '#0060b9', textColor: '#ffffff' };
+  }
+  if (normalized.includes('적격') || normalized.includes('심사') || normalized.includes('서류')) {
+    return { label: raw, bg: '#579bfc', hoverBg: '#4c7cc1', textColor: '#ffffff' };
+  }
+  if (normalized.includes('장기') || normalized.includes('관리')) {
+    return { label: raw, bg: '#a25ddc', hoverBg: '#8546b8', textColor: '#ffffff' };
+  }
+
+  return {
+    label: raw,
+    bg: '#676879',
+    hoverBg: '#50515e',
+    textColor: '#ffffff',
+  };
 };
 
 // 3x3 팝오버용 기본 9대 추천 팔레트
 const DEFAULT_PALETTE_STATUSES = [
-  '계약완료', '상담진행', '진행불가',
-  '재통화요', '신규접수', '적격심사',
-  '부재중',   '단순문의', '배정대기',
+  '계약 완료', '상담중', '사무장 접수',
+  '재통화 예정', '부재', '신규접수',
+  '적격심사', '진행불가', '장기관리중',
 ];
 
 export const StatusCell: React.FC<StatusCellProps> = ({
@@ -79,10 +162,7 @@ export const StatusCell: React.FC<StatusCellProps> = ({
   const [isCelebrating, setIsCelebrating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const currentConfig = MONDAY_STATUS_MAP[status] || {
-    ...DEFAULT_STATUS_CONFIG,
-    label: status || '미정',
-  };
+  const currentConfig = getStatusConfig(status);
 
   const palette = availableStatuses && availableStatuses.length > 0 
     ? availableStatuses 
@@ -156,7 +236,7 @@ export const StatusCell: React.FC<StatusCellProps> = ({
 
           <div className="grid grid-cols-3 gap-1.5">
             {palette.map((s) => {
-              const cfg = MONDAY_STATUS_MAP[s] || { ...DEFAULT_STATUS_CONFIG, label: s };
+              const cfg = getStatusConfig(s);
               const isSelected = s === status;
 
               return (

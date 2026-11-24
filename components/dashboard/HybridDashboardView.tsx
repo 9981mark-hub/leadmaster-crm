@@ -111,29 +111,35 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
     });
   }, [activeCases]);
 
-  // 파이프라인 상태별 분포 계산 (monday.com 배터리 위젯용)
+  // 파이프라인 상태별 분포 계산 (monday.com 배터리 위젯용 - 재통화/부재/사무장 세분화)
   const pipelineSegments = useMemo(() => {
     const counts: Record<string, number> = {
       '신규 접수': 0,
       '1차 상담': 0,
-      '적격 심사': 0,
+      '재통화/예약': 0,
+      '부재': 0,
+      '사무장 인계': 0,
       '계약 완료': 0,
       '보류/종결': 0,
     };
     activeCases.forEach((c) => {
       const st = c.status || '';
-      if (st.includes('신규') || st.includes('접수')) counts['신규 접수']++;
-      else if (st.includes('상담') || st.includes('부재') || st.includes('재통화')) counts['1차 상담']++;
-      else if (st.includes('서류') || st.includes('심사') || st.includes('인계')) counts['적격 심사']++;
-      else if (st.includes('계약') || st.includes('수임') || st.includes('완료')) counts['계약 완료']++;
-      else counts['보류/종결']++;
+      if (st.includes('계약') || st.includes('수임') || st.includes('완료')) counts['계약 완료']++;
+      else if (st.includes('불가') || st.includes('취소') || st.includes('종결')) counts['보류/종결']++;
+      else if (st.includes('사무장') || st.includes('인계') || st.includes('법무')) counts['사무장 인계']++;
+      else if (st.includes('부재')) counts['부재']++;
+      else if (st.includes('재통화') || st.includes('재컨택') || st.includes('예약')) counts['재통화/예약']++;
+      else if (st.includes('신규') || st.includes('접수') || st.includes('배정')) counts['신규 접수']++;
+      else counts['1차 상담']++;
     });
     return [
       { label: '신규 접수', count: counts['신규 접수'], color: '#0073ea' },
       { label: '1차 상담', count: counts['1차 상담'], color: '#fdab3d' },
-      { label: '적격 심사', count: counts['적격 심사'], color: '#579bfc' },
+      { label: '재통화/예약', count: counts['재통화/예약'], color: '#ffcb00' },
+      { label: '부재', count: counts['부재'], color: '#ff642e' },
+      { label: '사무장 인계', count: counts['사무장 인계'], color: '#00a2ae' },
       { label: '계약 완료', count: counts['계약 완료'], color: '#00c875' },
-      { label: '보류/기타', count: counts['보류/종결'], color: '#c4c4c4' },
+      { label: '보류/종결', count: counts['보류/종결'], color: '#df2f4a' },
     ];
   }, [activeCases]);
 
