@@ -484,21 +484,21 @@ export const CaseDetailAiSummary: React.FC<CaseDetailAiSummaryProps> = ({
 
             {/* Action Buttons (최근 요약을 볼 때만) */}
             {aiSummaryText && !aiSummaryEditMode && !viewing && (
-                <div className="pt-2 flex justify-end gap-2">
+                <div className="pt-2 flex flex-col gap-2">
                     <button
                         type="button"
                         onClick={handleSaveSummaryToMemo}
-                        className="flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 text-foreground px-3.5 py-2 rounded-lg font-semibold border border-border transition-colors shadow-2xs cursor-pointer"
+                        className="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-muted hover:bg-muted/80 text-foreground px-3.5 py-2.5 rounded-lg font-semibold border border-border transition-colors shadow-2xs cursor-pointer whitespace-nowrap"
                     >
-                        <Send size={13} className="text-primary" />
+                        <Send size={13} strokeWidth={1.75} className="text-primary shrink-0" />
                         <span>상담 내용으로 보내기 (특이사항 추가)</span>
                     </button>
                     <button
                         type="button"
                         onClick={handleTelegramSendClick}
-                        className="flex items-center gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-bold transition-colors shadow-2xs cursor-pointer"
+                        className="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2.5 rounded-lg font-bold transition-colors shadow-2xs cursor-pointer whitespace-nowrap"
                     >
-                        <MessageCircle size={13} />
+                        <MessageCircle size={13} strokeWidth={1.75} className="shrink-0" />
                         <span>텔레그램 전송</span>
                     </button>
                 </div>

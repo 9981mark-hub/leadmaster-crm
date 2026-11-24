@@ -103,19 +103,19 @@ export const CaseDetailAssets: React.FC<CaseDetailAssetsProps> = ({
     return (
         <SectionCard step={4} title="채무 · 재산" meta={`채무 ${c.creditLoan?.length || 0}건 · 재산 ${c.assets?.length || 0}건`} bodyClassName="">
             {/* 채무 합계: 상담하면서 바로 보이게 */}
-            <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))] divide-x divide-border border-b border-border bg-card">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border border-b border-border bg-card">
                 {[
                     { k: '총 채무', v: debt.total, strong: true },
                     { k: '신용 (카드 포함)', v: debt.credit },
                     { k: '담보', v: debt.collateral },
                     { k: '월 상환', v: c.loanMonthlyPay || 0, extra: payRatio !== null ? `소득의 ${payRatio}%` : '' },
                 ].map(x => (
-                    <div key={x.k} className="px-3.5 py-2.5 bg-card">
-                        <div className="text-xs text-muted-foreground font-medium">{x.k}</div>
-                        <div className={`tabular-nums font-mono ${x.strong ? 'text-lg font-bold text-foreground' : 'text-sm font-semibold text-foreground'}`}>
+                    <div key={x.k} className="px-3 py-2.5 bg-card min-w-0">
+                        <div className="text-xs text-muted-foreground font-medium truncate">{x.k}</div>
+                        <div className={`tabular-nums font-mono whitespace-nowrap break-keep ${x.strong ? 'text-base sm:text-lg font-bold text-foreground' : 'text-xs sm:text-sm font-semibold text-foreground'}`}>
                             {x.v > 0 ? formatKoreanMoney(x.v) : '-'}
                         </div>
-                        {x.extra && <div className="text-xs text-muted-foreground font-mono">{x.extra}</div>}
+                        {x.extra && <div className="text-2xs text-muted-foreground font-mono truncate">{x.extra}</div>}
                     </div>
                 ))}
             </div>
