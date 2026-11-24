@@ -43,18 +43,18 @@ import { supabase } from '../services/supabase';
 import { DEFAULT_STATUS_LIST } from '../constants';
 
 const TelegramLockedView: React.FC = () => (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-10 text-center border border-slate-200 dark:border-gray-700 shadow-sm max-w-lg mx-auto my-12 animate-scale-in">
-        <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs">
-            <Lock size={26} />
+    <div className="bg-card rounded-2xl p-10 text-center border border-border shadow-xs max-w-lg mx-auto my-12 animate-scale-in">
+        <div className="w-14 h-14 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs">
+            <Lock size={26} strokeWidth={1.75} />
         </div>
-        <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2">
+        <h3 className="text-base font-bold text-foreground mb-2">
             텔레그램 연동 관제 센터 접근 권한 잠김
         </h3>
-        <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed mb-4">
+        <p className="text-xs text-muted-foreground leading-relaxed mb-4">
             대표이사(Owner)가 텔레그램 연동 관제 센터 접근 권한을 아직 위임하지 않았습니다.<br />
             현장 피드백 관제 권한이 필요하신 경우 대표이사에게 <strong>[관리자 권한 위임]</strong>을 요청하세요.
         </p>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-xs font-semibold">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border text-xs font-semibold">
             🔒 권한 위임 대기
         </span>
     </div>
@@ -89,23 +89,23 @@ const ManualLinker = ({ onLink, prefillName }: { onLink: (caseId: string) => voi
     }, [prefillName]);
 
     return (
-        <div className="mt-2 text-sm bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
-            <p className="text-gray-700 dark:text-gray-200 font-bold mb-2 flex items-center gap-1 text-xs">
-                <AlertTriangle size={13} className="text-yellow-600" />
+        <div className="mt-2 text-sm bg-muted/30 border border-border rounded-xl p-3">
+            <p className="text-foreground font-semibold mb-2 flex items-center gap-1.5 text-xs">
+                <AlertTriangle size={13} strokeWidth={1.75} className="text-amber-500" />
                 자동 연동에 실패했습니다. 수동으로 고객을 검색하여 연결해 주세요:
             </p>
             <div className="flex gap-2 mb-2">
                 <input 
                     type="text" 
                     placeholder="고객 이름 또는 전화번호 검색..." 
-                    className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400 p-2 rounded-lg grow text-xs font-medium outline-none focus:ring-1 focus:ring-blue-500"
+                    className="border border-input bg-background text-foreground placeholder:text-muted-foreground p-2 rounded-lg grow text-xs font-medium outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleSearch()}
                 />
                 <button 
                     onClick={() => handleSearch()} 
-                    className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold px-3 py-1.5 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 text-xs transition shrink-0"
+                    className="bg-muted hover:bg-muted/80 text-foreground border border-border font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 shadow-2xs cursor-pointer"
                 >
                     {isSearching ? '검색 중...' : '검색'}
                 </button>
@@ -113,15 +113,15 @@ const ManualLinker = ({ onLink, prefillName }: { onLink: (caseId: string) => voi
             {results.length > 0 && (
                 <div className="flex flex-col gap-1.5 mt-2">
                     {results.map(r => (
-                        <div key={r.case_id} className="flex justify-between items-center bg-white dark:bg-gray-800 p-2 rounded-lg border border-blue-100 dark:border-blue-900">
-                            <span className="font-medium text-xs text-gray-800 dark:text-gray-200">
-                                {r.customer_name} <span className="text-gray-500 dark:text-gray-400">({r.status})</span> - {r.phone?.slice(-4) || '번호없음'}
+                        <div key={r.case_id} className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border shadow-2xs">
+                            <span className="font-medium text-xs text-foreground">
+                                {r.customer_name} <span className="text-muted-foreground">({r.status})</span> - <span className="font-mono">{r.phone?.slice(-4) || '번호없음'}</span>
                             </span>
                             <button 
                                 onClick={() => onLink(r.case_id)} 
-                                className="text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-2.5 py-1 flex items-center gap-1 rounded-md text-xs font-bold hover:bg-blue-100 transition"
+                                className="text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 flex items-center gap-1 rounded-md text-xs font-semibold hover:bg-primary/20 transition-colors cursor-pointer"
                             >
-                                <Check size={12} /> 연동 및 승인
+                                <Check size={12} strokeWidth={1.75} /> 연동 및 승인
                             </button>
                         </div>
                     ))}
@@ -738,8 +738,8 @@ export default function TelegramSync() {
         return (
             <div 
                 key={f.id} 
-                className={`p-5 transition-colors border-b border-gray-100 dark:border-gray-700/60 ${
-                    isSelected ? 'bg-purple-50/50 dark:bg-purple-950/20' : isHistory ? 'bg-white dark:bg-gray-800' : 'hover:bg-gray-50/60 dark:hover:bg-gray-750'
+                className={`p-4 sm:p-5 transition-colors border-b border-border ${
+                    isSelected ? 'bg-primary/5' : isHistory ? 'bg-card' : 'hover:bg-muted/30'
                 }`}
             >
                 <div className="flex items-start gap-3.5">
@@ -748,12 +748,12 @@ export default function TelegramSync() {
                         <button
                             type="button"
                             onClick={() => toggleSelect(f.id)}
-                            className="mt-1 text-gray-500 dark:text-gray-400 hover:text-purple-600 transition shrink-0 cursor-pointer"
+                            className="mt-1 text-muted-foreground hover:text-primary transition-colors shrink-0 cursor-pointer"
                         >
                             {isSelected ? (
-                                <CheckSquare size={19} className="text-purple-600" />
+                                <CheckSquare size={18} strokeWidth={1.75} className="text-primary" />
                             ) : (
-                                <Square size={19} />
+                                <Square size={18} strokeWidth={1.75} />
                             )}
                         </button>
                     )}
@@ -762,26 +762,26 @@ export default function TelegramSync() {
                         {/* 1. Header Badges */}
                         <div className="flex items-center gap-2 flex-wrap">
                             {/* Partner Badge */}
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800 flex items-center gap-1">
-                                <Building2 size={12} /> {partnerName}
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 flex items-center gap-1 shadow-2xs">
+                                <Building2 size={12} strokeWidth={1.75} /> {partnerName}
                             </span>
 
                             {/* Agent Badge */}
                             {c && (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 flex items-center gap-1">
-                                    <User size={12} /> {agentName}
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground border border-border flex items-center gap-1">
+                                    <User size={12} strokeWidth={1.75} className="text-muted-foreground" /> {agentName}
                                 </span>
                             )}
 
                             {/* Feedback Type Badge */}
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted text-foreground border border-border">
                                 {f.feedbackType}
                             </span>
 
                             {/* Care Needed Alert Badge */}
                             {ins?.isCareNeeded && (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800 flex items-center gap-1 animate-pulse">
-                                    <AlertTriangle size={12} /> 1차 TM 재관리 요망
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-destructive/10 text-destructive border border-destructive/20 flex items-center gap-1 animate-pulse">
+                                    <AlertTriangle size={12} strokeWidth={1.75} /> 1차 TM 재관리 요망
                                 </span>
                             )}
 
@@ -789,10 +789,10 @@ export default function TelegramSync() {
                             {isHistory && (
                                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                                     f.isConfirmed && f.isApplied 
-                                        ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
+                                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
                                         : f.isConfirmed 
-                                            ? 'bg-gray-100 text-gray-700 border-gray-200' 
-                                            : 'bg-amber-100 text-amber-700 border-amber-200'
+                                            ? 'bg-muted text-muted-foreground border-border' 
+                                            : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                                 }`}>
                                     {f.isConfirmed ? (f.isApplied ? '승인완료' : '무시됨') : '대기중'}
                                 </span>
@@ -802,26 +802,26 @@ export default function TelegramSync() {
                             {c ? (
                                 <Link 
                                     to={`/case/${c.caseId}`}
-                                    className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-0.5"
+                                    className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5"
                                 >
-                                    🎯 {c.customerName} <span className="text-gray-500 dark:text-gray-400 font-normal">({c.status})</span>
-                                    <ChevronRight size={12} />
+                                    🎯 {c.customerName} <span className="text-muted-foreground font-normal">({c.status})</span>
+                                    <ChevronRight size={12} strokeWidth={1.75} />
                                 </Link>
                             ) : f.customerName ? (
-                                <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                                <span className="text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
                                     🔍 {f.customerName} (미연동)
                                 </span>
                             ) : null}
 
                             {/* Timestamp */}
-                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto shrink-0">
+                            <span className="text-xs text-muted-foreground ml-auto shrink-0 font-mono tabular-nums">
                                 {format(parseISO(f.createdAt), 'yyyy.MM.dd HH:mm', { locale: ko })}
                             </span>
                         </div>
 
                         {/* 2. Message Body */}
-                        <div className="bg-gray-50/80 dark:bg-gray-900/50 p-3.5 rounded-xl border border-gray-100 dark:border-gray-700 text-sm">
-                            <p className="text-gray-800 dark:text-gray-200 font-medium whitespace-pre-wrap leading-relaxed">
+                        <div className="bg-muted/30 p-3.5 rounded-xl border border-border text-xs leading-relaxed">
+                            <p className="text-foreground font-normal whitespace-pre-wrap leading-relaxed font-sans">
                                 {f.feedbackContent}
                             </p>
                         </div>
@@ -831,43 +831,43 @@ export default function TelegramSync() {
                             <div className="flex flex-wrap items-center gap-2 pt-1">
                                 {/* Schedule Detected */}
                                 {ins?.schedule?.isSchedule && (
-                                    <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 text-xs">
-                                        <Calendar size={14} className="text-emerald-600" />
-                                        <span className="font-bold text-emerald-800 dark:text-emerald-300">
+                                    <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 text-xs">
+                                        <Calendar size={14} strokeWidth={1.75} className="text-emerald-500" />
+                                        <span className="font-bold text-emerald-500">
                                             {ins.schedule.dateDisplay}
                                         </span>
-                                        <label className="flex items-center gap-1 ml-2 text-emerald-700 dark:text-emerald-400 cursor-pointer select-none">
+                                        <label className="flex items-center gap-1 ml-2 text-emerald-500/90 cursor-pointer select-none">
                                             <input
                                                 type="checkbox"
                                                 checked={isCalChecked}
                                                 onChange={(e) => setCalendarChecks(prev => ({ ...prev, [f.id]: e.target.checked }))}
-                                                className="rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500"
+                                                className="rounded border-emerald-500 text-primary focus:ring-primary"
                                             />
-                                            <span className="font-semibold">캘린더 자동 등록</span>
+                                            <span className="font-semibold text-xs">캘린더 자동 등록</span>
                                         </label>
                                     </div>
                                 )}
 
                                 {/* Amounts Detected */}
                                 {ins?.amounts?.hasAmount && (
-                                    <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-700 dark:text-blue-300">
-                                        <DollarSign size={14} className="text-blue-600" />
+                                    <div className="flex items-center gap-1.5 bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 text-xs font-bold font-mono text-blue-400 tabular-nums">
+                                        <DollarSign size={14} strokeWidth={1.75} className="text-blue-400" />
                                         <span>{ins.amounts.displayStr}</span>
                                     </div>
                                 )}
 
                                 {/* Missed Call Count */}
                                 {ins?.missedCallCount && ins.missedCallCount > 1 && (
-                                    <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800 text-xs font-semibold text-amber-700 dark:text-amber-300">
-                                        <PhoneCall size={13} className="text-amber-600" />
+                                    <div className="flex items-center gap-1 bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold text-amber-500">
+                                        <PhoneCall size={13} strokeWidth={1.75} className="text-amber-500" />
                                         <span>부재 {ins.missedCallCount}차 감지</span>
                                     </div>
                                 )}
 
                                 {/* Target Status Preview based on Company Rules */}
                                 {rule?.targetStatus && (
-                                    <div className="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-950/30 px-2.5 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800 text-xs text-purple-700 dark:text-purple-300">
-                                        <Sparkles size={13} className="text-purple-600" />
+                                    <div className="flex items-center gap-1.5 bg-primary/10 px-2.5 py-1.5 rounded-lg border border-primary/20 text-xs text-primary font-medium">
+                                        <Sparkles size={13} strokeWidth={1.75} className="text-primary" />
                                         <span>규칙 상태: <b>'{rule.targetStatus}'</b></span>
                                     </div>
                                 )}
@@ -884,7 +884,7 @@ export default function TelegramSync() {
                                     />
                                 </div>
                             ) : (
-                                <div className="pt-1 text-xs text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/30 p-2 rounded-lg border border-amber-200 dark:border-amber-800">
+                                <div className="pt-1 text-xs text-amber-500 font-semibold bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/20">
                                     ⚠️ 고객 매칭 대기: 고객 정보가 아직 CRM에 연결되지 않았습니다. 관리자에게 고객 매칭을 요청하세요.
                                 </div>
                             )
@@ -898,17 +898,17 @@ export default function TelegramSync() {
                                 <button
                                     onClick={() => handleConfirm(f)}
                                     disabled={isActionBusy}
-                                    className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1 disabled:opacity-50"
+                                    className="w-full px-3 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
                                 >
-                                    <Check size={14} /> {ins?.schedule?.isSchedule ? '일정 즉시 저장' : '승인'}
+                                    <Check size={14} strokeWidth={1.75} /> {ins?.schedule?.isSchedule ? '일정 즉시 저장' : '승인'}
                                 </button>
                             )}
                             <button
                                 onClick={() => handleDismiss(f.id)}
                                 disabled={isActionBusy}
-                                className="w-full px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-medium transition flex items-center justify-center gap-1 disabled:opacity-50"
+                                className="w-full px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1 disabled:opacity-50 cursor-pointer"
                             >
-                                <X size={14} /> 무시
+                                <X size={14} strokeWidth={1.75} /> 무시
                             </button>
                         </div>
                     )}
@@ -919,10 +919,10 @@ export default function TelegramSync() {
                             <button
                                 onClick={() => handleReopen(f.id)}
                                 disabled={isActionBusy}
-                                className="w-full px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-600 dark:text-purple-400 bg-gray-100 hover:bg-purple-50 dark:bg-gray-700 dark:hover:bg-purple-900/30 rounded-xl transition flex items-center justify-center gap-1 disabled:opacity-50 border border-gray-200 dark:border-gray-600"
+                                className="w-full px-2.5 py-1.5 text-xs font-semibold text-foreground bg-card hover:bg-muted rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 border border-border shadow-2xs cursor-pointer"
                                 title="승인 또는 무시 처리를 취소하고 다시 승인 대기열로 복구합니다."
                             >
-                                <RotateCcw size={12} />
+                                <RotateCcw size={12} strokeWidth={1.75} />
                                 <span>대기열 복구</span>
                             </button>
                         </div>
@@ -936,14 +936,14 @@ export default function TelegramSync() {
         return (
             <div className="max-w-[1600px] mx-auto space-y-6">
                 <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 shrink-0">
-                        <Smartphone size={24} />
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 shadow-xs">
+                        <Smartphone size={20} strokeWidth={1.75} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
                             텔레그램 연동 관제 센터
                         </h1>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                             법률사무소 현장 피드백 실시간 파싱 · 1:N 채널 라우팅 · 캘린더/정산 자동 연동
                         </p>
                     </div>
@@ -1388,18 +1388,18 @@ export default function TelegramSync() {
 
                     {/* Pending List Contents */}
                     {isLoading ? (
-                        <div className="flex flex-col items-center justify-center p-16 text-gray-500 dark:text-gray-400">
-                            <div className="animate-spin inline-block w-8 h-8 border-[3px] border-indigo-500 border-t-transparent rounded-full mb-3" />
+                        <div className="flex flex-col items-center justify-center p-16 text-muted-foreground">
+                            <div className="animate-spin inline-block w-8 h-8 border-[3px] border-primary border-t-transparent rounded-full mb-3" />
                             <p className="font-medium text-xs">피드백 데이터를 동기화하는 중...</p>
                         </div>
                     ) : filteredPending.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-16 text-gray-500 dark:text-gray-400">
-                            <CheckCircle size={44} className="text-emerald-500 mb-3 opacity-60" />
-                            <p className="font-bold text-gray-700 dark:text-gray-300 text-sm">대기 중인 피드백이 없습니다.</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">모든 현장 피드백이 처리되었거나 자동 반영되었습니다.</p>
+                        <div className="flex flex-col items-center justify-center p-16 text-muted-foreground">
+                            <CheckCircle size={44} strokeWidth={1.75} className="text-emerald-500 mb-3 opacity-80" />
+                            <p className="font-bold text-foreground text-sm">대기 중인 피드백이 없습니다.</p>
+                            <p className="text-xs text-muted-foreground mt-1">모든 현장 피드백이 처리되었거나 자동 반영되었습니다.</p>
                         </div>
                     ) : (
-                        <div className="divide-y divide-gray-100 dark:divide-gray-700/60">
+                        <div className="divide-y divide-border">
                             {filteredPending.map(f => renderFeedbackCard(f, false))}
                         </div>
                     )}
@@ -1411,41 +1411,41 @@ export default function TelegramSync() {
                 <div className="space-y-4">
                     {/* Delete Actions Panel (대표 또는 과거 삭제 권한 위임자만) */}
                     {(isOwner || tgPerms.canPurgeHistory) && (
-                        <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-2xs border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                        <div className="bg-card p-4 rounded-xl shadow-xs border border-border flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                             <div>
-                                <h3 className="text-xs font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
-                                    <Trash2 className="text-rose-500" size={14} /> 과거 히스토리 데이터 정리
+                                <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                    <Trash2 className="text-destructive" size={14} strokeWidth={1.75} /> 과거 히스토리 데이터 정리
                                 </h3>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">보관 주기가 지난 텔레그램 수집 데이터를 영구 삭제합니다.</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">보관 주기가 지난 텔레그램 수집 데이터를 영구 삭제합니다.</p>
                             </div>
                             <div className="flex flex-wrap gap-2 items-center">
-                                <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 p-1.5 rounded-xl border border-gray-200 dark:border-gray-600">
-                                    <Calendar size={13} className="text-gray-500 ml-1" />
+                                <div className="flex items-center gap-1.5 bg-background p-1.5 rounded-lg border border-input shadow-2xs">
+                                    <Calendar size={13} strokeWidth={1.75} className="text-muted-foreground ml-1" />
                                     <input 
                                         type="date" 
-                                        className="bg-transparent border-none text-xs outline-none text-gray-700 dark:text-white font-medium"
+                                        className="bg-transparent border-none text-xs outline-none text-foreground font-mono"
                                         value={deleteDate}
                                         onChange={(e) => setDeleteDate(e.target.value)}
                                     />
                                     <button 
                                         onClick={() => handleDeleteHistory('date')}
                                         disabled={!deleteDate || isDeleting}
-                                        className="px-2.5 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 font-bold text-xs rounded-lg transition disabled:opacity-50"
+                                        className="px-2.5 py-1 bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20 font-bold text-xs rounded-md transition-colors disabled:opacity-50 cursor-pointer"
                                     >
                                         일자 삭제
                                     </button>
                                 </div>
-                                <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/60 p-1.5 rounded-xl border border-gray-200 dark:border-gray-600">
+                                <div className="flex items-center gap-1.5 bg-background p-1.5 rounded-lg border border-input shadow-2xs">
                                     <input 
                                         type="month" 
-                                        className="bg-transparent border-none text-xs outline-none text-gray-700 dark:text-white font-medium ml-1"
+                                        className="bg-transparent border-none text-xs outline-none text-foreground font-mono ml-1"
                                         value={deleteMonth}
                                         onChange={(e) => setDeleteMonth(e.target.value)}
                                     />
                                     <button 
                                         onClick={() => handleDeleteHistory('month')}
                                         disabled={!deleteMonth || isDeleting}
-                                        className="px-2.5 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 font-bold text-xs rounded-lg transition disabled:opacity-50"
+                                        className="px-2.5 py-1 bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20 font-bold text-xs rounded-md transition-colors disabled:opacity-50 cursor-pointer"
                                     >
                                         월간 삭제
                                     </button>
@@ -1455,42 +1455,42 @@ export default function TelegramSync() {
                     )}
 
                     {/* History List */}
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xs border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="bg-card rounded-xl shadow-xs border border-border overflow-hidden">
                         {isLoading ? (
-                            <div className="flex flex-col items-center justify-center p-16 text-gray-500 dark:text-gray-400">
-                                <div className="animate-spin inline-block w-8 h-8 border-[3px] border-indigo-500 border-t-transparent rounded-full mb-3" />
+                            <div className="flex flex-col items-center justify-center p-16 text-muted-foreground">
+                                <div className="animate-spin inline-block w-8 h-8 border-[3px] border-primary border-t-transparent rounded-full mb-3" />
                                 <p className="font-medium text-xs">히스토리를 불러오는 중...</p>
                             </div>
                         ) : filteredHistory.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center p-16 text-gray-500 dark:text-gray-400">
-                                <History size={44} className="text-gray-600 dark:text-gray-300 mb-3" />
-                                <p className="font-bold text-gray-600 dark:text-gray-300 text-sm">히스토리가 없습니다.</p>
+                            <div className="flex flex-col items-center justify-center p-16 text-muted-foreground">
+                                <History size={44} strokeWidth={1.75} className="text-muted-foreground mb-3 opacity-60" />
+                                <p className="font-bold text-foreground text-sm">히스토리가 없습니다.</p>
                             </div>
                         ) : (
                             <>
-                                <div className="divide-y divide-gray-100 dark:divide-gray-700/60">
+                                <div className="divide-y divide-border">
                                     {paginatedHistory.map(f => renderFeedbackCard(f, true))}
                                 </div>
 
                                 {/* Pagination */}
                                 {totalHistoryPages > 1 && (
-                                    <div className="flex items-center justify-center gap-2 p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                                    <div className="flex items-center justify-center gap-2 p-4 border-t border-border bg-muted/20">
                                         <button
                                             onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
                                             disabled={historyPage === 1}
-                                            className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 disabled:opacity-30"
+                                            className="p-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors disabled:opacity-30 cursor-pointer shadow-2xs"
                                         >
-                                            <ChevronLeft size={16} />
+                                            <ChevronLeft size={16} strokeWidth={1.75} />
                                         </button>
-                                        <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                                        <span className="text-xs font-mono font-bold text-foreground tabular-nums">
                                             {historyPage} / {totalHistoryPages}
                                         </span>
                                         <button
                                             onClick={() => setHistoryPage(p => Math.min(totalHistoryPages, p + 1))}
                                             disabled={historyPage === totalHistoryPages}
-                                            className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 disabled:opacity-30"
+                                            className="p-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors disabled:opacity-30 cursor-pointer shadow-2xs"
                                         >
-                                            <ChevronRight size={16} />
+                                            <ChevronRight size={16} strokeWidth={1.75} />
                                         </button>
                                     </div>
                                 )}
