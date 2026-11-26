@@ -896,7 +896,7 @@ export default function CaseList() {
     }).length;
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-6">
+        <div className="max-w-[1600px] mx-auto space-y-3 md:space-y-6">
             <CaseListHeader
                 totalItems={totalItems}
                 currentPage={currentPage}
@@ -920,6 +920,14 @@ export default function CaseList() {
                 onOpenNewCaseModal={() => setIsNewCaseModalOpen(true)}
                 density={density}
                 onToggleDensity={toggleDensity}
+                canImport={isAdmin}
+                onOpenImportModal={isAdmin ? () => setIsImportModalOpen(true) : undefined}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                canManageArchive={isAdmin}
+                companyMaskingPolicy={companyMaskingPolicy}
+                onToggleCompanyMaskingPolicy={isAdmin ? handleToggleCompanyMaskingPolicy : undefined}
+                onOpenStatusVisibilityModal={() => setIsVisibilityModalOpen(true)}
             />
 
             <CaseListFilter
@@ -946,6 +954,10 @@ export default function CaseList() {
                 onResetPage={() => setCurrentPage(1)}
                 companyMaskingPolicy={companyMaskingPolicy}
                 onToggleCompanyMaskingPolicy={isAdmin ? handleToggleCompanyMaskingPolicy : undefined}
+                assigneeFilter={assigneeFilter}
+                setAssigneeFilter={setAssigneeFilter}
+                members={members}
+                showAssignee={showAssignee}
             />
 
             {/* Filter Chips Bar (Active Filters Visualization) */}
@@ -991,7 +1003,7 @@ export default function CaseList() {
 
             {/* 빠른 보기 + 담당자 */}
             <div className="flex flex-wrap items-center gap-2">
-                <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-card border border-border shadow-2xs">
+                <div className="flex flex-nowrap md:flex-wrap gap-1 p-1 rounded-xl bg-card border border-border shadow-2xs overflow-x-auto max-w-full">
                     {([
                         { k: 'all', label: '전체', n: viewCounts.all },
                         { k: 'today', label: '오늘 할 일', n: viewCounts.today, hint: '오늘까지 잡힌 일정 · 신규 · 다시 걸 부재' },
@@ -1001,7 +1013,7 @@ export default function CaseList() {
                     ] as { k: QuickView; label: string; n: number; hint?: string }[]).map(v => (
                         <button key={v.k} type="button" title={v.hint}
                             onClick={() => { setQuickView(v.k); setCurrentPage(1); }}
-                            className={`h-8 px-3 rounded-lg text-xs flex items-center gap-1.5 transition-colors ${quickView === v.k ? 'bg-primary/10 text-primary font-semibold border border-primary/20' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                            className={`h-8 px-2.5 md:px-3 rounded-lg text-xs flex items-center gap-1.5 transition-colors shrink-0 whitespace-nowrap ${quickView === v.k ? 'bg-primary/10 text-primary font-semibold border border-primary/20' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
                             {v.label}
                             <span className={`text-[11px] tabular-nums ${quickView === v.k ? 'text-primary font-bold' : 'text-muted-foreground'}`}>{v.n.toLocaleString()}</span>
                         </button>
@@ -1009,7 +1021,7 @@ export default function CaseList() {
                 </div>
                 {showAssignee && (
                     <select value={assigneeFilter} onChange={e => { setAssigneeFilter(e.target.value); setCurrentPage(1); }}
-                        className="h-10 px-3 rounded-xl border border-border bg-card text-xs text-foreground shadow-2xs" aria-label="담당자">
+                        className="hidden md:block h-10 px-3 rounded-xl border border-border bg-card text-xs text-foreground shadow-2xs" aria-label="담당자">
                         <option value="">모든 담당자</option>
                         <option value="__none__">미배정</option>
                         {members.filter(m => m.status === 'active').map(m => <option key={m.userId} value={m.userId}>{m.displayName}</option>)}

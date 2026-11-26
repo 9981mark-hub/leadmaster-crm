@@ -1,6 +1,7 @@
 import React from 'react';
-import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2, XCircle, Star, Archive, ShieldAlert, Eye } from 'lucide-react';
+import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2, XCircle, Star, Archive, ShieldAlert, Eye, SlidersHorizontal, User } from 'lucide-react';
 import { Partner, CaseStatus } from '../../types';
+import { TeamMember } from '../../services/team';
 
 interface CaseListFilterProps {
     search: string;
@@ -41,6 +42,11 @@ interface CaseListFilterProps {
     /** 회사 전체 리드 목록 마스킹 정책 ('masked': 방어모드 / 'unmasked': 전체공개) */
     companyMaskingPolicy?: 'masked' | 'unmasked';
     onToggleCompanyMaskingPolicy?: () => void;
+    /** 모바일 필터 서랍 통합용 담당자 필터 */
+    assigneeFilter?: string;
+    setAssigneeFilter?: (val: string) => void;
+    members?: TeamMember[];
+    showAssignee?: boolean;
 }
 
 export const CaseListFilter: React.FC<CaseListFilterProps> = ({
@@ -59,9 +65,48 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
     partners, inboundPaths, statuses,
     secondaryStatuses, tertiaryStatuses,
     onOpenImportModal, canImport = false, onOpenStatusVisibilityModal, onResetPage,
-    companyMaskingPolicy = 'masked', onToggleCompanyMaskingPolicy
+    companyMaskingPolicy = 'masked', onToggleCompanyMaskingPolicy,
+    assigneeFilter = '', setAssigneeFilter, members = [], showAssignee = false
 }) => {
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = React.useState(false);
+    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = React.useState(false);
+
+    const activeFilterCount =
+        (dateFilterStart ? 1 : 0) +
+        (dateFilterEnd ? 1 : 0) +
+        (partnerFilter ? 1 : 0) +
+        (inboundPathFilter ? 1 : 0) +
+        (statusFilters.length > 0 ? 1 : 0) +
+        (assigneeFilter ? 1 : 0);
+
+    const formatLocalDate = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+
+    const applyDatePreset = (preset: 'today' | '7d' | 'month' | 'clear') => {
+        const now = new Date();
+        if (preset === 'clear') {
+            setDateFilterStart('');
+            setDateFilterEnd('');
+        } else if (preset === 'today') {
+            const today = formatLocalDate(now);
+            setDateFilterStart(today);
+            setDateFilterEnd(today);
+        } else if (preset === '7d') {
+            const start = new Date(now);
+            start.setDate(start.getDate() - 6);
+            setDateFilterStart(formatLocalDate(start));
+            setDateFilterEnd(formatLocalDate(now));
+        } else if (preset === 'month') {
+            const start = new Date(now.getFullYear(), now.getMonth(), 1);
+            setDateFilterStart(formatLocalDate(start));
+            setDateFilterEnd(formatLocalDate(now));
+        }
+        onResetPage();
+    };
 
     // Helper to wrap setters with page reset
     const withReset = (setter: (val: any) => void) => (e: any) => {
@@ -97,28 +142,79 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                 <button
                     type="button"
                     onClick={() => { setShowStarredOnly(!showStarredOnly); onResetPage(); }}
-                    className={`flex items-center justify-center p-1.5 border rounded-[4px] transition-all shadow-2xs shrink-0 ${showStarredOnly ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-white dark:bg-card border-[#d0d4e4] dark:border-border text-[#676879] dark:text-muted-foreground hover:bg-[#f6f7fb] dark:hover:bg-muted hover:text-[#323338] dark:hover:text-foreground'}`}
+                    className={`flex items-center justify-center p-1.5 px-2 border rounded-[4px] transition-all shadow-2xs shrink-0 ${showStarredOnly ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-white dark:bg-card border-[#d0d4e4] dark:border-border text-[#676879] dark:text-muted-foreground hover:bg-[#f6f7fb] dark:hover:bg-muted hover:text-[#323338] dark:hover:text-foreground'}`}
                     title="중요 표시된 항목만 보기"
                 >
                     <Star size={16} strokeWidth={1.75} fill={showStarredOnly ? 'currentColor' : 'none'} />
                 </button>
-                {/* Cloud Upload Button (Mobile Only) */}
+                {/* Mobile Filter Drawer Toggle Button */}
+                <button
+                    type="button"
+                    onClick={() => setIsMobileFiltersOpen(prev => !prev)}
+                    className={`md:hidden flex items-center gap-1.5 px-2.5 py-1.5 border rounded-[4px] text-xs font-medium transition-all shadow-2xs shrink-0 ${isMobileFiltersOpen || activeFilterCount > 0 ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-white dark:bg-card border-[#d0d4e4] dark:border-border text-[#323338] dark:text-foreground hover:bg-[#f6f7fb] dark:hover:bg-muted'}`}
+                    aria-expanded={isMobileFiltersOpen}
+                    title="상세 필터 열기/닫기"
+                >
+                    <SlidersHorizontal size={14} strokeWidth={1.75} />
+                    <span>필터</span>
+                    {activeFilterCount > 0 && (
+                        <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold tabular-nums">
+                            {activeFilterCount}
+                        </span>
+                    )}
+                </button>
+                {/* Cloud Upload Button (Tablet Only: md~xl, mobile uses Header more menu) */}
                 {canImport && onOpenImportModal && <button
                     type="button"
                     onClick={(e) => {
                         e.preventDefault();
                         onOpenImportModal?.();
                     }}
-                    className="xl:hidden flex items-center justify-center p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-2xs shrink-0"
+                    className="hidden md:flex xl:hidden items-center justify-center p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-2xs shrink-0"
                     title="케이스 대량/일괄 등록 (관리자 전용)"
                 >
                     <Upload size={16} strokeWidth={1.75} />
                 </button>}
             </div>
 
-            <div className="flex flex-wrap gap-1.5 w-full xl:w-auto items-center">
-                {/* Date Filter */}
-                <div className="flex items-center bg-muted/40 border border-border rounded-lg p-1 text-xs">
+            <div className={`${isMobileFiltersOpen ? 'flex' : 'hidden'} md:flex flex-wrap gap-2 md:gap-1.5 w-full xl:w-auto items-center pt-2 md:pt-0 border-t md:border-t-0 border-border`}>
+                {/* Date Filter - Mobile: Presets + Labeled 2-col inputs */}
+                <div className="flex flex-col gap-1.5 w-full md:hidden">
+                    <div className="flex items-center justify-between gap-1">
+                        <span className="text-[11px] font-semibold text-muted-foreground">등록 기간</span>
+                        <div className="flex items-center gap-1">
+                            <button type="button" onClick={() => applyDatePreset('today')} className="px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-[11px] text-foreground">오늘</button>
+                            <button type="button" onClick={() => applyDatePreset('7d')} className="px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-[11px] text-foreground">7일</button>
+                            <button type="button" onClick={() => applyDatePreset('month')} className="px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-[11px] text-foreground">이번 달</button>
+                            {(dateFilterStart || dateFilterEnd) && (
+                                <button type="button" onClick={() => applyDatePreset('clear')} className="px-2 py-0.5 rounded bg-destructive/10 text-[11px] text-destructive">해제</button>
+                            )}
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                        <label className="flex flex-col gap-0.5 bg-muted/40 border border-border rounded-lg px-2 py-1">
+                            <span className="text-[10px] text-muted-foreground">시작일</span>
+                            <input
+                                type="date"
+                                className="bg-transparent text-xs outline-none text-foreground w-full"
+                                value={dateFilterStart}
+                                onChange={withReset(setDateFilterStart)}
+                            />
+                        </label>
+                        <label className="flex flex-col gap-0.5 bg-muted/40 border border-border rounded-lg px-2 py-1">
+                            <span className="text-[10px] text-muted-foreground">종료일</span>
+                            <input
+                                type="date"
+                                className="bg-transparent text-xs outline-none text-foreground w-full"
+                                value={dateFilterEnd}
+                                onChange={withReset(setDateFilterEnd)}
+                            />
+                        </label>
+                    </div>
+                </div>
+
+                {/* Date Filter - Desktop/Tablet */}
+                <div className="hidden md:flex items-center bg-muted/40 border border-border rounded-lg p-1 text-xs">
                     <input
                         type="date"
                         className="bg-transparent text-xs p-1 outline-none text-foreground"
@@ -133,28 +229,30 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                         onChange={withReset(setDateFilterEnd)}
                     />
                 </div>
-                <div className="relative flex-1 min-w-[100px]">
-                    <Building className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} strokeWidth={1.75} />
-                    <select
-                        className="w-full border border-border p-2 pl-7 rounded-lg text-xs bg-card text-foreground appearance-none shadow-2xs"
-                        value={partnerFilter}
-                        onChange={withReset(setPartnerFilter)}
-                    >
-                        <option value="">전체 거래처</option>
-                        {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
-                    </select>
-                </div>
+                <div className="grid grid-cols-2 md:contents gap-1.5 w-full">
+                    <div className="relative flex-1 min-w-0 md:min-w-[100px]">
+                        <Building className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} strokeWidth={1.75} />
+                        <select
+                            className="w-full border border-border p-2 pl-7 rounded-lg text-xs bg-card text-foreground appearance-none shadow-2xs"
+                            value={partnerFilter}
+                            onChange={withReset(setPartnerFilter)}
+                        >
+                            <option value="">전체 거래처</option>
+                            {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
+                        </select>
+                    </div>
 
-                <div className="relative flex-1 min-w-[100px]">
-                    <Filter className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} strokeWidth={1.75} />
-                    <select
-                        className="w-full border border-border p-2 pl-7 rounded-lg text-xs bg-card text-foreground appearance-none shadow-2xs"
-                        value={inboundPathFilter}
-                        onChange={withReset(setInboundPathFilter)}
-                    >
-                        <option value="">전체 유입경로</option>
-                        {inboundPaths.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
+                    <div className="relative flex-1 min-w-0 md:min-w-[100px]">
+                        <Filter className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} strokeWidth={1.75} />
+                        <select
+                            className="w-full border border-border p-2 pl-7 rounded-lg text-xs bg-card text-foreground appearance-none shadow-2xs"
+                            value={inboundPathFilter}
+                            onChange={withReset(setInboundPathFilter)}
+                        >
+                            <option value="">전체 유입경로</option>
+                            {inboundPaths.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                    </div>
                 </div>
 
                 {/* Status + Sort + Actions */}
@@ -233,11 +331,30 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
 
                         <button
                             onClick={onOpenStatusVisibilityModal}
-                            className="p-2 bg-card text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-muted transition-colors shadow-2xs"
+                            className="hidden md:inline-flex p-2 bg-card text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-muted transition-colors shadow-2xs"
                             title="상태 보기 설정"
                         >
                             <Settings size={16} strokeWidth={1.75} />
                         </button>
+
+                        {/* 모바일 전용 담당자 필터 (필터 서랍 통합) */}
+                        {showAssignee && setAssigneeFilter && (
+                            <div className="relative flex-1 min-w-[100px] md:hidden">
+                                <User className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} strokeWidth={1.75} />
+                                <select
+                                    value={assigneeFilter}
+                                    onChange={(e) => { setAssigneeFilter(e.target.value); onResetPage(); }}
+                                    className="w-full border border-border p-2 pl-7 rounded-lg text-xs bg-card text-foreground appearance-none shadow-2xs"
+                                    aria-label="담당자"
+                                >
+                                    <option value="">모든 담당자</option>
+                                    <option value="__none__">미배정</option>
+                                    {members.filter(m => m.status === 'active').map(m => (
+                                        <option key={m.userId} value={m.userId}>{m.displayName}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
                         {/* 2차/3차 상태 필터 */}
                         {statusFilters.includes('사무장 접수') && (
@@ -265,7 +382,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                     </div>
 
                     {/* Group 2: Sort, Actions, Trash */}
-                    <div className="flex flex-1 xl:contents min-w-[200px] gap-1.5 mt-1 xl:mt-0">
+                    <div className="flex flex-wrap flex-1 xl:contents min-w-[200px] gap-1.5 mt-1 xl:mt-0">
                         <div className="relative flex-1 min-w-[120px]">
                             <ArrowUpDown className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} strokeWidth={1.75} />
                             <select
@@ -297,8 +414,8 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             <Upload size={16} strokeWidth={1.75} />
                         </button>}
 
-                        {/* Layout Toggle (List / Kanban) - monday.com 표준 4px 뷰 스위처 */}
-                        <div className="bg-[#f6f7fb] dark:bg-muted p-0.5 rounded-[4px] border border-[#d0d4e4] dark:border-border flex items-center gap-0.5 shadow-2xs">
+                        {/* Layout Toggle (List / Kanban) - 모바일 숨김 */}
+                        <div className="hidden md:flex bg-[#f6f7fb] dark:bg-muted p-0.5 rounded-[4px] border border-[#d0d4e4] dark:border-border items-center gap-0.5 shadow-2xs">
                             <button
                                 onClick={() => setLayoutMode('list')}
                                 className={`p-1.5 rounded-[3px] transition-all ${layoutMode === 'list' ? 'bg-white dark:bg-card shadow-2xs text-[#0073ea] font-semibold' : 'text-[#676879] dark:text-muted-foreground hover:text-[#323338] dark:hover:text-foreground'}`}
@@ -315,12 +432,12 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             </button>
                         </div>
 
-                        {/* 리드 목록 대량 유출 방어(마스킹) 정책 선택 토글 */}
+                        {/* 리드 목록 대량 유출 방어(마스킹) 정책 선택 토글 (모바일은 헤더 더보기 메뉴로 통합) */}
                         {onToggleCompanyMaskingPolicy && (
                             <button
                                 type="button"
                                 onClick={onToggleCompanyMaskingPolicy}
-                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all shadow-2xs shrink-0 font-medium text-xs border ${
+                                className={`hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all shadow-2xs shrink-0 font-medium text-xs border ${
                                     companyMaskingPolicy === 'masked'
                                         ? 'bg-card border-border text-foreground hover:bg-muted'
                                         : 'bg-primary/10 border-primary/20 text-primary hover:bg-primary/15'
@@ -334,11 +451,11 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             </button>
                         )}
 
-                        {/* 보관함 버튼 */}
+                        {/* 보관함 버튼 (모바일은 헤더 더보기 메뉴로 통합) */}
                         {canManageArchive && (
                             <button
                                 onClick={() => setViewMode(viewMode === 'archived' ? 'active' : 'archived')}
-                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all shadow-2xs shrink-0 font-medium text-xs border ${
+                                className={`hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all shadow-2xs shrink-0 font-medium text-xs border ${
                                     viewMode === 'archived'
                                         ? 'bg-primary text-primary-foreground border-primary'
                                         : 'bg-card border-border text-foreground hover:bg-muted'
@@ -350,11 +467,11 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             </button>
                         )}
 
-                        {/* 휴지통 버튼 */}
+                        {/* 휴지통 버튼 (모바일은 헤더 더보기 메뉴로 통합) */}
                         {viewMode !== 'active' && (
                             <button
                                 onClick={() => setViewMode(viewMode === 'trash' ? 'archived' : 'trash')}
-                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors shadow-2xs shrink-0 text-xs font-medium border ${
+                                className={`hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors shadow-2xs shrink-0 text-xs font-medium border ${
                                     viewMode === 'trash'
                                         ? 'bg-destructive text-destructive-foreground border-destructive'
                                         : 'bg-card border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10'
@@ -365,6 +482,16 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                                 <span>{viewMode === 'trash' ? '보관함으로' : '휴지통'}</span>
                             </button>
                         )}
+                    </div>
+                    {/* 모바일 필터 닫기 버튼 */}
+                    <div className="flex md:hidden items-center justify-end w-full pt-1">
+                        <button
+                            type="button"
+                            onClick={() => setIsMobileFiltersOpen(false)}
+                            className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-2xs"
+                        >
+                            필터 닫기
+                        </button>
                     </div>
                 </div>
             </div>
