@@ -220,7 +220,7 @@ export const LiteInCallHud: React.FC<Props> = ({
                   2. 월 평균 소득 (세후 실수령액)
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  통장에 실제로 찍히는 월 평균 금액 확인 (1인가구 최저생계비 133만원 초과 여부)
+                  통장에 실제로 찍히는 월 평균 금액 확인 (2026년 1인가구 최저생계비 약 154만원 초과 여부)
                 </p>
               </div>
             </div>

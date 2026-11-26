@@ -2,20 +2,20 @@ import React, { useState, useMemo } from 'react';
 import { Calculator, Copy, Check, ChevronDown, ChevronUp, Sparkles, TrendingDown, DollarSign, ShieldCheck } from 'lucide-react';
 import { Case } from '../../types';
 
-// 2026년 기준 가구원 수별 법원 최저생계비 (기준 중위소득의 60%, 단위: 만 원)
+// 2026년 보건복지부 고시 기준 가구원 수별 법원 최저생계비 (기준 중위소득의 60%, 단위: 만 원 반올림)
 const MIN_LIVING_COST_2026: Record<number, number> = {
-  1: 139, // 1인 가구 1,392,000원
-  2: 231, // 2인 가구 2,310,000원
-  3: 295, // 3인 가구 2,950,000원
-  4: 357, // 4인 가구 3,570,000원
-  5: 418, // 5인 가구 4,180,000원
-  6: 477, // 6인 가구 4,770,000원
+  1: 154, // 1인 가구 1,538,543원
+  2: 252, // 2인 가구 2,519,575원
+  3: 322, // 3인 가구 3,215,422원
+  4: 390, // 4인 가구 3,896,843원
+  5: 453, // 5인 가구 4,534,031원
+  6: 513, // 6인 가구 5,133,571원
 };
 
 const getLivingCost = (count: number): number => {
   if (count <= 1) return MIN_LIVING_COST_2026[1];
   if (count <= 6) return MIN_LIVING_COST_2026[count];
-  return MIN_LIVING_COST_2026[6] + (count - 6) * 59;
+  return MIN_LIVING_COST_2026[6] + (count - 6) * 60;
 };
 
 interface Props {

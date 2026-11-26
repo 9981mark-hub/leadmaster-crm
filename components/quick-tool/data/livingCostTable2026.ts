@@ -9,14 +9,14 @@ export interface HouseholdLivingCost {
 }
 
 export const LIVING_COST_TABLE_2026: HouseholdLivingCost[] = [
-  { householdSize: 1, medianIncome: 2425000, minLivingCost: 1455000 },
-  { householdSize: 2, medianIncome: 3980000, minLivingCost: 2388000 },
-  { householdSize: 3, medianIncome: 5090000, minLivingCost: 3054000 },
-  { householdSize: 4, medianIncome: 6150000, minLivingCost: 3690000 },
-  { householdSize: 5, medianIncome: 7160000, minLivingCost: 4296000 },
-  { householdSize: 6, medianIncome: 8130000, minLivingCost: 4878000 },
-  { householdSize: 7, medianIncome: 9080000, minLivingCost: 5448000 },
-  { householdSize: 8, medianIncome: 10020000, minLivingCost: 6012000 },
+  { householdSize: 1, medianIncome: 2564238, minLivingCost: 1538543 },
+  { householdSize: 2, medianIncome: 4199292, minLivingCost: 2519575 },
+  { householdSize: 3, medianIncome: 5359036, minLivingCost: 3215422 },
+  { householdSize: 4, medianIncome: 6494738, minLivingCost: 3896843 },
+  { householdSize: 5, medianIncome: 7556719, minLivingCost: 4534031 },
+  { householdSize: 6, medianIncome: 8555952, minLivingCost: 5133571 },
+  { householdSize: 7, medianIncome: 9555185, minLivingCost: 5733111 },
+  { householdSize: 8, medianIncome: 10554418, minLivingCost: 6332651 },
 ];
 
 /**

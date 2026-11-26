@@ -77,7 +77,7 @@ export const LivingCostTab: React.FC<LivingCostTabProps> = ({ onInsertToMemo, sh
             👨‍👩‍👧‍👦 가구원 수 선택 (부양가족 포함)
           </label>
           <span className="text-2xs font-mono text-primary font-bold">
-            2026년 기준 60%: {formatMoney(calculation.standardLivingCost)}
+            2026년 기준 60%: {calculation.standardLivingCost.toLocaleString()}원
           </span>
         </div>
 
