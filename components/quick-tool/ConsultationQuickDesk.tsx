@@ -121,9 +121,6 @@ export const ConsultationQuickDesk: React.FC = () => {
         >
           <Zap className="w-4 h-4 fill-current group-hover:rotate-12 transition-transform" />
           <span className="text-xs font-bold tracking-tight">업무 퀵툴</span>
-          <kbd className="px-1.5 py-0.5 text-3xs font-mono font-bold bg-primary-foreground/20 text-primary-foreground rounded">
-            Alt+Q
-          </kbd>
         </button>
       )}
 
@@ -142,24 +139,21 @@ export const ConsultationQuickDesk: React.FC = () => {
             opacity: currentOpacity,
             zIndex: 45,
           }}
-          className="bg-card/95 backdrop-blur-md text-card-foreground border border-border shadow-2xl rounded-2xl flex flex-col overflow-hidden transition-opacity duration-150 select-none"
+          className="bg-[#eef2f8]/95 dark:bg-zinc-900/95 backdrop-blur-md text-foreground border-2 border-primary/35 dark:border-primary/40 shadow-[0_24px_60px_rgba(15,23,42,0.28)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.8)] rounded-2xl flex flex-col overflow-hidden transition-opacity duration-150 select-none"
         >
           {/* A. 윈도우 헤더 (드래그 핸들 & 컨트롤 바) */}
           <div
             onMouseDown={onMouseDownHeader}
-            className="px-4 py-2.5 bg-muted/50 border-b border-border flex items-center justify-between cursor-move shrink-0"
+            className="px-4 py-2.5 bg-primary/10 dark:bg-primary/15 border-b border-primary/20 flex items-center justify-between cursor-move shrink-0"
           >
-            {/* 좌측: 타이틀 & 단축키 */}
+            {/* 좌측: 타이틀 */}
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
+              <div className="p-1.5 rounded-lg bg-primary text-primary-foreground shadow-2xs">
                 <Zap className="w-3.5 h-3.5 fill-current" />
               </div>
               <span className="font-bold text-xs text-foreground tracking-tight">
                 상담 업무 퀵툴
               </span>
-              <kbd className="px-1.5 py-0.5 text-3xs font-mono bg-muted text-muted-foreground border border-border rounded">
-                Alt+Q
-              </kbd>
             </div>
 
             {/* 우측: 윈도우 조절 버튼들 */}

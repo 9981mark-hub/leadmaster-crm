@@ -13,83 +13,124 @@ export const AgeCalculatorTab: React.FC<AgeCalculatorTabProps> = ({ onInsertToMe
   });
   const [copied, setCopied] = useState(false);
 
-  // 생년월일 파싱 및 계산
-  const calculationResult = useMemo(() => {
+  // 생년월일 파싱 및 계산 (2자리 출생연도·4자리·6자리·8자리 지원, 1900년대 생은 100세 이하만 계산)
+  const calculationState = useMemo(() => {
     const raw = birthInput.replace(/\D/g, '');
-    if (raw.length !== 6 && raw.length !== 8) {
-      return null;
+    if (![2, 4, 6, 8].includes(raw.length)) {
+      return { result: null, errorMsg: null };
     }
+
+    const targetDate = new Date(targetDateInput);
+    if (isNaN(targetDate.getTime())) {
+      return { result: null, errorMsg: null };
+    }
+
+    const targetYear = targetDate.getFullYear();
+    const min1900Year = targetYear - 100; // 1900년대 생은 100세까지만 허용
+    const currentTwoDigit = targetYear % 100;
 
     let year = 0;
     let month = 0;
     let day = 0;
+    let isYearOnly = false;
 
-    if (raw.length === 6) {
-      const yy = parseInt(raw.slice(0, 2), 10);
+    const resolveTwoDigitYear = (yy: number) => {
+      // 00~현재연도 뒤 2자리(예: 00, 10, 20, 26) -> 2000년대, 그 이후(27~99, 예: 77) -> 1900년대
+      return yy <= currentTwoDigit ? 2000 + yy : 1900 + yy;
+    };
+
+    if (raw.length === 2) {
+      year = resolveTwoDigitYear(parseInt(raw, 10));
+      isYearOnly = true;
+    } else if (raw.length === 4) {
+      year = parseInt(raw, 10);
+      isYearOnly = true;
+    } else if (raw.length === 6) {
+      year = resolveTwoDigitYear(parseInt(raw.slice(0, 2), 10));
       month = parseInt(raw.slice(2, 4), 10);
       day = parseInt(raw.slice(4, 6), 10);
-      // 50 이상은 1900년대, 50 미만은 2000년대로 추정
-      year = yy >= 50 ? 1900 + yy : 2000 + yy;
     } else {
       year = parseInt(raw.slice(0, 4), 10);
       month = parseInt(raw.slice(4, 6), 10);
       day = parseInt(raw.slice(6, 8), 10);
     }
 
-    if (month < 1 || month > 12 || day < 1 || day > 31) {
-      return null;
+    if (year > targetYear) {
+      return { result: null, errorMsg: `${targetYear}년 이후 출생자는 계산할 수 없습니다.` };
     }
 
-    const birthDate = new Date(year, month - 1, day);
-    const targetDate = new Date(targetDateInput);
+    if (year < 2000 && year < min1900Year) {
+      return {
+        result: null,
+        errorMsg: `1900년대 생은 100세(${min1900Year}년생)까지만 계산합니다.`,
+      };
+    }
 
-    if (isNaN(birthDate.getTime()) || isNaN(targetDate.getTime())) {
-      return null;
+    if (!isYearOnly && (month < 1 || month > 12 || day < 1 || day > 31)) {
+      return { result: null, errorMsg: null };
     }
 
     // 연 나이 = 기준연도 - 출생연도
-    const yearAge = targetDate.getFullYear() - birthDate.getFullYear();
+    const yearAge = targetYear - year;
 
-    // 만 나이 계산
     let internationalAge = yearAge;
-    const hasPassedBirthday =
-      targetDate.getMonth() > birthDate.getMonth() ||
-      (targetDate.getMonth() === birthDate.getMonth() && targetDate.getDate() >= birthDate.getDate());
+    let hasPassedBirthday = true;
+    let dDay = 0;
 
-    if (!hasPassedBirthday) {
-      internationalAge -= 1;
+    if (!isYearOnly) {
+      const birthDate = new Date(year, month - 1, day);
+      if (isNaN(birthDate.getTime())) {
+        return { result: null, errorMsg: null };
+      }
+
+      hasPassedBirthday =
+        targetDate.getMonth() > birthDate.getMonth() ||
+        (targetDate.getMonth() === birthDate.getMonth() && targetDate.getDate() >= birthDate.getDate());
+
+      if (!hasPassedBirthday) {
+        internationalAge -= 1;
+      }
+
+      const nextBirthday = new Date(targetYear, month - 1, day);
+      if (nextBirthday < targetDate) {
+        nextBirthday.setFullYear(targetYear + 1);
+      }
+      const diffTime = nextBirthday.getTime() - targetDate.getTime();
+      dDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
     // 법률 및 실무 특례 판정
-    const isYouthSpecial = internationalAge >= 19 && internationalAge <= 29; // 청년 특례 (만 19~29세)
-    const isSenior = internationalAge >= 65; // 고령자 (만 65세 이상)
-    const isMinorDependent = internationalAge < 19; // 미성년 부양가족 가능 (만 19세 미만)
-
-    // 생일 D-Day 계산
-    const nextBirthday = new Date(targetDate.getFullYear(), month - 1, day);
-    if (nextBirthday < targetDate) {
-      nextBirthday.setFullYear(targetDate.getFullYear() + 1);
-    }
-    const diffTime = nextBirthday.getTime() - targetDate.getTime();
-    const dDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const isYouthSpecial = internationalAge >= 19 && internationalAge <= 29;
+    const isSenior = internationalAge >= 65;
+    const isMinorDependent = internationalAge < 19;
 
     return {
-      formattedBirth: `${year}년 ${month}월 ${day}일`,
-      internationalAge,
-      yearAge,
-      hasPassedBirthday,
-      dDay,
-      isYouthSpecial,
-      isSenior,
-      isMinorDependent,
+      errorMsg: null,
+      result: {
+        isYearOnly,
+        formattedBirth: isYearOnly ? `${year}년생 (월·일 미입력)` : `${year}년 ${month}월 ${day}일`,
+        internationalAge,
+        yearAge,
+        hasPassedBirthday,
+        dDay,
+        isYouthSpecial,
+        isSenior,
+        isMinorDependent,
+      },
     };
   }, [birthInput, targetDateInput]);
+
+  const calculationResult = calculationState.result;
 
   // 상담 스크립트 생성
   const consultationScript = useMemo(() => {
     if (!calculationResult) return '';
     const { internationalAge, isYouthSpecial, isSenior } = calculationResult;
 
+    if (calculationResult.isYearOnly) {
+      const minIntAge = Math.max(0, calculationResult.yearAge - 1);
+      return `고객님(${calculationResult.formattedBirth})은 올해 연 나이 ${calculationResult.yearAge}세, 만 나이는 생일 전후에 따라 만 ${minIntAge}~${calculationResult.yearAge}세입니다.`;
+    }
     if (isYouthSpecial) {
       return `고객님께서는 현재 만 ${internationalAge}세로 [청년 특례 대상자]에 해당하십니다. 서울·수원·부산회생법원 실무준칙에 따라 일반 36개월이 아닌 24개월(2년) 만에 조기 면책받으실 수 있는 혜택이 적용될 수 있습니다.`;
     }
@@ -123,14 +164,14 @@ export const AgeCalculatorTab: React.FC<AgeCalculatorTabProps> = ({ onInsertToMe
       <div className="bg-card p-4 rounded-xl border border-border space-y-3">
         <div>
           <label className="block text-2xs font-semibold text-muted-foreground mb-1">
-            🎂 고객 생년월일 (6자리 or 8자리)
+            🎂 출생연도 2자리 또는 생년월일 (2·4·6·8자리)
           </label>
           <div className="flex gap-2">
             <input
               type="text"
               value={birthInput}
               onChange={(e) => setBirthInput(e.target.value)}
-              placeholder="예: 960515 또는 19960515"
+              placeholder="예: 77, 00, 10, 20 또는 960515"
               maxLength={8}
               className="flex-1 px-3 py-2 text-sm font-mono font-bold bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
@@ -162,17 +203,21 @@ export const AgeCalculatorTab: React.FC<AgeCalculatorTabProps> = ({ onInsertToMe
       {calculationResult ? (
         <div className="bg-card p-4 rounded-xl border border-border space-y-3">
           <div className="flex items-center justify-between border-b border-border pb-2">
-            <span className="text-2xs text-muted-foreground">출생일: {calculationResult.formattedBirth}</span>
-            <span className="text-2xs font-mono text-muted-foreground">
-              다음 생일까지 D-{calculationResult.dDay === 0 ? 'Day' : calculationResult.dDay}
-            </span>
+            <span className="text-2xs text-muted-foreground">출생: {calculationResult.formattedBirth}</span>
+            {!calculationResult.isYearOnly && (
+              <span className="text-2xs font-mono text-muted-foreground">
+                다음 생일까지 D-{calculationResult.dDay === 0 ? 'Day' : calculationResult.dDay}
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3 py-1">
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
               <span className="block text-2xs text-primary font-medium">법적 만 나이</span>
               <span className="text-2xl font-bold font-mono text-primary">
-                만 {calculationResult.internationalAge}세
+                {calculationResult.isYearOnly
+                  ? `만 ${Math.max(0, calculationResult.yearAge - 1)}~${calculationResult.yearAge}세`
+                  : `만 ${calculationResult.internationalAge}세`}
               </span>
             </div>
             <div className="p-3 rounded-lg bg-muted/30 border border-border text-center">
@@ -251,7 +296,7 @@ export const AgeCalculatorTab: React.FC<AgeCalculatorTabProps> = ({ onInsertToMe
         </div>
       ) : (
         <div className="bg-card p-6 rounded-xl border border-border text-center text-muted-foreground">
-          생년월일 6자리(예: 960515)를 올바르게 입력해주세요.
+          {calculationState.errorMsg || '출생연도 2자리(예: 77, 00, 10, 20) 또는 생년월일 6자리(예: 960515)를 입력해주세요.'}
         </div>
       )}
     </div>
