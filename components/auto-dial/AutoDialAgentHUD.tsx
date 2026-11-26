@@ -68,6 +68,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
 
   // 상담 메모 및 일시정지 사유
   const [memo, setMemo] = useState<string>('');
+  const [wrapUpPaused, setWrapUpPaused] = useState<boolean>(false);
   const [isPauseModalOpen, setIsPauseModalOpen] = useState<boolean>(false);
   const [pauseReason, setPauseReason] = useState<string>('화장실 / 음용수');
 
@@ -219,7 +220,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
     enterWrapUpState(0);
   };
 
-  // 6. 후처리 (Wrap-up) 진입 & 카운트다운 가동
+  // 6. 후처리 (Wrap-up) 진입 & 카운트다운 가동 (40초 이상 유효 상담은 자동 전환 일시정지)
   const enterWrapUpState = async (durationSec: number) => {
     clearAllTimers();
     if (!campaign || !allocation) return;
@@ -230,6 +231,14 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
       customerName: currentQueueItem?.customerName,
     });
 
+    if (durationSec >= 40) {
+      setWrapUpPaused(true);
+      setWrapUpSeconds(0);
+      showToast('유효 상담(40초 이상)으로 감지되어 자동 넘김을 일시정지했습니다.', 'info');
+      return;
+    }
+
+    setWrapUpPaused(false);
     let remaining = campaign.pacingSettings.wrapUpLimitSeconds || 10;
     setWrapUpSeconds(remaining);
 
@@ -504,7 +513,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
                     <span className="w-2 h-2 rounded-full bg-current animate-ping" />
                     {hudState === 'talking' && '🟢 고객 통화 연결됨'}
                     {(hudState === 'dialing' || hudState === 'ringing') && `🟡 신호 연결중 (${ringSeconds}초 / 20초)`}
-                    {hudState === 'wrapup' && `🔵 후처리 진행중 (${wrapUpSeconds}초 남음)`}
+                    {hudState === 'wrapup' && (wrapUpPaused ? '🔵 유효 상담 보호 · 결과 저장 대기' : `🔵 후처리 진행중 (${wrapUpSeconds}초 남음)`)}
                     {hudState === 'gap_wait' && `⏳ 다음 발신 준비 (${gapSeconds}초)`}
                   </span>
 

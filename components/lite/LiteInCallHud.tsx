@@ -47,11 +47,11 @@ export const LiteInCallHud: React.FC<Props> = ({
       : c.phone;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-gray-900 w-full md:max-w-xl max-h-[92vh] rounded-t-3xl md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100 dark:border-gray-800">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 animate-in fade-in duration-200">
+      <div className="bg-card text-card-foreground w-full md:max-w-xl max-h-[92vh] rounded-t-3xl md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-border">
         
         {/* 상단 통화 상태 바 */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 shrink-0 flex items-center justify-between shadow-md">
+        <div className="bg-primary text-primary-foreground p-3.5 sm:p-4 shrink-0 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isCalling ? 'bg-white/20 animate-pulse' : 'bg-amber-400/30'}`}>
@@ -96,7 +96,35 @@ export const LiteInCallHud: React.FC<Props> = ({
         </div>
 
         {/* 바디: 사전 정보 및 필수 질문 가이드 */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-3 custom-scrollbar">
+          {/* 모바일 1-터치 7대 문진 퀵 체크 칩 */}
+          <div className="p-2.5 rounded-xl bg-muted/40 border border-border">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] font-bold text-foreground">필수 확인 7항목 (터치 체크)</span>
+              <span className="text-[11px] font-mono text-primary font-bold">
+                {['채무액', '월소득', '4대보험', '부양가족', '주거', '재산', '연체'].filter(k => checkedItems[k]).length}/7
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {['채무액', '월소득', '4대보험', '부양가족', '주거', '재산', '연체'].map((label) => {
+                const active = !!checkedItems[label];
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => toggleCheck(label)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors cursor-pointer ${
+                      active
+                        ? 'bg-primary text-primary-foreground border-primary shadow-2xs'
+                        : 'bg-card text-muted-foreground border-border hover:text-foreground'
+                    }`}
+                  >
+                    {active ? `✓ ${label}` : label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           
           {/* 1-Tap 반론 극복 치트키 */}
           <LiteBattlecards />
@@ -267,11 +295,11 @@ export const LiteInCallHud: React.FC<Props> = ({
         </div>
 
         {/* 하단 고정 액션 버튼 바 (엄지 터치 최적화: 통화 종료 + 부재 + 상담완료) */}
-        <div className="p-3 bg-gray-50 dark:bg-gray-800/90 border-t border-gray-200 dark:border-gray-700 shrink-0 space-y-2">
+        <div className="p-3 bg-card border-t border-border shrink-0 space-y-2">
           {/* 1. 앱 내 즉시 통화 종료 (전화 끊기) 버튼 */}
           <button
             onClick={onEndCall || onOpenPostCall}
-            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-extrabold text-sm shadow-md active:scale-[0.98] transition-all"
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground font-extrabold text-sm shadow-md active:scale-[0.98] transition-all cursor-pointer"
           >
             <PhoneOff size={18} />
             <span>통화 종료 (전화 끊고 결과 입력)</span>
@@ -281,7 +309,7 @@ export const LiteInCallHud: React.FC<Props> = ({
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={onQuickMissedCall}
-              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs active:scale-95 transition-all"
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer"
             >
               <PhoneOff size={14} />
               <span>📵 부재 (카운트+1)</span>
@@ -289,7 +317,7 @@ export const LiteInCallHud: React.FC<Props> = ({
 
             <button
               onClick={onOpenPostCall}
-              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs active:scale-95 transition-all"
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer"
             >
               <CheckCircle2 size={14} />
               <span>상담 메모 & 전송</span>

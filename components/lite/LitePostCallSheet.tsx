@@ -83,9 +83,11 @@ export const LitePostCallSheet: React.FC<Props> = ({
     fetchKnownTelegramChats().then(setKnownChats).catch(() => {});
   }, []);
 
-  // AI 요약문 상태
+  // AI 요약문 상태 & 실시간 분석 대기
   const [summaryText, setSummaryText] = useState<string>('');
   const [loadingAi, setLoadingAi] = useState(false);
+  const [aiPolling, setAiPolling] = useState(false);
+  const [missingItems, setMissingItems] = useState<string[]>([]);
 
   // 1-Click SMS 모달 및 AI 스마트 일정 감지
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
@@ -107,38 +109,64 @@ export const LitePostCallSheet: React.FC<Props> = ({
     showToast(`${detectedSchedule.datetime} 재통화 일정이 캘린더에 등록되었습니다!`, 'success');
   };
 
-  // 초기 요약문 빌드 (최근 분석 녹음 or 템플릿)
+  // 초기 요약문 빌드 + 통화 직후 녹음 AI 분석 실시간 자동 반영 (최대 20초, 2.5초 간격)
   useEffect(() => {
     let alive = true;
-    setLoadingAi(true);
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 8;
 
-    // 1순위: 최근 녹음 AI 정리의 office_summary 또는 summary
-    fetchLatestAnalyzedRecording(c.caseId).then(rec => {
-      if (!alive) return;
-      if (rec?.extracted?.office_summary) {
-        setSummaryText(rec.extracted.office_summary);
-      } else if (rec?.summary) {
-        setSummaryText(rec.summary);
-      } else if (c.aiSummary) {
+    const fallbackText = () => {
+      if (c.aiSummary) {
         try {
           const parsed = parseAiTranscript(c.aiSummary);
-          if (parsed.summaryText) setSummaryText(parsed.summaryText);
-          else setSummaryText(generateSummary(c, currentPartner?.summaryTemplate));
-        } catch {
-          setSummaryText(generateSummary(c, currentPartner?.summaryTemplate));
+          if (parsed.summaryText) return parsed.summaryText;
+        } catch {}
+      }
+      return generateSummary(c, currentPartner?.summaryTemplate);
+    };
+
+    const loadLatest = async (isInitial: boolean) => {
+      if (isInitial) setLoadingAi(true);
+      try {
+        const rec = await fetchLatestAnalyzedRecording(c.caseId);
+        if (!alive) return false;
+        const aiOffice = rec?.extracted?.office_summary || rec?.summary || '';
+        if (aiOffice) {
+          setSummaryText(aiOffice);
+          setMissingItems(Array.isArray(rec?.extracted?.missing_items) ? rec!.extracted!.missing_items! : []);
+          setAiPolling(false);
+          setLoadingAi(false);
+          return true;
         }
-      } else {
-        setSummaryText(generateSummary(c, currentPartner?.summaryTemplate));
+        if (isInitial) {
+          setSummaryText(fallbackText());
+          setAiPolling(true);
+        }
+      } catch {
+        if (alive && isInitial) setSummaryText(fallbackText());
+      } finally {
+        if (alive && isInitial) setLoadingAi(false);
       }
-    }).catch(() => {
-      if (alive) {
-        setSummaryText(generateSummary(c, currentPartner?.summaryTemplate));
-      }
-    }).finally(() => {
-      if (alive) setLoadingAi(false);
+      return false;
+    };
+
+    loadLatest(true).then((found) => {
+      if (!alive || found) return;
+      pollTimer = setInterval(async () => {
+        attempts += 1;
+        const ok = await loadLatest(false);
+        if (ok || attempts >= MAX_ATTEMPTS) {
+          if (pollTimer) clearInterval(pollTimer);
+          if (alive) setAiPolling(false);
+        }
+      }, 2500);
     });
 
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+      if (pollTimer) clearInterval(pollTimer);
+    };
   }, [c.caseId, currentPartner]);
 
   // 전송 상태
@@ -224,21 +252,21 @@ export const LitePostCallSheet: React.FC<Props> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-gray-900 w-full md:max-w-xl max-h-[94vh] rounded-t-3xl md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100 dark:border-gray-800">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 animate-in fade-in duration-200">
+      <div className="bg-card text-card-foreground w-full md:max-w-xl max-h-[94vh] rounded-t-3xl md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-border">
         
         {/* 헤더 */}
-        <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/80 dark:bg-gray-800/60 shrink-0">
+        <div className="px-4 sm:px-5 py-3 border-b border-border flex items-center justify-between bg-muted/40 shrink-0">
           <div>
-            <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+            <h3 className="font-bold text-foreground text-base flex items-center gap-2">
               <span>{c.customerName} 고객</span>
-              <span className="text-xs font-normal text-gray-500">통화 후 결과 처리</span>
+              <span className="text-xs font-normal text-muted-foreground">통화 후 결과 처리</span>
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{c.phone}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 font-mono">{c.phone}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
             <X size={20} />
           </button>
@@ -366,37 +394,46 @@ export const LitePostCallSheet: React.FC<Props> = ({
 
           {/* 3. AI 상담 요약문 확인 및 편집 */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+            <div className="flex items-center justify-between mb-1.5 gap-2 flex-wrap">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <Sparkles size={14} className="text-amber-500" />
                 ③ 상담 요약문 (자동 생성 · 편집 가능)
               </label>
-              {loadingAi && (
-                <span className="text-xs text-blue-600 flex items-center gap-1 animate-pulse">
-                  <Loader2 size={12} className="animate-spin" /> 녹음 AI 분석 불러오는 중...
+              {(loadingAi || aiPolling) && (
+                <span className="text-[11px] font-semibold text-primary flex items-center gap-1 animate-pulse">
+                  <Loader2 size={12} className="animate-spin" /> AI 통화 내용 자동 요약 대기 중...
                 </span>
               )}
             </div>
+
+            {missingItems.length > 0 && (
+              <div className="mb-2 p-2.5 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-2">
+                <AlertTriangle size={14} className="text-destructive shrink-0 mt-0.5" />
+                <div className="text-[11px] text-destructive font-semibold leading-snug">
+                  누락 확인 필요: {missingItems.join(', ')}
+                </div>
+              </div>
+            )}
 
             <textarea
               rows={6}
               value={summaryText}
               onChange={e => setSummaryText(e.target.value)}
               placeholder="상담 요약 내용이 여기에 표시됩니다..."
-              className="w-full p-3 text-xs leading-relaxed border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500 font-sans"
+              className="w-full p-3 text-xs leading-relaxed border border-border rounded-xl bg-muted/40 text-foreground outline-none focus:ring-2 focus:ring-primary font-sans"
             />
           </div>
 
         </div>
 
         {/* 하단 고정 전송 액션 바 */}
-        <div className="p-3.5 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shrink-0 space-y-2">
+        <div className="p-3.5 bg-card border-t border-border shrink-0 space-y-2">
           
           {selectedStatus === '사무장 접수' ? (
             <button
               onClick={handleDeliverTelegram}
               disabled={sendingTelegram}
-              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-md active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
             >
               {sendingTelegram ? (
                 <>
@@ -414,7 +451,7 @@ export const LitePostCallSheet: React.FC<Props> = ({
             <button
               onClick={handleSaveOnly}
               disabled={savingStatus}
-              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md active:scale-95 transition-all disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-md active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
             >
               {savingStatus ? (
                 <>

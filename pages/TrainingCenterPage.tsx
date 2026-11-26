@@ -2500,6 +2500,117 @@ export default function TrainingCenterPage() {
               </div>
             </div>
 
+            {/* 📱 모바일 전용 풀스크린 스마트폰 모의통화 HUD (통화 연결/발신 중일 때 몰입 모드) */}
+            {(callState === 'calling' || callState === 'connected') && (
+              <div className="fixed inset-0 z-50 md:hidden bg-background text-foreground flex flex-col animate-in fade-in duration-200">
+                {/* 1. 상단 통화 정보 & 7대 문진 미니 칩 1줄 고정 */}
+                <div className="p-4 bg-card border-b border-border space-y-3 shrink-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${callState === 'connected' ? 'bg-primary animate-ping' : 'bg-amber-500 animate-pulse'}`} />
+                        <h3 className="text-base font-bold text-foreground truncate">{selectedPersona.customerName}</h3>
+                      </div>
+                      <p className="text-xs font-mono text-muted-foreground mt-0.5">
+                        {callState === 'calling' ? '신호 연결 중... (뚜르르르~)' : `통화 중 · ${formatTime(callDuration)}`}
+                      </p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-bold shrink-0">
+                      {isCustomerSpeaking ? '🗣️ 고객 발화 중' : callState === 'connected' ? '🎙️ 내 차례' : '발신 중'}
+                    </span>
+                  </div>
+
+                  {/* 7대 문진 미니 체크 칩 */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { k: 'job', label: '직업' },
+                      { k: 'salary', label: '소득' },
+                      { k: 'dependents', label: '부양가족' },
+                      { k: 'housing', label: '주거' },
+                      { k: 'debt', label: '채무액' },
+                      { k: 'overdue', label: '연체' },
+                      { k: 'history', label: '이력' },
+                    ].map(({ k, label }) => {
+                      const done = Boolean((liveChecklist as any)[k]);
+                      return (
+                        <span
+                          key={k}
+                          className={`px-2 py-0.5 rounded-md text-[11px] font-bold border ${
+                            done
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-muted/50 text-muted-foreground border-border'
+                          }`}
+                        >
+                          {done ? `✓ ${label}` : label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. 중앙 실시간 자막 (최근 대화 4줄) */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
+                  {messages.slice(-4).map((m) => (
+                    <div
+                      key={m.id}
+                      className={`p-3 rounded-2xl text-xs leading-relaxed border ${
+                        m.speaker === 'agent'
+                          ? 'bg-primary/10 border-primary/20 text-foreground ml-6'
+                          : 'bg-card border-border text-foreground mr-6'
+                      }`}
+                    >
+                      <span className="block text-[10px] font-bold text-muted-foreground mb-1">
+                        {m.speaker === 'agent' ? '나 (상담원)' : selectedPersona.customerName}
+                      </span>
+                      {m.text}
+                    </div>
+                  ))}
+                  {interimText && (
+                    <div className="p-2.5 rounded-xl bg-muted/50 border border-border text-xs text-muted-foreground italic ml-6">
+                      🎙️ {interimText}...
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. 하단 엄지존 컨트롤 */}
+                <div className="p-4 bg-card border-t border-border grid grid-cols-2 gap-2.5 shrink-0">
+                  {callState === 'connected' ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => toggleMicrophone()}
+                        className={`py-3.5 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 cursor-pointer ${
+                          isMicActive
+                            ? 'bg-muted text-foreground border-border'
+                            : 'bg-amber-500 text-white border-amber-500'
+                        }`}
+                      >
+                        {isMicActive ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+                        <span>{isMicActive ? '마이크 끄기' : '마이크 켜기'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleEndCall}
+                        className="py-3.5 px-3 rounded-xl text-xs font-bold bg-destructive text-destructive-foreground flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <PhoneOff className="w-4 h-4" />
+                        <span>통화 종료 · 채점</span>
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleCancelCalling}
+                      className="col-span-2 py-3.5 px-4 rounded-xl text-xs font-bold bg-amber-500 text-white flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <PhoneOff className="w-4 h-4" />
+                      <span>발신 취소</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Split Screen: Transcript / Live Paralegal Checklist & Sandbox */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
               {/* Live Chat & Transcript (7 Cols) */}

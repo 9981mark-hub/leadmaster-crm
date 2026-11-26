@@ -450,7 +450,7 @@ export default function LiteCallPage() {
                 집중 통화
               </span>
             </h1>
-            <p className="text-[11px] text-muted-foreground">콜 & 텔레그램 전달 전용</p>
+            <p className="hidden sm:block text-[11px] text-muted-foreground">콜 & 텔레그램 전달 전용</p>
           </div>
         </div>
 

@@ -4268,7 +4268,7 @@ export default function Settlement() {
                             v4.5 Master
                         </span>
                     </h2>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    <p className="hidden sm:block text-xs text-muted-foreground mt-0.5 leading-relaxed">
                         거래처별 정산 시기·금액·건수 관제 및 DB구매원가·상담원수당·손익 일괄 분석 (팀 관리 100% 직통)
                     </p>
                 </div>

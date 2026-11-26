@@ -588,20 +588,20 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                 );
                             })()}
 
-                            <div className="flex justify-between items-end mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                                <div className="flex flex-col text-xs text-gray-500">
-                                    <span>{c.caseType} | {c.inboundPath}</span>
-                                    <span>{partner?.name}</span>
+                            <div className="flex justify-between items-center mt-2 pt-2 border-t border-border gap-2">
+                                <div className="text-[11px] text-muted-foreground truncate min-w-0">
+                                    <span>{c.caseType} · {c.inboundPath}</span>
+                                    {partner?.name && <span> · {partner.name}</span>}
                                 </div>
-                                <div className="flex gap-2">
-                                    <button onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)} className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 active:scale-95 transition-all">
-                                        <Phone size={16} />
+                                <div className="flex gap-1.5 shrink-0">
+                                    <button onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)} className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary/20 active:scale-95 transition-all">
+                                        <Phone size={15} />
                                     </button>
                                     <HoverCheckTooltip
                                         mobileAlign="right"
                                         trigger={
-                                            <button className="p-2 bg-blue-100 text-blue-600 rounded-full">
-                                                <MessageSquare size={16} />
+                                            <button className="p-2 bg-muted text-foreground rounded-full hover:bg-muted/80">
+                                                <MessageSquare size={15} />
                                             </button>
                                         }
                                         content={

@@ -208,7 +208,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <span>전사 손익 & 리드 효율화 총괄 관제판</span>
             </h1>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="hidden sm:block text-xs text-muted-foreground mt-1">
               DB 구입 비용 대비 실질 영업이익, 대행사별 ROI 품질 평가 및 상담원 1인당 생산성을 조망합니다.
             </p>
           </div>
@@ -364,7 +364,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                     {neglectedCases.length}건
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="hidden sm:block text-xs text-muted-foreground mt-1">
                   구입 후 48시간 동안 첫 전화가 연결되지 않은 자산 손실 위험 리드입니다.
                 </p>
               </div>
@@ -378,7 +378,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                     0건 (안전)
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="hidden sm:block text-xs text-muted-foreground mt-1">
                   단시간 리드 대량 열람, 비인가 다운로드 및 화면 캡처 시도가 감지되지 않았습니다.
                 </p>
               </div>
@@ -392,7 +392,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
                     85%
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="hidden sm:block text-xs text-muted-foreground mt-1">
                   상담원 모의콜 스크립트 숙지도 평균 88점 (필수 고지사항 누락 방지)
                 </p>
               </div>
