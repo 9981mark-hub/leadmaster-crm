@@ -138,7 +138,8 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
         });
     };
 
-    const btn = 'h-9 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 border border-border bg-card text-foreground hover:bg-muted transition-colors whitespace-nowrap shadow-2xs';
+    const btnBase = 'h-9 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition-colors whitespace-nowrap shadow-2xs';
+    const btn = `${btnBase} border-border bg-card text-foreground hover:bg-muted`;
     const sel = 'h-9 px-2.5 border border-border rounded-lg text-xs font-medium outline-none min-w-[120px] bg-card text-foreground shadow-2xs';
 
     return (
@@ -184,7 +185,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
 
                     {/* 할 일 */}
                     <div ref={menuRef} className="hidden md:flex flex-wrap items-center gap-1.5 relative">
-                        <button onClick={call} className={`${btn} bg-primary text-primary-foreground border-primary hover:bg-primary/90 font-semibold`}><Phone size={14} strokeWidth={1.75} /> 전화</button>
+                        <button onClick={call} className={`${btnBase} bg-primary text-primary-foreground border-primary hover:bg-primary/90 font-semibold`}><Phone size={14} strokeWidth={1.75} /> 전화</button>
                         {isMobileUA() ? (
                             <a href={`sms:${phoneDigits}`} onClick={() => onEngage?.()} className={btn}><MessageSquare size={14} strokeWidth={1.75} /> 문자</a>
                         ) : (
@@ -198,7 +199,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                         )}
                         <button
                             onClick={() => isMissedStatus ? onMissedCallIncrement?.() : onStatusChangeStart(missedCallStatus as CaseStatus)}
-                            className={`${btn} bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20`}
+                            className={`${btnBase} bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20`}
                             title={isMissedStatus ? `부재 1회 더 기록 (지금 ${c.missedCallCount || 0}회)` : `상태를 '${missedCallStatus}'(으)로`}
                         >
                             <PhoneMissed size={14} strokeWidth={1.75} /> 부재{isMissedStatus ? ` ${c.missedCallCount || 0}` : ''}{isMissedStatus && <Plus size={12} strokeWidth={1.75} />}
