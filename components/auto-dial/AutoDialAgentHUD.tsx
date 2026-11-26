@@ -363,30 +363,66 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-gray-900 text-white flex flex-col overflow-hidden select-none animate-in fade-in duration-150">
-      {/* 1. 상단 몰입형 헤더 바 */}
-      <header className="h-16 px-6 bg-gray-100 dark:bg-gray-950 border-b border-gray-800 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-rose-500 animate-pulse" />
-            <span className="text-xs font-black tracking-widest uppercase text-rose-600 dark:text-rose-400">
-              LIVE AUTO-CALL v4.0
+      {/* 1. 상단 몰입형 헤더 바 (라이트/다크 모두 다크 HUD 톤 통일 + 모바일 2단 진행률) */}
+      <header className="px-3 sm:px-6 py-2.5 sm:py-0 sm:h-16 bg-gray-950 border-b border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center justify-between gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+              <span className="text-[11px] sm:text-xs font-black tracking-wider uppercase text-rose-400 whitespace-nowrap">
+                LIVE 오토콜
+              </span>
+            </div>
+            <div className="h-3.5 w-px bg-gray-800 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold text-gray-200 truncate">
+              {campaign.name}
+            </span>
+            <span className="hidden sm:inline-flex text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800 items-center gap-1 shrink-0">
+              <Smartphone size={12} />
+              SIM {currentQueueItem ? currentQueueItem.simSlot + 1 : 1} 발신
             </span>
           </div>
-          <div className="h-4 w-px bg-gray-800" />
-          <span className="text-sm font-bold text-gray-200 truncate max-w-xs md:max-w-md">
-            {campaign.name}
+
+          {/* 모바일 우측 휴식/나가기 */}
+          <div className="flex sm:hidden items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsPauseModalOpen(true)}
+              className="px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg text-[11px] font-bold flex items-center gap-1 border border-gray-700 whitespace-nowrap"
+            >
+              <Coffee size={13} className="text-amber-400" />
+              휴식
+            </button>
+            <button
+              type="button"
+              onClick={onExit}
+              className="p-1.5 text-gray-300 hover:text-white bg-gray-800/80 hover:bg-gray-800 rounded-lg border border-gray-700"
+              title="오토콜 HUD 종료"
+            >
+              <ArrowLeft size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* 모바일 2줄: SIM + 당일 소화율 프로그레스 바 */}
+        <div className="flex sm:hidden items-center justify-between gap-2 bg-gray-900 px-2.5 py-1.5 rounded-lg border border-gray-800 text-[11px]">
+          <span className="text-indigo-300 font-bold flex items-center gap-1 shrink-0">
+            <Smartphone size={11} />
+            SIM {currentQueueItem ? currentQueueItem.simSlot + 1 : 1}
           </span>
-          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
-            <Smartphone size={12} />
-            SIM {currentQueueItem ? currentQueueItem.simSlot + 1 : 1} 발신
+          <div className="flex-1 bg-gray-800 h-1.5 rounded-full overflow-hidden">
+            <div className="bg-indigo-500 h-1.5 rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
+          </div>
+          <span className="font-mono font-bold text-indigo-400 shrink-0 tabular-nums">
+            {allocation.completedCount}/{allocation.targetCount} ({progressPercent}%)
           </span>
         </div>
 
-        {/* 진행률 & 일시정지 / 종료 버튼 */}
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-3 bg-gray-900 px-4 py-1.5 rounded-xl border border-gray-800 text-xs">
-            <span className="text-gray-500 dark:text-gray-400">당일 소화율:</span>
-            <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+        {/* 데스크톱 진행률 & 일시정지 / 종료 버튼 */}
+        <div className="hidden sm:flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3 bg-gray-900 px-4 py-1.5 rounded-xl border border-gray-800 text-xs">
+            <span className="text-gray-400">당일 소화율:</span>
+            <span className="font-mono font-bold text-indigo-400">
               {allocation.completedCount} / {allocation.targetCount}건 ({progressPercent}%)
             </span>
             <div className="w-24 bg-gray-800 h-1.5 rounded-full overflow-hidden">
@@ -401,9 +437,9 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
           <button
             type="button"
             onClick={() => setIsPauseModalOpen(true)}
-            className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-gray-700 transition-colors"
+            className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-gray-700 transition-colors"
           >
-            <Coffee size={14} className="text-amber-600 dark:text-amber-400" />
+            <Coffee size={14} className="text-amber-400" />
             잠시 휴식
           </button>
 
@@ -411,7 +447,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
           <button
             type="button"
             onClick={onExit}
-            className="p-2 text-gray-500 dark:text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
             title="오토콜 HUD 종료"
           >
             <ArrowLeft size={18} />

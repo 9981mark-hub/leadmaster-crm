@@ -35,10 +35,11 @@ export const LiteTodayPerformanceBar: React.FC<Props> = ({
     return localStorage.getItem('managerName') || org?.displayName || user?.name || '상담원';
   }, [org?.displayName, user?.name]);
 
-  // 접기/펼치기 상태 (사용자 선호 기억)
+  // 접기/펼치기 상태 (사용자 선호 기억, 모바일 첫 진입 시 기본 접힘)
   const [expanded, setExpanded] = useState<boolean>(() => {
     const saved = localStorage.getItem('lm_lite_perf_expanded');
-    return saved !== null ? saved === 'true' : true;
+    if (saved !== null) return saved === 'true';
+    return typeof window !== 'undefined' ? window.innerWidth >= 640 : true;
   });
 
   const toggleExpanded = () => {

@@ -437,81 +437,111 @@ export default function LiteCallPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col max-w-2xl mx-auto border-x border-border">
       
-      {/* ── Top Header ── */}
-      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
-            <Zap size={16} strokeWidth={1.75} className="fill-current" />
+      {/* ── Top Header (모바일 2단 슬림화 / 데스크톱 1단) ── */}
+      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border px-3 sm:px-4 py-2.5 sm:py-3 space-y-2 sm:space-y-0 shadow-xs">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+              <Zap size={16} strokeWidth={1.75} className="fill-current" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-sm font-bold tracking-tight text-foreground flex items-center gap-1.5 whitespace-nowrap">
+                <span>간편 콜 모드</span>
+                <span className="hidden sm:inline text-[11px] bg-muted text-muted-foreground border border-border px-1.5 py-0.2 rounded font-semibold">
+                  집중 통화
+                </span>
+              </h1>
+              <p className="hidden sm:block text-[11px] text-muted-foreground">콜 & 텔레그램 전달 전용</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-sm font-bold tracking-tight text-foreground flex items-center gap-1.5">
-              <span>간편 콜 모드</span>
-              <span className="text-[11px] bg-muted text-muted-foreground border border-border px-1.5 py-0.2 rounded font-semibold">
-                집중 통화
-              </span>
-            </h1>
-            <p className="hidden sm:block text-[11px] text-muted-foreground">콜 & 텔레그램 전달 전용</p>
+
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* ── 데스크톱 콜 모드 스위처 ── */}
+            <div className="hidden sm:flex items-center p-0.5 rounded-lg bg-muted/60 border border-border text-xs font-semibold">
+              <button
+                onClick={() => setIsAutoDialHudOpen(false)}
+                className="px-2.5 py-1 rounded-md bg-card text-foreground shadow-2xs flex items-center gap-1 whitespace-nowrap"
+              >
+                <Zap size={12} strokeWidth={1.75} className="text-primary" />
+                <span>1건 직접</span>
+              </button>
+              <button
+                onClick={() => {
+                  if (myAllocation) {
+                    setIsAutoDialHudOpen(true);
+                  } else {
+                    showToast('현재 배정된 오토콜 캠페인이 없습니다. 관리자에게 배정을 요청하세요.', 'info');
+                  }
+                }}
+                className="px-2.5 py-1 rounded-md text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors whitespace-nowrap"
+                title="연속 자동 발신 오토콜 모드"
+              >
+                <Play size={12} strokeWidth={1.75} className="text-primary" />
+                <span>오토콜</span>
+                {myAllocation && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                )}
+              </button>
+            </div>
+
+            <button
+              onClick={() => {
+                refetchCases();
+                checkMyAllocation();
+                setRefetchTrigger(prev => prev + 1);
+              }}
+              className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              title="새로고침"
+            >
+              <RefreshCw size={15} strokeWidth={1.75} className={isLoading ? 'animate-spin' : ''} />
+            </button>
+
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              title="테마 전환"
+            >
+              {theme === 'dark' ? <Sun size={15} strokeWidth={1.75} className="text-amber-400" /> : <Moon size={15} strokeWidth={1.75} />}
+            </button>
+
+            <button
+              onClick={() => {
+                sessionStorage.removeItem('lm_lite_mode_active');
+                navigate('/cases');
+              }}
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors whitespace-nowrap"
+            >
+              <ChevronLeft size={14} strokeWidth={1.75} />
+              <span className="sm:hidden">나가기</span>
+              <span className="hidden sm:inline">일반 모드</span>
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* ── 콜 모드 스위처 (1건 직접 vs 연속 오토콜) ── */}
-          <div className="flex items-center p-0.5 rounded-lg bg-muted/60 border border-border text-xs font-semibold">
-            <button
-              onClick={() => setIsAutoDialHudOpen(false)}
-              className="px-2 py-1 rounded-md bg-card text-foreground shadow-2xs flex items-center gap-1"
-            >
-              <Zap size={12} strokeWidth={1.75} className="text-primary" />
-              <span className="hidden sm:inline">1건</span> 직접
-            </button>
-            <button
-              onClick={() => {
-                if (myAllocation) {
-                  setIsAutoDialHudOpen(true);
-                } else {
-                  showToast('현재 배정된 오토콜 캠페인이 없습니다. 관리자에게 배정을 요청하세요.', 'info');
-                }
-              }}
-              className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-              title="연속 자동 발신 오토콜 모드"
-            >
-              <Play size={12} strokeWidth={1.75} className="text-primary" />
-              <span>오토콜</span>
-              {myAllocation && (
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              )}
-            </button>
-          </div>
-
+        {/* ── 모바일 전용 2줄 풀폭 모드 스위처 (글자 세로 꺾임 방지) ── */}
+        <div className="grid grid-cols-2 gap-1 p-0.5 rounded-lg bg-muted/60 border border-border text-xs font-semibold sm:hidden">
+          <button
+            onClick={() => setIsAutoDialHudOpen(false)}
+            className="py-1.5 px-2 rounded-md bg-card text-foreground shadow-2xs flex items-center justify-center gap-1.5 whitespace-nowrap"
+          >
+            <Zap size={13} strokeWidth={1.75} className="text-primary shrink-0" />
+            <span>1건 직접 통화</span>
+          </button>
           <button
             onClick={() => {
-              refetchCases();
-              checkMyAllocation();
-              setRefetchTrigger(prev => prev + 1);
+              if (myAllocation) {
+                setIsAutoDialHudOpen(true);
+              } else {
+                showToast('현재 배정된 오토콜 캠페인이 없습니다. 관리자에게 배정을 요청하세요.', 'info');
+              }
             }}
-            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            title="새로고침"
+            className="py-1.5 px-2 rounded-md text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap"
           >
-            <RefreshCw size={15} strokeWidth={1.75} className={isLoading ? 'animate-spin' : ''} />
-          </button>
-          
-          <button
-            onClick={toggleTheme}
-            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            title="테마 전환"
-          >
-            {theme === 'dark' ? <Sun size={15} strokeWidth={1.75} className="text-amber-400" /> : <Moon size={15} strokeWidth={1.75} />}
-          </button>
-
-          <button
-            onClick={() => {
-              sessionStorage.removeItem('lm_lite_mode_active');
-              navigate('/cases');
-            }}
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors"
-          >
-            <ChevronLeft size={14} strokeWidth={1.75} />
-            <span className="hidden sm:inline">일반 모드</span>
+            <Play size={13} strokeWidth={1.75} className="text-primary shrink-0" />
+            <span>오토콜 연속 발신</span>
+            {myAllocation && (
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
+            )}
           </button>
         </div>
       </header>
@@ -752,7 +782,7 @@ export default function LiteCallPage() {
                     className="flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   >
                     <MessageSquare size={13} strokeWidth={1.75} />
-                    <span>📩 1-Click 문자</span>
+                    <span>📩 원클릭 문자</span>
                   </button>
                 </div>
 
