@@ -185,8 +185,8 @@ export const HybridDashboardView: React.FC<HybridDashboardViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 웰컴 배너 */}
-      <div className="bg-card rounded-xl p-5 text-foreground shadow-xs border border-border relative overflow-hidden">
+      {/* 웰컴 배너 (모바일 숨김) */}
+      <div className="hidden sm:block bg-card rounded-xl p-5 text-foreground shadow-xs border border-border relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
