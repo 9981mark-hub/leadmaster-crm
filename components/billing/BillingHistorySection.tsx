@@ -262,8 +262,59 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
             </button>
           </div>
 
-          {/* Transactions Table */}
-          <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-x-auto shadow-2xs">
+          {/* 모바일 전용 결제 내역 카드 리스트 */}
+          <div className="md:hidden divide-y divide-border border border-border rounded-xl overflow-hidden bg-card">
+            {filteredTransactions.map((tx) => {
+              const isPaid = tx.status === 'paid';
+              return (
+                <div key={tx.id} className="p-3.5 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-sm font-bold text-foreground truncate">{tx.description}</div>
+                      <div className="text-[11px] text-muted-foreground font-mono">
+                        {tx.transactionDate} · {tx.paymentMethod}
+                      </div>
+                    </div>
+                    {isPaid ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-[11px] whitespace-nowrap shrink-0">
+                        <CheckCircle2 size={11} /> 완납
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold text-[11px] whitespace-nowrap shrink-0">
+                        <Clock size={11} /> 대기
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/60">
+                    <span className="text-sm font-extrabold font-mono text-foreground">
+                      ₩ {tx.totalPrice.toLocaleString()}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {isPaid && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedReceipt(tx)}
+                          className="px-2.5 py-1 rounded-md bg-card border border-border text-foreground hover:bg-muted font-medium text-[11px]"
+                        >
+                          🧾 전표
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => onOpenInvoiceModal(tx.invoice)}
+                        className="px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 font-medium text-[11px]"
+                      >
+                        📄 청구서
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 데스크톱 Transactions Table */}
+          <div className="hidden md:block border border-slate-200 dark:border-slate-800 rounded-xl overflow-x-auto shadow-2xs">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold">
                 <tr>

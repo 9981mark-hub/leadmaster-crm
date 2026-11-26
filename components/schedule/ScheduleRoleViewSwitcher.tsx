@@ -145,9 +145,9 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
   }
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-1 rounded-lg bg-muted/70 border border-border/60">
-      {/* 탭 버튼 목록 */}
-      <div className="flex flex-wrap items-center gap-1">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-1.5 sm:p-1 rounded-lg bg-muted/70 border border-border/60">
+      {/* 탭 버튼 목록 (모바일: 2열 그리드 / 데스크톱: 가로 flex) */}
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1">
         {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeMode === tab.id;
@@ -156,17 +156,17 @@ export const ScheduleRoleViewSwitcher: React.FC<ScheduleRoleViewSwitcherProps> =
             <button
               key={tab.id}
               onClick={() => onChangeMode(tab.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              className={`flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-md text-xs font-medium transition-all ${
                 isActive
                   ? 'bg-background text-foreground shadow-2xs border border-border font-semibold'
                   : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
               }`}
             >
-              <Icon size={14} strokeWidth={1.75} className={isActive ? 'text-primary' : 'text-muted-foreground'} />
+              <Icon size={14} strokeWidth={1.75} className={`shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
               <span className="hidden md:inline">{tab.label}</span>
-              <span className="md:hidden">{tab.shortLabel}</span>
+              <span className="md:hidden truncate">{tab.shortLabel}</span>
               {tab.badge && (
-                <span className="text-2xs font-semibold px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20 tracking-tight">
+                <span className="hidden sm:inline text-2xs font-semibold px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20 tracking-tight">
                   {tab.badge}
                 </span>
               )}

@@ -208,7 +208,7 @@ const AutoDialDashboard: React.FC = () => {
       {/* 1. 상단 타이틀 & 런처 바 */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card text-card-foreground p-5 sm:p-6 rounded-xl border border-border shadow-xs">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="hidden sm:flex items-center gap-2 mb-1.5">
             <span className="text-2xs px-2 py-0.5 rounded font-semibold tracking-tight bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
               <Sparkles size={11} strokeWidth={1.75} className="text-primary" />
               AUTO-DIALER v4.0
@@ -217,36 +217,38 @@ const AutoDialDashboard: React.FC = () => {
               관리자 전용 캠페인 배정 & 실시간 플로어 관제탑
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <PhoneCall className="w-6 h-6 text-primary" strokeWidth={1.75} />
+          <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <PhoneCall className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" strokeWidth={1.75} />
             <span>오토콜 관제 센터</span>
           </h1>
-          <p className="text-muted-foreground mt-0.5 text-xs max-w-xl leading-relaxed">
+          <p className="hidden sm:block text-muted-foreground mt-0.5 text-xs max-w-xl leading-relaxed">
             상담원별 일일 타깃 DB 할당, 7초 연속 발신 템포 제어, 플로어 실시간 통화 현황을 중앙에서 관제합니다.
           </p>
         </div>
 
         {/* 액션 버튼 그룹 */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto shrink-0">
           {/* 간편 콜 모드로 이동 안내 */}
           <button
             type="button"
             onClick={() => window.location.href = '#/lite'}
-            className="h-8 px-3 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="h-9 sm:h-8 px-2.5 sm:px-3 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
             title="상담원 간편 콜 & 오토콜 통합 워크스페이스로 이동"
           >
-            <Zap size={13} strokeWidth={1.75} className="text-amber-500" />
-            <span>간편콜 워크스페이스</span>
+            <Zap size={13} strokeWidth={1.75} className="text-amber-500 shrink-0" />
+            <span className="sm:hidden">간편콜</span>
+            <span className="hidden sm:inline">간편콜 워크스페이스</span>
           </button>
 
           {/* 상담원: 오토콜 HUD 직접 시작 버튼 */}
           <button
             type="button"
             onClick={() => setViewMode('agent_hud')}
-            className="h-8 px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-medium shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="h-9 sm:h-8 px-2.5 sm:px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-medium shadow-2xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
           >
-            <Headphones size={14} strokeWidth={1.75} />
-            <span>나의 오토콜 런타임</span>
+            <Headphones size={14} strokeWidth={1.75} className="shrink-0" />
+            <span className="sm:hidden">오토콜 실행</span>
+            <span className="hidden sm:inline">나의 오토콜 런타임</span>
           </button>
 
           {/* 관리자: 새 캠페인 생성 모달 버튼 */}
@@ -254,7 +256,7 @@ const AutoDialDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsCampaignModalOpen(true)}
-              className="h-8 px-3 bg-background hover:bg-muted text-foreground rounded-lg text-xs font-medium border border-border shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="col-span-2 sm:col-span-1 h-9 sm:h-8 px-3 bg-background hover:bg-muted text-foreground rounded-lg text-xs font-medium border border-border shadow-2xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
             >
               <Plus size={13} strokeWidth={1.75} />
               <span>캠페인 생성</span>
@@ -488,10 +490,57 @@ const AutoDialDashboard: React.FC = () => {
 
           {/* Batch List Table */}
           <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden flex flex-col">
-            <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
+            <div className="px-4 sm:px-5 py-3.5 border-b border-border flex items-center justify-between">
               <h2 className="text-sm font-semibold text-foreground">최근 배치 목록</h2>
             </div>
-            <div className="overflow-x-auto">
+
+            {/* 모바일 카드 리스트 */}
+            <div className="md:hidden divide-y divide-border">
+              {batches.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground text-xs">
+                  등록된 배치가 없습니다.
+                </div>
+              ) : (
+                batches.map(batch => {
+                  const pct = batch.totalCount > 0 ? Math.round((batch.completedCount / batch.totalCount) * 100) : 0;
+                  return (
+                    <div key={batch.id} className="p-4 space-y-2.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="text-sm font-semibold text-foreground truncate">{batch.name}</div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteBatch(batch.id)}
+                          className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors shrink-0"
+                          title="배치 삭제"
+                        >
+                          <Trash2 size={14} strokeWidth={1.75} />
+                        </button>
+                      </div>
+                      <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs pt-0.5">
+                        <div>
+                          <span className="text-[11px] text-muted-foreground block">진행</span>
+                          <span className="font-mono font-semibold text-foreground tabular-nums">{batch.completedCount}/{batch.totalCount} ({pct}%)</span>
+                        </div>
+                        <div>
+                          <span className="text-[11px] text-muted-foreground block">연결 성공</span>
+                          <span className="font-mono font-semibold text-primary tabular-nums">{batch.connectedCount}건</span>
+                        </div>
+                        <div>
+                          <span className="text-[11px] text-muted-foreground block">부재</span>
+                          <span className="font-mono font-semibold text-amber-500 tabular-nums">{batch.noAnswerCount}건</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* 데스크톱 테이블 */}
+            <div className="hidden md:block overflow-x-auto">
               {batches.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground text-xs">
                   등록된 배치가 없습니다.

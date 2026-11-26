@@ -957,33 +957,33 @@ export default function TelegramSync() {
         <div className="max-w-[1600px] mx-auto space-y-6">
             
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 shadow-xs">
-                        <Smartphone size={20} strokeWidth={1.75} />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 shadow-xs">
+                        <Smartphone size={18} strokeWidth={1.75} />
                     </div>
-                    <div>
-                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                            텔레그램 연동 관제 센터
+                    <div className="min-w-0">
+                        <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <span>텔레그램 연동 관제</span>
                             {isOwner ? (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1">
-                                    👑 대표 전사 관제
+                                <span className="px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1 whitespace-nowrap">
+                                    👑 대표 관제
                                 </span>
                             ) : canViewAll ? (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
-                                    🎖️ 총괄 실장 관제
+                                <span className="px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-primary/10 text-primary border border-primary/20 flex items-center gap-1 whitespace-nowrap">
+                                    🎖️ 총괄 관제
                                 </span>
                             ) : isTeamScope ? (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted text-foreground border border-border flex items-center gap-1">
-                                    👔 {myTeam} 플로어 관제
+                                <span className="px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-muted text-foreground border border-border flex items-center gap-1 whitespace-nowrap">
+                                    👔 {myTeam}
                                 </span>
                             ) : (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
-                                    🎧 내 리드 알림 모드
+                                <span className="px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1 whitespace-nowrap">
+                                    🎧 내 리드 알림
                                 </span>
                             )}
                         </h1>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <p className="hidden sm:block text-xs text-muted-foreground mt-0.5">
                             {isAgent 
                                 ? '법률사무소에서 보내온 내 담당 고객의 출장/내방 일정 및 현장 피드백 실시간 확인'
                                 : isTeamScope
@@ -994,13 +994,13 @@ export default function TelegramSync() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
                     {/* Bot Live Indicator (관리자 및 대표만) */}
                     {(canViewAll || isTeamScope) && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-card text-xs">
-                            <span className={`w-2 h-2 rounded-full ${botStatus?.webhookConnected ? 'bg-primary animate-pulse' : 'bg-amber-500'}`} />
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-xs whitespace-nowrap">
+                            <span className={`w-2 h-2 rounded-full shrink-0 ${botStatus?.webhookConnected ? 'bg-primary animate-pulse' : 'bg-amber-500'}`} />
                             <span className="font-semibold text-foreground">
-                                {botStatus?.webhookConnected ? (botStatus.botUsername ? `@${botStatus.botUsername}` : '봇 정상 수신') : '웹훅 미연결'}
+                                {botStatus?.webhookConnected ? (botStatus.botUsername ? `@${botStatus.botUsername}` : '봇 정상') : '미연결'}
                             </span>
                         </div>
                     )}
@@ -1009,10 +1009,11 @@ export default function TelegramSync() {
                     {(isOwner || tgPerms.canManageRules) && (
                         <button
                             onClick={() => setIsRuleModalOpen(true)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                            className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted transition flex items-center gap-1.5 shadow-xs cursor-pointer whitespace-nowrap"
                         >
-                            <Settings2 size={14} strokeWidth={1.75} className="text-muted-foreground" />
-                            <span>자동화 룰 설정</span>
+                            <Settings2 size={14} strokeWidth={1.75} className="text-muted-foreground shrink-0" />
+                            <span className="sm:hidden">룰 설정</span>
+                            <span className="hidden sm:inline">자동화 룰 설정</span>
                         </button>
                     )}
 
@@ -1020,18 +1021,19 @@ export default function TelegramSync() {
                     {isOwner && (
                         <Link
                             to="/team"
-                            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted transition flex items-center gap-1.5 shadow-xs"
+                            className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted transition flex items-center gap-1.5 shadow-xs whitespace-nowrap"
                             title="팀 관리에서 중간 관리자에게 텔레그램 관제 권한을 양도/위임할 수 있습니다."
                         >
-                            <ShieldCheck size={14} strokeWidth={1.75} className="text-primary" />
-                            <span>관제 권한 위임</span>
+                            <ShieldCheck size={14} strokeWidth={1.75} className="text-primary shrink-0" />
+                            <span className="sm:hidden">권한 위임</span>
+                            <span className="hidden sm:inline">관제 권한 위임</span>
                         </Link>
                     )}
 
                     <button
                         onClick={loadData}
                         disabled={isLoading}
-                        className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted border border-border transition cursor-pointer"
+                        className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted border border-border transition cursor-pointer ml-auto sm:ml-0"
                         title="새로고침"
                     >
                         <RefreshCw size={15} strokeWidth={1.75} className={isLoading ? 'animate-spin' : ''} />

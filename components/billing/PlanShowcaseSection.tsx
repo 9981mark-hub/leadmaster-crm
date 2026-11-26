@@ -154,8 +154,8 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
         </div>
       </div>
 
-      {/* 2. 4-Tier Grid Showcase (ChatGPT / Notion 벤치마킹) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* 2. 4-Tier Grid Showcase (모바일: 가로 스와이프 / PC: 4열 그리드) */}
+      <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3.5 md:gap-5 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-2 md:pb-0">
         {PLAN_TIERS_DATA.map((tier) => {
           const isCurrent = tier.id === currentTierId;
           const unitPrice = isAnnual ? tier.annualUnitPrice : tier.monthlyUnitPrice;
@@ -163,7 +163,7 @@ export const PlanShowcaseSection: React.FC<PlanShowcaseSectionProps> = ({
           return (
             <div
               key={tier.id}
-              className={`relative rounded-xl p-5 flex flex-col justify-between transition-all duration-200 bg-card text-card-foreground ${
+              className={`relative rounded-xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 bg-card text-card-foreground min-w-[80vw] sm:min-w-[290px] md:min-w-0 snap-center shrink-0 ${
                 tier.popular
                   ? 'border-2 border-primary shadow-xs ring-1 ring-primary/20'
                   : isCurrent

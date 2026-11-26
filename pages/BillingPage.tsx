@@ -136,20 +136,20 @@ export const BillingPage: React.FC = () => {
       {/* 1. Global Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground mb-1">
+          <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-muted-foreground mb-1">
             <span>정산 / 경영</span>
             <ChevronRight size={12} className="text-muted-foreground" />
             <span className="text-foreground">구독 & 플랜 관제 센터</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-xs shrink-0">
-              <CreditCard size={20} strokeWidth={1.75} />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-xs shrink-0">
+              <CreditCard size={18} strokeWidth={1.75} />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                구독 & 플랜 관제 센터 (Plans & Billing)
+              <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground">
+                구독 & 플랜 관제 센터
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              <p className="hidden sm:block text-xs sm:text-sm text-muted-foreground mt-0.5">
                 조직 규모에 최적화된 리드마스터 요금제를 선택하고, 좌석 라이선스 및 결제 영수증을 통합 관리합니다.
               </p>
             </div>
@@ -157,44 +157,51 @@ export const BillingPage: React.FC = () => {
         </div>
 
         {/* Header Action Buttons */}
-        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
+        <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2 w-full md:w-auto">
           <button
             onClick={() => setActiveInvoiceForModal(invoices[0])}
-            className="px-3 py-2 text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted rounded-xl transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+            className="px-2.5 sm:px-3 py-2 text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted rounded-xl transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <FileText size={14} strokeWidth={1.75} className="text-primary" /> 당월 청구서 보기
+            <FileText size={14} strokeWidth={1.75} className="text-primary shrink-0" />
+            <span className="sm:hidden">당월 청구서</span>
+            <span className="hidden sm:inline">당월 청구서 보기</span>
           </button>
           <button
             onClick={() => setIsTaxInfoModalOpen(true)}
-            className="px-3 py-2 text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted rounded-xl transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+            className="px-2.5 sm:px-3 py-2 text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted rounded-xl transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <Building2 size={14} strokeWidth={1.75} className="text-muted-foreground" /> 세금계산서 설정
+            <Building2 size={14} strokeWidth={1.75} className="text-muted-foreground shrink-0" />
+            <span className="sm:hidden">세금계산서</span>
+            <span className="hidden sm:inline">세금계산서 설정</span>
           </button>
           <button
             onClick={loadData}
-            className="p-2 text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted rounded-xl transition-colors shadow-2xs cursor-pointer"
+            className="col-span-2 sm:col-span-1 p-2 text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted rounded-xl transition-colors shadow-2xs cursor-pointer flex items-center justify-center gap-1.5 text-xs"
             title="데이터 새로고침"
           >
             <RefreshCw size={15} strokeWidth={1.75} />
+            <span className="sm:hidden">새로고침</span>
           </button>
         </div>
       </div>
 
       {/* 2. 광고비 도메인 분리 안내 배너 (정산 손익센터 지출 목록 안내) */}
-      <div className="p-4 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+      <div className="p-3.5 sm:p-4 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 shadow-xs">
         <div className="flex items-center gap-2.5">
           <span className="text-base shrink-0">💡</span>
           <div className="text-xs text-muted-foreground leading-relaxed">
-            <strong className="text-foreground font-semibold">마케팅 광고비 및 지출 장부 안내:</strong> 페이스북, 네이버, 토스애즈 등 외부 광고비 집행 내역과 종합 마케팅 ROAS는 회계 원칙에 따라 
-            <strong className="text-foreground font-semibold"> [정산 손익센터 &gt; 지출 목록]</strong>에서 통합 관리됩니다.
+            <strong className="text-foreground font-semibold">광고비 · 지출 장부 안내:</strong>{' '}
+            <span className="sm:hidden">외부 광고비 및 ROAS는 </span>
+            <span className="hidden sm:inline">페이스북, 네이버, 토스애즈 등 외부 광고비 집행 내역과 종합 마케팅 ROAS는 회계 원칙에 따라 </span>
+            <strong className="text-foreground font-semibold">[정산 손익센터 &gt; 지출 목록]</strong>에서 관리됩니다.
           </div>
         </div>
 
         <Link
           to="/settlement?tab=expenses"
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold transition-colors shrink-0 shadow-xs"
+          className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold transition-colors shrink-0 shadow-xs"
         >
-          <span>정산 손익센터 지출목록 바로가기</span>
+          <span>지출 목록 바로가기</span>
           <ArrowUpRight size={13} strokeWidth={1.75} />
         </Link>
       </div>
