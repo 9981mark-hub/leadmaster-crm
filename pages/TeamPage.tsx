@@ -318,33 +318,35 @@ export default function TeamPage() {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-6">
+    <div className="max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
       {/* 상단 헤더 */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-border">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <UserCog size={22} strokeWidth={1.75} className="text-primary" />
-            <span>팀 관리 & 콜센터 운영</span>
+      <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-border">
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <UserCog size={20} strokeWidth={1.75} className="text-primary shrink-0" />
+            <span className="truncate">팀 관리 & 콜센터 운영</span>
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="hidden sm:block text-xs text-muted-foreground mt-0.5">
             {org.orgName} · 상담원 성과/콜 분석, 인센티브, 15,000건 스마트 대량 배정, DB 회차 품질 관리
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <Link
             to="/training"
-            className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-foreground bg-muted hover:bg-muted/80 border border-border rounded-lg shadow-2xs transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-medium text-foreground bg-muted hover:bg-muted/80 border border-border rounded-lg shadow-2xs transition-colors whitespace-nowrap"
           >
             <GraduationCap size={13} strokeWidth={1.75} />
-            <span>신입 트레이닝 센터</span>
+            <span className="sm:hidden">교육 센터</span>
+            <span className="hidden sm:inline">신입 트레이닝 센터</span>
           </Link>
           <button
             onClick={() => setShowUpload(true)}
-            className="inline-flex items-center gap-1.5 h-8 px-3.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg shadow-2xs transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 h-8 px-2.5 sm:px-3.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg shadow-2xs transition-colors cursor-pointer whitespace-nowrap"
             title="케이스 일괄/간편 등록 (엑셀 대량 업로드, AI 영수증/신청서 OCR, 시트 입력, 간편 수기 등록)"
           >
             <FileUp size={13} strokeWidth={1.75} />
-            <span>신규 DB 등록</span>
+            <span className="sm:hidden">신규 DB</span>
+            <span className="hidden sm:inline">신규 DB 등록</span>
           </button>
           <button
             onClick={reload}
@@ -357,8 +359,49 @@ export default function TeamPage() {
         </div>
       </div>
 
-      {/* 8대 전문 탭 네비게이션 (Shadcn Segmented Control) */}
-      <div className="bg-muted/70 p-1 rounded-lg border border-border/60 flex items-center gap-1 overflow-x-auto">
+      {/* 모바일 전용: 전체 메뉴 드롭다운 + 주요 4개 퀵 칩 */}
+      <div className="md:hidden space-y-2">
+        <select
+          value={activeTab}
+          onChange={(e) => setActiveTab(e.target.value as any)}
+          className="w-full h-10 px-3 rounded-xl border border-border bg-card text-sm font-semibold text-foreground shadow-2xs"
+          aria-label="팀 관리 메뉴 선택"
+        >
+          <option value="hr">👥 직원 HR 종합 관제 (근태·급여)</option>
+          <option value="performance">🏆 팀원 성과 · 인센티브</option>
+          <option value="call_audit">📞 콜 활동 · AI 요약</option>
+          <option value="bulk_assign">🔀 대용량 리드 배정 {unassignedCount > 0 ? `(${unassignedCount}건)` : ''}</option>
+          <option value="rules">⚙️ 배분 규칙 · 로테이션</option>
+          <option value="lifecycle">📦 DB 수명주기 · 보관</option>
+          <option value="quality">📊 회차별 DB 품질</option>
+          <option value="dnc">🚫 수신거부 (전화금지)</option>
+          <option value="members">👤 멤버 & 설정</option>
+        </select>
+        <div className="grid grid-cols-4 gap-1.5">
+          {[
+            { id: 'hr', label: 'HR 관제' },
+            { id: 'performance', label: '성과·수당' },
+            { id: 'bulk_assign', label: unassignedCount > 0 ? `배정(${unassignedCount > 99 ? '99+' : unassignedCount})` : '리드 배정' },
+            { id: 'members', label: '멤버' },
+          ].map((chip) => (
+            <button
+              key={chip.id}
+              type="button"
+              onClick={() => setActiveTab(chip.id as any)}
+              className={`py-1.5 px-1 rounded-lg text-[11px] font-semibold border transition-colors truncate ${
+                activeTab === chip.id
+                  ? 'bg-primary/10 text-primary border-primary/30'
+                  : 'bg-card text-muted-foreground border-border'
+              }`}
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 데스크톱 8대 전문 탭 네비게이션 (Shadcn Segmented Control) */}
+      <div className="hidden md:flex bg-muted/70 p-1 rounded-lg border border-border/60 items-center gap-1 overflow-x-auto">
         <button
           onClick={() => setActiveTab('hr')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap btn-tactile ${

@@ -217,35 +217,35 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             {/* 상단 전광판 & 필터 바 */}
-            <div className="bg-card text-card-foreground p-5 rounded-xl shadow-xs border border-border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div className="bg-card text-card-foreground p-3.5 sm:p-5 rounded-xl shadow-xs border border-border flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 sm:gap-4">
                 <div>
-                    <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <Users className="text-primary" size={22} strokeWidth={1.75} />
-                        <span>상담직원 올인원 HR 종합 관제 (flex.team형)</span>
+                    <h2 className="text-base sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <Users className="text-primary shrink-0" size={20} strokeWidth={1.75} />
+                        <span>상담직원 근태 · 실적 · 급여 관제</span>
                     </h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="hidden sm:block text-xs text-muted-foreground mt-0.5">
                         근태(출퇴근·이석)부터 콜 활동, 수임 실적, 건당 인센티브 및 3.3% 세무 급여 정산까지 하나로 연결됩니다.
                     </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2">
                     {/* 월 선택 */}
-                    <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 px-3 py-1.5 rounded-xl text-xs font-bold">
-                        <Calendar size={13} className="text-gray-500" />
+                    <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex-1 sm:flex-none">
+                        <Calendar size={13} className="text-gray-500 shrink-0" />
                         <input
                             type="month"
                             value={selectedMonth}
                             onChange={(e) => setSelectedMonth(e.target.value)}
-                            className="bg-transparent outline-none font-bold text-gray-800 dark:text-gray-200"
+                            className="bg-transparent outline-none font-bold text-gray-800 dark:text-gray-200 w-full sm:w-auto"
                         />
                     </div>
 
                     <button
                         type="button"
                         onClick={loadHRData}
-                        className="p-2 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                        className="p-2 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors shrink-0"
                         title="새로고침"
                     >
                         <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -254,9 +254,11 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                     <button
                         type="button"
                         onClick={handleDownloadPayrollRegister}
-                        className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
+                        className="px-3 sm:px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors whitespace-nowrap"
                     >
-                        <Download size={13} /> 전직원 급여대장 엑셀
+                        <Download size={13} />
+                        <span className="sm:hidden">급여대장</span>
+                        <span className="hidden sm:inline">전직원 급여대장 엑셀</span>
                     </button>
                 </div>
             </div>
@@ -332,75 +334,164 @@ export const AgentHRHub: React.FC<AgentHRHubProps> = ({
                 </div>
             </div>
 
-            {/* 4대 핵심 요약 카드 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
-                    <span className="text-xs font-medium text-muted-foreground block mb-1.5">당월 수임 계약 총합</span>
-                    <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
+            {/* 4대 핵심 요약 카드 (모바일 2x2 격자 / PC 4열) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+                <div className="bg-card text-card-foreground p-3.5 sm:p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
+                    <span className="text-[11px] sm:text-xs font-medium text-muted-foreground block mb-1 sm:mb-1.5">당월 수임 계약</span>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-lg sm:text-2xl font-bold font-mono tabular-nums text-foreground">
                             {summaryKPI.totalContracts.toLocaleString()}
                         </span>
-                        <span className="text-xs font-semibold text-muted-foreground">건 계약</span>
+                        <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground">건</span>
                     </div>
-                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
-                        수임료 매출: ₩ {(summaryKPI.totalRevenue / 10000).toLocaleString()} 만원
-                    </div>
-                </div>
-
-                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
-                    <span className="text-xs font-medium text-muted-foreground block mb-1.5">당월 총 지급 인센티브</span>
-                    <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
-                            ₩ {(summaryKPI.totalGrossPay / 10000).toFixed(0)}
-                        </span>
-                        <span className="text-xs font-semibold text-muted-foreground">만원 (세전)</span>
-                    </div>
-                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
-                        기본급 + 성과급 + 일비 합산
+                    <div className="mt-1.5 sm:mt-2.5 text-[11px] sm:text-xs text-muted-foreground font-normal truncate">
+                        매출: ₩ {(summaryKPI.totalRevenue / 10000).toLocaleString()}만
                     </div>
                 </div>
 
-                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
-                    <span className="text-xs font-medium text-muted-foreground block mb-1.5">실지급액 합계 (세후)</span>
-                    <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-bold font-mono tabular-nums text-primary">
-                            ₩ {(summaryKPI.totalNetPay / 10000).toFixed(0)}
+                <div className="bg-card text-card-foreground p-3.5 sm:p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
+                    <span className="text-[11px] sm:text-xs font-medium text-muted-foreground block mb-1 sm:mb-1.5">총 지급 인센티브</span>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-lg sm:text-2xl font-bold font-mono tabular-nums text-foreground">
+                            ₩{(summaryKPI.totalGrossPay / 10000).toFixed(0)}
                         </span>
-                        <span className="text-xs font-semibold text-muted-foreground">만원</span>
+                        <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground">만원</span>
                     </div>
-                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
-                        상담원 실수령액 총합
+                    <div className="mt-1.5 sm:mt-2.5 text-[11px] sm:text-xs text-muted-foreground font-normal truncate">
+                        세전 (기본+성과+일비)
                     </div>
                 </div>
 
-                <div className="bg-card text-card-foreground p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
-                    <span className="text-xs font-medium text-muted-foreground block mb-1.5">3.3% 원천징수 세금 총액</span>
-                    <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
-                            ₩ {(summaryKPI.totalTax / 10000).toFixed(0)}
+                <div className="bg-card text-card-foreground p-3.5 sm:p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
+                    <span className="text-[11px] sm:text-xs font-medium text-muted-foreground block mb-1 sm:mb-1.5">실지급액 (세후)</span>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-lg sm:text-2xl font-bold font-mono tabular-nums text-primary">
+                            ₩{(summaryKPI.totalNetPay / 10000).toFixed(0)}
                         </span>
-                        <span className="text-xs font-semibold text-muted-foreground">만원</span>
+                        <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground">만원</span>
                     </div>
-                    <div className="mt-2.5 text-xs text-muted-foreground font-normal">
-                        소득세(3%) + 지방세(0.3%)
+                    <div className="mt-1.5 sm:mt-2.5 text-[11px] sm:text-xs text-muted-foreground font-normal truncate">
+                        상담원 실수령 총합
+                    </div>
+                </div>
+
+                <div className="bg-card text-card-foreground p-3.5 sm:p-5 rounded-xl border border-border shadow-xs card-interactive hover:border-primary/40 transition-all">
+                    <span className="text-[11px] sm:text-xs font-medium text-muted-foreground block mb-1 sm:mb-1.5">3.3% 세금 총액</span>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-lg sm:text-2xl font-bold font-mono tabular-nums text-foreground">
+                            ₩{(summaryKPI.totalTax / 10000).toFixed(0)}
+                        </span>
+                        <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground">만원</span>
+                    </div>
+                    <div className="mt-1.5 sm:mt-2.5 text-[11px] sm:text-xs text-muted-foreground font-normal truncate">
+                        소득세(3%)+지방세(0.3%)
                     </div>
                 </div>
             </div>
 
             {/* 종합 실적 & 급여 매트릭스 그리드 테이블 */}
             <div className="bg-card text-card-foreground rounded-xl shadow-xs border border-border overflow-hidden">
-                <div className="p-5 border-b border-border flex justify-between items-center bg-muted/40">
+                <div className="p-4 sm:p-5 border-b border-border flex justify-between items-center bg-muted/40">
                     <div>
-                        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                            <span>👥 {selectedMonth} 상담원별 근태·실적·급여 통합 명세</span>
-                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-normal">
+                        <h3 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-2">
+                            <span>👥 {selectedMonth} 상담원별 근태·실적·급여</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-normal whitespace-nowrap">
                                 {agentCalculations.length}명
                             </span>
                         </h3>
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                {/* 모바일 전용 카드 리스트 (글자 꺾임/가로 스크롤 제거) */}
+                <div className="md:hidden divide-y divide-border">
+                    {agentCalculations.map((item) => {
+                        const st = item.todayAtt?.currentStatus || 'off';
+                        const stBadge = st === 'working'
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                            : st === 'away'
+                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
+                                : st === 'meal'
+                                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
+                                    : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400';
+                        const stLabel = st === 'working' ? '업무중' : st === 'away' ? '이석중' : st === 'meal' ? '식사' : '미출근';
+                        const salaryLabel = item.calc.profile.salaryType === 'pure_incentive'
+                            ? `건당 ${(item.calc.profile.unitIncentive / 10000).toFixed(0)}만`
+                            : item.calc.profile.salaryType === 'base_plus_incentive'
+                                ? '기본+인센'
+                                : '구간식';
+
+                        return (
+                            <div key={item.member.userId} className="p-4 space-y-3">
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                        <div className="text-sm font-bold text-foreground truncate">{item.member.displayName}</div>
+                                        <div className="text-xs text-muted-foreground truncate">{item.member.email}</div>
+                                    </div>
+                                    <span className={`px-2.5 py-0.5 rounded-full font-bold text-xs whitespace-nowrap shrink-0 ${stBadge}`}>
+                                        {stLabel}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-muted/40 border border-border/60 text-center">
+                                    <div>
+                                        <span className="text-[11px] text-muted-foreground block">출근일수</span>
+                                        <span className="text-xs font-bold text-foreground font-mono">
+                                            {item.attendanceKnown ? `${item.calc.attendanceDays}일` : '-'}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[11px] text-muted-foreground block">수임 계약</span>
+                                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-mono">
+                                            {item.calc.contractCount}건
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[11px] text-muted-foreground block">수임 매출</span>
+                                        <span className="text-xs font-bold text-foreground font-mono">
+                                            ₩{(item.calc.totalFeeRevenue / 10000).toLocaleString()}만
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-2 pt-0.5">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium text-xs whitespace-nowrap shrink-0">
+                                            {salaryLabel}
+                                        </span>
+                                        <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono truncate">
+                                            ₩{item.calc.netPay.toLocaleString()}원
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => setTargetPayrollAgent({ member: item.member, profile: item.calc.profile })}
+                                            className="p-2 rounded-lg border border-border text-muted-foreground hover:text-indigo-600 hover:bg-muted transition-colors"
+                                            title="급여 체계 설정"
+                                        >
+                                            <Settings size={14} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTargetPayslipCalculation(item.calc)}
+                                            className="px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-1 whitespace-nowrap"
+                                        >
+                                            <FileText size={13} /> 명세서
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {agentCalculations.length === 0 && (
+                        <div className="py-10 text-center text-xs text-muted-foreground">
+                            등록된 상담원 또는 조회된 근태/실적 데이터가 없습니다.
+                        </div>
+                    )}
+                </div>
+
+                {/* 데스크톱 테이블 */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left text-xs">
                         <thead className="bg-gray-50 dark:bg-gray-750 text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
                             <tr>
