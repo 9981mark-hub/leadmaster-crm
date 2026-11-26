@@ -724,7 +724,7 @@ export default function SettingsPage() {
                                 </span>
                             )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <p className="hidden sm:block text-xs text-muted-foreground mt-0.5">
                             거래처별 정산 정책, 상담 상태 체계, 텔레그램 연동 및 데이터 백업을 통합 관리합니다.
                         </p>
                     </div>
@@ -780,29 +780,31 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto shrink-0">
                     <Link
                         to="/billing"
-                        className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs transition-colors cursor-pointer"
+                        className="inline-flex items-center justify-center gap-1.5 h-8 px-2.5 sm:px-3.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs transition-colors cursor-pointer whitespace-nowrap"
                     >
-                        <CreditCard size={13} strokeWidth={1.75} />
-                        <span>빌링 & 광고비 센터</span>
+                        <CreditCard size={13} strokeWidth={1.75} className="shrink-0" />
+                        <span className="sm:hidden">빌링·광고비</span>
+                        <span className="hidden sm:inline">빌링 & 광고비 센터</span>
                     </Link>
                     {isOwner && (
                         <button
                             type="button"
                             onClick={() => setIsCompanyModalOpen(true)}
-                            className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-medium bg-background text-foreground hover:bg-muted border border-border shadow-2xs transition-colors shrink-0 cursor-pointer"
+                            className="inline-flex items-center justify-center gap-1.5 h-8 px-2.5 sm:px-3.5 rounded-lg text-xs font-medium bg-background text-foreground hover:bg-muted border border-border shadow-2xs transition-colors shrink-0 cursor-pointer whitespace-nowrap"
                         >
-                            <Building2 size={13} strokeWidth={1.75} />
-                            <span>회사명 · 대표 사진 설정</span>
+                            <Building2 size={13} strokeWidth={1.75} className="shrink-0" />
+                            <span className="sm:hidden">회사명·로고</span>
+                            <span className="hidden sm:inline">회사명 · 대표 사진 설정</span>
                         </button>
                     )}
                 </div>
             </div>
 
-            {/* 2. 대분류 4대 탭 바 (Shadcn Segmented Control) */}
-            <div className="bg-muted/70 p-1 rounded-lg border border-border/60 flex items-center gap-1 overflow-x-auto">
+            {/* 2. 대분류 4대 탭 바 (모바일: 2x2 그리드 / 데스크톱: 가로 1줄) */}
+            <div className="bg-muted/70 p-1 rounded-lg border border-border/60 grid grid-cols-2 md:flex items-center gap-1.5 md:gap-1 md:overflow-x-auto">
                 {showPartnersTab && (
                     <button
                         onClick={() => setActiveTab('partners')}

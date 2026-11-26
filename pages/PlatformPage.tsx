@@ -246,32 +246,33 @@ export default function PlatformPage() {
   return (
     <div className="max-w-[1600px] mx-auto space-y-6 pb-12 animate-page-in">
       {/* Title Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
-            <div className="p-2 bg-blue-50 dark:bg-blue-950/50 rounded-xl border border-blue-100 dark:border-blue-900/50 text-blue-600 dark:text-blue-400">
-              <Building2 size={24} />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white flex flex-wrap items-center gap-2">
+            <div className="p-1.5 sm:p-2 bg-blue-50 dark:bg-blue-950/50 rounded-xl border border-blue-100 dark:border-blue-900/50 text-blue-600 dark:text-blue-400 shrink-0">
+              <Building2 size={20} />
             </div>
-            <span>플랫폼 과금 및 회사 관제 센터</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            <span>플랫폼 과금 및 회사 관제</span>
+            <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 whitespace-nowrap">
               HOST HQ
             </span>
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
+          <p className="hidden sm:block text-sm text-gray-500 dark:text-gray-400 mt-1.5">
             고객사별 활성 상담원 과금(₩ 48,000/인) 현황, 서버 원가 마진율 및 테넌트 라이프사이클을 총괄합니다.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsAlertPopupOpen(true)}
-            className={`px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-xs cursor-pointer ${
+            className={`flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer whitespace-nowrap ${
               (seatRequests.filter(r => r.status === 'pending').length + applications.filter(a => a.status === 'pending').length) > 0
                 ? 'bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/20 animate-pulse'
                 : 'bg-card border border-border text-foreground hover:bg-muted'
             }`}
           >
-            <AlertTriangle size={15} />
-            <span>중요 알림 센터</span>
+            <AlertTriangle size={14} />
+            <span className="sm:hidden">알림 센터</span>
+            <span className="hidden sm:inline">중요 알림 센터</span>
             {(seatRequests.filter(r => r.status === 'pending').length + applications.filter(a => a.status === 'pending').length) > 0 && (
               <span className="px-1.5 py-0.2 rounded-full text-2xs bg-destructive text-white font-mono">
                 {seatRequests.filter(r => r.status === 'pending').length + applications.filter(a => a.status === 'pending').length}
@@ -280,7 +281,7 @@ export default function PlatformPage() {
           </button>
           <button
             onClick={reload}
-            className="px-3.5 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold flex items-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-xs cursor-pointer"
+            className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-xs cursor-pointer whitespace-nowrap"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> 새로고침
           </button>
@@ -319,7 +320,7 @@ export default function PlatformPage() {
       )}
 
       {/* 4대 핵심 재무 & 인프라 KPI 카드 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {/* KPI 1: 유료 고객사 */}
         <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
           <div className="flex items-center justify-between">
@@ -759,7 +760,97 @@ export default function PlatformPage() {
           </span>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* 모바일 전용 고객사 카드 리스트 */}
+        <div className="md:hidden divide-y divide-border">
+          {orgs.map(o => {
+            const isHq = o.id === HQ_ORG_ID || o.slug === 'hq';
+            const bill = calculateOrgMonthlyBill(Math.max(1, o.activeMembers), permissionsMap[o.id]);
+            const monthlyBill = isHq ? 0 : bill.totalPrice;
+
+            return (
+              <div key={o.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-sm font-bold text-foreground truncate">{o.name}</span>
+                      {isHq && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 rounded">
+                          본사(면제)
+                        </span>
+                      )}
+                    </div>
+                    {o.ownerInviteEmail && (
+                      <div className="text-[11px] font-mono text-muted-foreground truncate mt-0.5">
+                        {o.ownerInviteEmail}
+                      </div>
+                    )}
+                  </div>
+                  {o.status === 'active' ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/40 whitespace-nowrap shrink-0">
+                      <CheckCircle2 size={11} /> 정상
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-md border border-red-200/60 dark:border-red-800/40 whitespace-nowrap shrink-0">
+                      <Ban size={11} /> 중지
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-muted/40 border border-border/60 text-center">
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block">멤버</span>
+                    <span className="text-xs font-bold font-mono text-foreground">
+                      <span className="text-blue-600 dark:text-blue-400">{o.activeMembers}</span>/{o.members}명
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block">당월 청구</span>
+                    <span className="text-xs font-bold font-mono text-foreground">
+                      {isHq ? '본사' : `₩${(monthlyBill / 10000).toFixed(1)}만`}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block">보유 리드</span>
+                    <span className="text-xs font-bold font-mono text-foreground">
+                      {o.cases.toLocaleString()}건
+                    </span>
+                  </div>
+                </div>
+
+                {!isHq && (
+                  <div className="flex flex-wrap items-center justify-end gap-1.5">
+                    <button
+                      onClick={() => setSelectedOrgForPerm(o)}
+                      className="px-2.5 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded-lg inline-flex items-center gap-1"
+                    >
+                      <Settings size={12} /> 권한
+                    </button>
+                    <button
+                      onClick={() => copyInvoice(o)}
+                      className="px-2.5 py-1.5 text-xs font-semibold text-foreground bg-card border border-border rounded-lg inline-flex items-center gap-1"
+                    >
+                      <FileText size={12} /> 청구서
+                    </button>
+                    <button
+                      onClick={() => toggleStatus(o)}
+                      disabled={busy}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border inline-flex items-center gap-1 ${
+                        o.status === 'active'
+                          ? 'border-destructive/30 text-destructive bg-destructive/5'
+                          : 'border-emerald-500/30 text-emerald-600 bg-emerald-500/5'
+                      }`}
+                    >
+                      {o.status === 'active' ? '중지' : '재개'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 데스크톱 테이블 */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm min-w-[1150px]">
             <thead className="bg-muted/40 text-muted-foreground text-left border-b border-border text-2xs font-mono select-none">
               <tr>
