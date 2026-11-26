@@ -52,12 +52,28 @@ export const ConsultationQuickDesk: React.FC = () => {
     }
   });
 
-  const { size, applyPreset, onMouseDownResizeHandle } = useResizableWindow({
+  const { size, setSize, onMouseDownResizeHandle } = useResizableWindow({
     defaultWidth: 480,
     defaultHeight: 620,
     minWidth: 380,
     minHeight: 460,
   });
+
+  const sizePercent = Math.max(0, Math.min(100, Math.round(((size.width - 380) / (760 - 380)) * 100)));
+
+  const handleSizeSliderChange = (pct: number) => {
+    const ratio = Math.max(0, Math.min(100, pct)) / 100;
+    const maxW = typeof window !== 'undefined' ? Math.min(760, window.innerWidth - 40) : 760;
+    const maxH = typeof window !== 'undefined' ? Math.min(820, window.innerHeight - 40) : 820;
+    const nextSize = {
+      width: Math.min(maxW, Math.round(380 + (760 - 380) * ratio)),
+      height: Math.min(maxH, Math.round(460 + (820 - 460) * ratio)),
+    };
+    setSize(nextSize);
+    try {
+      localStorage.setItem('quick_desk_size', JSON.stringify(nextSize));
+    } catch {}
+  };
 
   const { position, onMouseDownHeader, resetPosition } = useDraggableWindow({
     defaultWidth: size.width,
@@ -168,29 +184,22 @@ export const ConsultationQuickDesk: React.FC = () => {
                 <span>{OPACITY_PRESETS[opacityIndex].label}</span>
               </button>
 
-              {/* 크기 프리셋 버튼 */}
-              <div className="flex bg-muted/60 p-0.5 rounded-md border border-border/60">
-                <button
-                  onClick={() => applyPreset('compact')}
-                  className="px-1.5 py-0.5 text-3xs font-medium rounded hover:bg-card text-muted-foreground hover:text-foreground"
-                  title="콤팩트 뷰 (400x520)"
-                >
-                  소
-                </button>
-                <button
-                  onClick={() => applyPreset('standard')}
-                  className="px-1.5 py-0.5 text-3xs font-medium rounded hover:bg-card text-muted-foreground hover:text-foreground"
-                  title="기본 뷰 (480x620)"
-                >
-                  중
-                </button>
-                <button
-                  onClick={() => applyPreset('wide')}
-                  className="px-1.5 py-0.5 text-3xs font-medium rounded hover:bg-card text-muted-foreground hover:text-foreground"
-                  title="와이드 뷰 (660x720)"
-                >
-                  대
-                </button>
+              {/* 크기 조절 슬라이더 */}
+              <div
+                className="flex items-center gap-1.5 bg-card/80 px-2 py-1 rounded-lg border border-border/80"
+                title="좌우로 움직여 퀵툴 창 크기를 조절하세요"
+              >
+                <Maximize2 className="w-3 h-3 text-primary shrink-0" />
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={2}
+                  value={sizePercent}
+                  onChange={(e) => handleSizeSliderChange(Number(e.target.value))}
+                  aria-label="퀵툴 창 크기 조절"
+                  className="w-16 sm:w-20 h-1.5 accent-primary cursor-pointer"
+                />
               </div>
 
               {/* 위치 리셋 */}
