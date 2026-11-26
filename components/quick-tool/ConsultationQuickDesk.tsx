@@ -70,8 +70,11 @@ export const ConsultationQuickDesk: React.FC = () => {
       height: Math.min(maxH, Math.round(460 + (820 - 460) * ratio)),
     };
     setSize(nextSize);
+  };
+
+  const persistCurrentSize = () => {
     try {
-      localStorage.setItem('quick_desk_size', JSON.stringify(nextSize));
+      localStorage.setItem('quick_desk_size', JSON.stringify(size));
     } catch {}
   };
 
@@ -162,18 +165,39 @@ export const ConsultationQuickDesk: React.FC = () => {
             onMouseDown={onMouseDownHeader}
             className="px-4 py-2.5 bg-primary/10 dark:bg-primary/15 border-b border-primary/20 flex items-center justify-between cursor-move shrink-0"
           >
-            {/* 좌측: 타이틀 */}
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-primary text-primary-foreground shadow-2xs">
+            {/* 좌측: 타이틀 & 고정 위치 크기 조절 슬라이더 */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="p-1.5 rounded-lg bg-primary text-primary-foreground shadow-2xs shrink-0">
                 <Zap className="w-3.5 h-3.5 fill-current" />
               </div>
-              <span className="font-bold text-xs text-foreground tracking-tight">
+              <span className="font-bold text-xs text-foreground tracking-tight whitespace-nowrap">
                 상담 업무 퀵툴
               </span>
+              {/* 좌측 기준 고정(left: position.x)이므로 드래그 시 슬라이더가 흔들리지 않음 */}
+              <div
+                data-no-drag
+                onMouseDown={(e) => e.stopPropagation()}
+                className="flex items-center gap-1.5 bg-card/90 px-2 py-1 rounded-lg border border-border/80 shrink-0"
+                title="좌우로 움직여 퀵툴 창 크기를 조절하세요"
+              >
+                <Maximize2 className="w-3 h-3 text-primary shrink-0" />
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={sizePercent}
+                  onChange={(e) => handleSizeSliderChange(Number(e.target.value))}
+                  onPointerUp={persistCurrentSize}
+                  onMouseUp={persistCurrentSize}
+                  aria-label="퀵툴 창 크기 조절"
+                  className="w-16 sm:w-20 h-1.5 accent-primary cursor-pointer"
+                />
+              </div>
             </div>
 
             {/* 우측: 윈도우 조절 버튼들 */}
-            <div className="flex items-center gap-1" data-no-drag>
+            <div className="flex items-center gap-1 shrink-0" data-no-drag>
               {/* 투명도 조절 */}
               <button
                 onClick={toggleOpacity}
@@ -183,24 +207,6 @@ export const ConsultationQuickDesk: React.FC = () => {
                 <Eye className="w-3 h-3 text-primary" />
                 <span>{OPACITY_PRESETS[opacityIndex].label}</span>
               </button>
-
-              {/* 크기 조절 슬라이더 */}
-              <div
-                className="flex items-center gap-1.5 bg-card/80 px-2 py-1 rounded-lg border border-border/80"
-                title="좌우로 움직여 퀵툴 창 크기를 조절하세요"
-              >
-                <Maximize2 className="w-3 h-3 text-primary shrink-0" />
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={2}
-                  value={sizePercent}
-                  onChange={(e) => handleSizeSliderChange(Number(e.target.value))}
-                  aria-label="퀵툴 창 크기 조절"
-                  className="w-16 sm:w-20 h-1.5 accent-primary cursor-pointer"
-                />
-              </div>
 
               {/* 위치 리셋 */}
               <button
