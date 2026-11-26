@@ -184,9 +184,9 @@ export const CaseSummaryTab: React.FC<CaseSummaryTabProps> = ({
             />
 
             {/* 2. 메인 3컬럼 (기본 요약문 / AI 요약문 / 대화록) 카드 레이아웃 */}
-            <div className={`grid md:grid-cols-2 ${showTranscript ? 'xl:grid-cols-3' : ''} gap-4 min-h-[400px] md:min-h-[500px]`}>
+            <div className={`grid md:grid-cols-2 ${showTranscript ? 'xl:grid-cols-3' : ''} gap-3 sm:gap-4 min-h-[360px] md:min-h-[500px]`}>
                 {/* LEFT: Basic Summary */}
-                <div className="bg-card p-4 rounded-xl border border-border shadow-2xs flex flex-col h-full relative text-foreground">
+                <div className="bg-card p-3 sm:p-4 rounded-xl border border-border shadow-2xs flex flex-col h-full relative text-foreground">
                     <div className="flex justify-between items-center mb-3">
                         <h3 className="font-semibold text-foreground flex items-center gap-2">
                             <FileText size={18} className="text-primary" /> 기본 요약문

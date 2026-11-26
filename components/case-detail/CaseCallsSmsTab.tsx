@@ -20,6 +20,7 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>('custom');
   const [editingTemplate, setEditingTemplate] = useState<{ id?: string, title: string, content: string } | null>(null);
   const [customMessage, setCustomMessage] = useState('');
+  const [mobilePanel, setMobilePanel] = useState<'timeline' | 'sms'>('timeline');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -69,9 +70,38 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full text-foreground">
+    <div className="space-y-3 lg:space-y-0">
+      {/* 모바일 전용 패널 전환 스위치 */}
+      <div className="lg:hidden grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-muted/60 border border-border">
+        <button
+          type="button"
+          onClick={() => setMobilePanel('timeline')}
+          className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+            mobilePanel === 'timeline'
+              ? 'bg-card text-foreground shadow-2xs border border-border'
+              : 'text-muted-foreground'
+          }`}
+        >
+          <MessageSquare className="w-3.5 h-3.5 text-primary" />
+          <span>통화·문자 기록 ({logs.length})</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobilePanel('sms')}
+          className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+            mobilePanel === 'sms'
+              ? 'bg-card text-foreground shadow-2xs border border-border'
+              : 'text-muted-foreground'
+          }`}
+        >
+          <Send className="w-3.5 h-3.5 text-primary" />
+          <span>문자 보내기</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-full text-foreground">
       {/* 왼쪽: 통화 및 문자 타임라인 */}
-      <div className="flex flex-col bg-card rounded-xl p-5 border border-border shadow-2xs" style={{ maxHeight: '600px' }}>
+      <div className={`${mobilePanel === 'timeline' ? 'flex' : 'hidden lg:flex'} flex-col bg-card rounded-xl p-3.5 sm:p-5 border border-border shadow-2xs`} style={{ maxHeight: '600px' }}>
         <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2 shrink-0">
           <MessageSquare className="w-5 h-5 text-primary" />
           통화 및 문자 기록
@@ -205,7 +235,7 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
       </div>
 
       {/* 오른쪽: 문자 발송 및 템플릿 관리 */}
-      <div className="flex flex-col h-full bg-card rounded-xl p-5 border border-border shadow-2xs text-foreground">
+      <div className={`${mobilePanel === 'sms' ? 'flex' : 'hidden lg:flex'} flex-col h-full bg-card rounded-xl p-3.5 sm:p-5 border border-border shadow-2xs text-foreground`}>
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Send className="w-5 h-5 text-primary shrink-0" />
@@ -348,6 +378,7 @@ export function CaseCallsSmsTab({ c }: CaseCallsSmsTabProps) {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

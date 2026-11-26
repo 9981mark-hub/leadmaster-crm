@@ -143,7 +143,7 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
     const sel = 'h-9 px-2.5 border border-border rounded-lg text-xs font-medium outline-none min-w-[120px] bg-card text-foreground shadow-2xs';
 
     return (
-        <div className="sticky top-0 z-20 -mx-1 px-1 pt-1 bg-background/95 backdrop-blur-md">
+        <div className="md:sticky md:top-0 z-20 -mx-1 px-1 pt-1 bg-background/95 backdrop-blur-md">
             <div className="relative bg-card rounded-xl border border-border shadow-xs overflow-hidden">
                 <span className={`absolute left-0 top-0 bottom-0 w-1.5 ${statusBar(c.status)}`} aria-hidden />
                 <div className="pl-4 pr-3 py-3 flex flex-col lg:flex-row lg:items-center gap-3">

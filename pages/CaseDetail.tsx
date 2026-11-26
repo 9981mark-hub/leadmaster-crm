@@ -925,27 +925,27 @@ export default function CaseDetail() {
                     </div>
                 )}
 
-                {/* Tabs */}
-                <div className="flex gap-1 border-b border-border px-1 overflow-x-auto no-scrollbar">
+                {/* Tabs (모바일: 3열x2줄 한눈에 보기 / 데스크톱: 밑줄 가로 탭) */}
+                <div className="grid grid-cols-3 md:flex gap-1 border-b border-border px-0.5 md:px-1 pb-2 md:pb-0">
                     {[
                         { id: 'info', label: '상담 정보' },
                         { id: 'recordings', label: '통화 녹음·AI' },
                         { id: 'summary', label: '요약문' },
-                        { id: 'calls_sms', label: '통화·문자 기록' },
+                        { id: 'calls_sms', label: '통화·문자' },
                         { id: 'timeline', label: '타임라인' },
                         ...(isAdmin ? [{ id: 'settlement', label: '수임료/정산' }] : [])
                     ].map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={"px-4 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap transition-colors " + (activeTab === tab.id ? 'border-primary text-foreground font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground font-medium')}
+                            className={"px-2 md:px-4 py-2 md:py-2.5 text-xs md:text-sm rounded-lg md:rounded-none md:border-b-2 md:-mb-px whitespace-nowrap transition-colors text-center " + (activeTab === tab.id ? 'bg-primary/10 text-primary font-semibold md:bg-transparent md:border-primary md:text-foreground' : 'bg-muted/40 md:bg-transparent md:border-transparent text-muted-foreground hover:text-foreground font-medium')}
                         >
                             {tab.label}
                         </button>
                     ))}
                 </div>
 
-                <div className={activeTab === 'info' || activeTab === 'settlement' ? 'min-h-[600px]' : 'bg-card text-foreground p-4 md:p-6 rounded-2xl border border-border min-h-[600px]'}>
+                <div className={activeTab === 'info' || activeTab === 'settlement' ? 'min-h-[600px]' : 'bg-card text-foreground p-3 sm:p-4 md:p-6 rounded-2xl border border-border min-h-[600px]'}>
                     {activeTab === 'info' && (
                         <CaseInfoTab
                             c={c}
