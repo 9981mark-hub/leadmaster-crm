@@ -59,22 +59,31 @@ export const ConsultationQuickDesk: React.FC = () => {
     minHeight: 460,
   });
 
-  const sizePercent = Math.max(0, Math.min(100, Math.round(((size.width - 380) / (760 - 380)) * 100)));
+  const SIZE_STEPS = [
+    { width: 390, height: 480, label: '아주 작게' },
+    { width: 450, height: 560, label: '작게' },
+    { width: 510, height: 630, label: '보통' },
+    { width: 610, height: 710, label: '크게' },
+    { width: 730, height: 790, label: '최대' },
+  ];
 
-  const handleSizeSliderChange = (pct: number) => {
-    const ratio = Math.max(0, Math.min(100, pct)) / 100;
-    const maxW = typeof window !== 'undefined' ? Math.min(760, window.innerWidth - 40) : 760;
-    const maxH = typeof window !== 'undefined' ? Math.min(820, window.innerHeight - 40) : 820;
+  const activeSizeStep = SIZE_STEPS.reduce((bestIdx, step, idx) => {
+    const bestDiff = Math.abs(SIZE_STEPS[bestIdx].width - size.width);
+    const curDiff = Math.abs(step.width - size.width);
+    return curDiff < bestDiff ? idx : bestIdx;
+  }, 0);
+
+  const applySizeStep = (stepIdx: number) => {
+    const step = SIZE_STEPS[Math.max(0, Math.min(SIZE_STEPS.length - 1, stepIdx))];
+    const maxW = typeof window !== 'undefined' ? Math.min(860, window.innerWidth - 40) : step.width;
+    const maxH = typeof window !== 'undefined' ? Math.min(880, window.innerHeight - 40) : step.height;
     const nextSize = {
-      width: Math.min(maxW, Math.round(380 + (760 - 380) * ratio)),
-      height: Math.min(maxH, Math.round(460 + (820 - 460) * ratio)),
+      width: Math.min(maxW, step.width),
+      height: Math.min(maxH, step.height),
     };
     setSize(nextSize);
-  };
-
-  const persistCurrentSize = () => {
     try {
-      localStorage.setItem('quick_desk_size', JSON.stringify(size));
+      localStorage.setItem('quick_desk_size', JSON.stringify(nextSize));
     } catch {}
   };
 
@@ -158,7 +167,7 @@ export const ConsultationQuickDesk: React.FC = () => {
             opacity: currentOpacity,
             zIndex: 45,
           }}
-          className="bg-[#eef2f8]/95 dark:bg-zinc-900/95 backdrop-blur-md text-foreground border-2 border-primary/35 dark:border-primary/40 shadow-[0_24px_60px_rgba(15,23,42,0.28)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.8)] rounded-2xl flex flex-col overflow-hidden transition-opacity duration-150 select-none"
+          className="bg-[#eef2f8] dark:bg-zinc-900 text-foreground border-2 border-primary/35 dark:border-primary/40 shadow-[0_24px_60px_rgba(15,23,42,0.28)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.8)] rounded-2xl flex flex-col overflow-hidden transition-[width,height,opacity] duration-150 ease-out select-none"
         >
           {/* A. 윈도우 헤더 (드래그 핸들 & 컨트롤 바) */}
           <div
@@ -173,26 +182,31 @@ export const ConsultationQuickDesk: React.FC = () => {
               <span className="font-bold text-xs text-foreground tracking-tight whitespace-nowrap">
                 상담 업무 퀵툴
               </span>
-              {/* 좌측 기준 고정(left: position.x)이므로 드래그 시 슬라이더가 흔들리지 않음 */}
+              {/* 5단계 그래프형 창 크기 조절 바 (클릭 또는 드래그) */}
               <div
                 data-no-drag
                 onMouseDown={(e) => e.stopPropagation()}
-                className="flex items-center gap-1.5 bg-card/90 px-2 py-1 rounded-lg border border-border/80 shrink-0"
-                title="좌우로 움직여 퀵툴 창 크기를 조절하세요"
+                className="flex items-end gap-1 bg-card/90 px-2 py-1 rounded-lg border border-border/80 shrink-0 h-7"
+                title="막대 그래프를 클릭하거나 드래그하여 창 크기를 조절하세요"
               >
-                <Maximize2 className="w-3 h-3 text-primary shrink-0" />
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={sizePercent}
-                  onChange={(e) => handleSizeSliderChange(Number(e.target.value))}
-                  onPointerUp={persistCurrentSize}
-                  onMouseUp={persistCurrentSize}
-                  aria-label="퀵툴 창 크기 조절"
-                  className="w-16 sm:w-20 h-1.5 accent-primary cursor-pointer"
-                />
+                {SIZE_STEPS.map((step, idx) => {
+                  const isActive = idx <= activeSizeStep;
+                  const barHeights = ['h-1.5', 'h-2', 'h-2.5', 'h-3.5', 'h-4'];
+                  return (
+                    <button
+                      key={step.label}
+                      type="button"
+                      onPointerDown={() => applySizeStep(idx)}
+                      onPointerEnter={(e) => {
+                        if (e.buttons === 1) applySizeStep(idx);
+                      }}
+                      title={`${step.label} (${step.width}×${step.height})`}
+                      className={`w-2 ${barHeights[idx]} rounded-xs transition-colors cursor-pointer ${
+                        isActive ? 'bg-primary' : 'bg-muted-foreground/30 hover:bg-primary/50'
+                      }`}
+                    />
+                  );
+                })}
               </div>
             </div>
 
