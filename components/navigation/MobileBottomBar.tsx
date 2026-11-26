@@ -34,7 +34,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
     { 
       to: isAdmin ? '/settlement' : '/training', 
       icon: isAdmin ? Calculator : GraduationCap, 
-      label: isAdmin ? '정산' : '트레이닝' 
+      label: isAdmin ? '정산' : '교육·연습' 
     },
   ];
 
@@ -53,7 +53,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
     ...(isAdmin ? [{
       label: '정산 & 경영',
       items: [
-        { to: '/billing', icon: CreditCard, label: '빌링 & 광고비' },
+        { to: '/billing', icon: CreditCard, label: '요금제·결제 & 광고비' },
         { to: '/settlement', icon: Calculator, label: '정산·손익 센터' },
         { to: '/team', icon: UserCog, label: '팀 관리' },
       ],
@@ -61,15 +61,15 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
     {
       label: '연동 & 소통',
       items: [
-        { to: '/telegram', icon: Smartphone, label: 'TG 연동 센터', badge: pendingTgCount },
+        { to: '/telegram', icon: Smartphone, label: '텔레그램 연동', badge: pendingTgCount },
         { to: '/notices', icon: Megaphone, label: '사내 공지사항' },
-        { to: '/training', icon: GraduationCap, label: 'AI 트레이닝' },
+        { to: '/training', icon: GraduationCap, label: '신입 교육·모의콜' },
       ],
     },
     {
       label: '시스템 & 마이',
       items: [
-        ...(isPlatformAdmin ? [{ to: '/platform', icon: Building2, label: '회사 관리 (Host)' }] : []),
+        ...(isPlatformAdmin ? [{ to: '/platform', icon: Building2, label: '전체 회사 관리 (운영자)' }] : []),
         ...(isOwner || isPlatformAdmin || (isAdmin && org?.adminPermissions?.settings?.allowAccess)
           ? [{ to: '/settings', icon: Settings, label: '시스템 설정' }]
           : []),

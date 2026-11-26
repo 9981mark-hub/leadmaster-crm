@@ -2037,12 +2037,12 @@ export default function Statistics() {
                                             </p>
                                         </div>
                                         <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">토스 잠재고객 & 평균 CPL</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">토스 잠재고객 & 평균 유입 단가</p>
                                             <h4 className="text-xl font-bold text-purple-600 dark:text-purple-400">
                                                 {tossSummaryKpis.totalTossLeads}명
                                             </h4>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                광고비 기준 CPL: <span className="font-semibold text-gray-600 dark:text-gray-300">{tossSummaryKpis.avgCpl.toLocaleString()}원</span>
+                                                고객 1명당 광고비: <span className="font-semibold text-gray-600 dark:text-gray-300">{tossSummaryKpis.avgCpl.toLocaleString()}원</span>
                                             </p>
                                         </div>
                                         <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 glass-panel">

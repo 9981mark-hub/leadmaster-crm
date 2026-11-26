@@ -139,7 +139,7 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">상호 / 회사명</span>
-                <span className="font-bold text-foreground">리드마스터 (LeadMaster CRM)</span>
+                <span className="font-bold text-foreground">몬스터랩 (리드마스터 CRM)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">대표자</span>
@@ -147,7 +147,7 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">사업자등록번호</span>
-                <span className="font-mono text-foreground">214-12-89201</span>
+                <span className="font-mono text-foreground">521-39-01355</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">담당 이메일</span>
@@ -259,8 +259,8 @@ export const OrgInvoiceModal: React.FC<OrgInvoiceModalProps> = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-muted-foreground">
               <div>• <strong className="text-foreground">입금 은행:</strong> 카카오뱅크</div>
-              <div>• <strong className="text-foreground">계좌 번호:</strong> <span className="font-mono font-bold text-foreground">3333-21-490199</span></div>
-              <div>• <strong className="text-foreground">예금주:</strong> 진성훈 (리드마스터)</div>
+              <div>• <strong className="text-foreground">계좌 번호:</strong> <span className="font-mono font-bold text-foreground">3333-35-6862273</span></div>
+              <div>• <strong className="text-foreground">예금주:</strong> 진성호(몬스터랩)</div>
               <div>• <strong className="text-foreground">입금자명 표기:</strong> [{taxInfo.companyName}_{taxInfo.representativeName}]</div>
             </div>
             <p className="text-xs text-muted-foreground pt-1">

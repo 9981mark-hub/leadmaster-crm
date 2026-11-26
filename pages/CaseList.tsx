@@ -1160,7 +1160,7 @@ export default function CaseList() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-sm sm:text-base tracking-tight text-foreground flex items-center gap-2">
-                                            <span>사무장 인계 수임 큐 (Paralegal Handoff Pipeline)</span>
+                                            <span>법무법인 전달 · 수임 대기 현황</span>
                                             <span className="px-2 py-0.5 rounded-full text-[11px] bg-primary/10 text-primary border border-primary/20 font-semibold">
                                                 전환율 극대화
                                             </span>

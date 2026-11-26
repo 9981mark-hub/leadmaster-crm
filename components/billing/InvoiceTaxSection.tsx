@@ -23,9 +23,9 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
   const [copiedAccount, setCopiedAccount] = useState(false);
 
   const handleCopyAccount = () => {
-    navigator.clipboard.writeText('3333-21-490199').then(() => {
+    navigator.clipboard.writeText('3333-35-6862273').then(() => {
       setCopiedAccount(true);
-      showToast('공식 입금 계좌번호(카카오뱅크 3333-21-490199)가 복사되었습니다.', 'success');
+      showToast('공식 입금 계좌번호(카카오뱅크 3333-35-6862273)가 복사되었습니다.', 'success');
       setTimeout(() => setCopiedAccount(false), 2000);
     });
   };
@@ -64,7 +64,7 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
             <div className="mt-3">
               <div className="text-xs text-slate-500 dark:text-slate-400">카카오뱅크</div>
               <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono mt-0.5 flex items-center gap-2">
-                3333-21-490199
+                3333-35-6862273
                 <button
                   onClick={handleCopyAccount}
                   className="p-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-blue-600 border border-slate-200 dark:border-slate-700 shadow-2xs transition-colors cursor-pointer"
@@ -74,7 +74,7 @@ export const InvoiceTaxSection: React.FC<InvoiceTaxSectionProps> = ({
                 </button>
               </div>
               <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                예금주: <span className="font-bold text-slate-900 dark:text-white">진성훈 (리드마스터)</span>
+                예금주: <span className="font-bold text-slate-900 dark:text-white">진성호(몬스터랩)</span>
               </div>
             </div>
 

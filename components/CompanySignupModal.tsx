@@ -130,7 +130,7 @@ export default function CompanySignupModal({
   };
 
   const handleCopyAccount = () => {
-    navigator.clipboard.writeText('3333-21-490199');
+    navigator.clipboard.writeText('3333-35-6862273');
     setCopiedAccount(true);
     setTimeout(() => setCopiedAccount(false), 2000);
   };
@@ -146,8 +146,8 @@ export default function CompanySignupModal({
 --------------------------------------------------
 ■ 공식 수납 계좌 안내:
 - 은행: 카카오뱅크
-- 계좌번호: 3333-21-490199
-- 예금주: 진성훈 (리드마스터)
+- 계좌번호: 3333-35-6862273
+- 예금주: 진성호(몬스터랩)
 - 입금자명: ${companyName}_${ownerName || '대표'}
 
 ■ 4대 전자 이용계약 체결 내역 (전자서명법 제3조 준수):
@@ -220,10 +220,10 @@ export default function CompanySignupModal({
                   <div>
                     <div className="text-xs text-muted-foreground font-medium">카카오뱅크</div>
                     <div className="text-base sm:text-lg font-mono font-black text-foreground tracking-wider">
-                      3333-21-490199
+                      3333-35-6862273
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      예금주: <strong className="text-foreground">진성훈 (리드마스터)</strong>
+                      예금주: <strong className="text-foreground">진성호(몬스터랩)</strong>
                     </div>
                   </div>
                   <button

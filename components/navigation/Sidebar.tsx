@@ -78,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'finance',
       label: '정산 / 경영',
       items: [
-        { to: '/billing', icon: CreditCard, label: '빌링 & 광고비', adminOnly: true },
+        { to: '/billing', icon: CreditCard, label: '요금제·결제 & 광고비', adminOnly: true },
         { to: '/settlement', icon: Calculator, label: '정산·손익 센터', adminOnly: true },
         { to: '/team', icon: UserCog, label: '팀 관리', adminOnly: true },
       ],
@@ -90,18 +90,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { 
           to: '/telegram', 
           icon: Smartphone, 
-          label: 'TG 연동 센터', 
+          label: '텔레그램 연동', 
           badge: pendingTgCount > 0 ? pendingTgCount : undefined 
         },
         { to: '/notices', icon: Megaphone, label: '사내 공지사항' },
-        { to: '/training', icon: GraduationCap, label: 'AI 트레이닝' },
+        { to: '/training', icon: GraduationCap, label: '신입 교육·모의콜' },
       ],
     },
     {
       id: 'admin',
       label: '시스템 관리',
       items: [
-        { to: '/platform', icon: Crown, label: '👑 플랫폼 총괄 어드민', platformAdminOnly: true },
+        { to: '/platform', icon: Crown, label: '👑 플랫폼 운영자 관리', platformAdminOnly: true },
         { to: '/settings', icon: Settings, label: '시스템 설정', adminOnly: true },
         { to: '/mypage', icon: User, label: '마이페이지' },
       ],

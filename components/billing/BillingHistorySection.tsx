@@ -36,9 +36,9 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
 
   // 계좌번호 복사 핸들러
   const handleCopyAccount = () => {
-    navigator.clipboard.writeText('3333-21-490199').then(() => {
+    navigator.clipboard.writeText('3333-35-6862273').then(() => {
       setCopiedAccount(true);
-      showToast('공식 입금 계좌번호(카카오뱅크 3333-21-490199)가 복사되었습니다.', 'success');
+      showToast('공식 입금 계좌번호(카카오뱅크 3333-35-6862273)가 복사되었습니다.', 'success');
       setTimeout(() => setCopiedAccount(false), 2000);
     });
   };
@@ -152,7 +152,7 @@ export const BillingHistorySection: React.FC<BillingHistorySectionProps> = ({
             <div className="mt-4 pt-3 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
               <span>무통장 납부용 공식 계좌:</span>
               <div className="flex items-center gap-1.5 font-mono font-semibold text-foreground">
-                <span>카카오뱅크 3333-21-490199</span>
+                <span>카카오뱅크 3333-35-6862273</span>
                 <button
                   onClick={handleCopyAccount}
                   className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 cursor-pointer"

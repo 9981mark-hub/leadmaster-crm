@@ -3,6 +3,7 @@ import {
   UserOnboardingProfile,
   ONBOARDING_STEP_METAS,
   getAllOnboardingProfiles,
+  fetchAllOnboardingProfilesFromServer,
   approveOnboarding,
   resetOnboardingProfile,
 } from '../../services/trainingOnboardingService';
@@ -48,6 +49,9 @@ export const AdminOnboardingModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const loadData = () => {
     const list = getAllOnboardingProfiles();
     setProfiles(list);
+    void fetchAllOnboardingProfilesFromServer().then((serverList) => {
+      setProfiles(serverList);
+    });
   };
 
   const handleApprove = (targetUserId: string, userName: string) => {

@@ -473,10 +473,34 @@ export const TrainingReportModal: React.FC<Props> = ({
                   </div>
                 </div>
 
+                {/* 원클릭 자주 쓰는 코칭 문구 버튼 */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[11px] font-semibold text-muted-foreground mr-1">원클릭 코칭 문구:</span>
+                  {[
+                    '👍 첫인사·목소리 톤이 안정적이고 좋습니다.',
+                    '👍 7대 문진(채무·소득·가족·주거)이 빠짐없이 깔끔합니다.',
+                    '⚠️ 부양가족·월소득 질문을 놓쳤습니다. 꼭 확인하세요.',
+                    '⚠️ 거절 멘트 시 너무 빨리 끊지 말고 한 번 더 여쭤보세요.',
+                    '⚠️ 확정적 표현·금지어 사용에 주의해 주세요.',
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        setAdminComment(prev => (prev.trim() ? `${prev.trim()}\n${preset}` : preset));
+                        setIsSavedFeedback(false);
+                      }}
+                      className="px-2 py-1 text-[11px] rounded-md bg-muted/60 hover:bg-muted text-foreground border border-border transition-colors cursor-pointer"
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+
                 <textarea
                   value={adminComment}
                   onChange={e => { setAdminComment(e.target.value); setIsSavedFeedback(false); }}
-                  placeholder="신입 상담원에게 전달할 팀장의 직접 코칭 조언을 입력하세요. (예: 보이스피싱 의심 시 당황하지 말고 3대 무과금 원칙을 먼저 단호히 짚어줄 것)"
+                  placeholder="신입 상담원에게 전달할 팀장의 직접 코칭 조언을 입력하세요. (위 버튼을 누르면 자동 입력됩니다)"
                   rows={2}
                   className="w-full text-xs p-2.5 rounded-xl bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-900/80 focus:ring-1 focus:ring-amber-500 focus:outline-none placeholder-gray-400"
                 />

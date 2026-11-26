@@ -4,6 +4,7 @@
  */
 
 import { loadLevelExamProgress } from './trainingExamBank';
+import { supabase } from './supabase';
 
 export type OnboardingStepId =
   | 'step_1_videos'
@@ -263,8 +264,155 @@ export function saveOnboardingProfile(profile: UserOnboardingProfile): void {
 
     // 전체 유저 목록 인덱스 갱신
     registerUserIndex(profile.userId);
+
+    // 백그라운드 Supabase 서버 동기화 (실패해도 로컬 동작 유지)
+    void syncOnboardingProfileToServer(profile);
   } catch (e) {
     console.error('Failed to save onboarding profile:', e);
+  }
+}
+
+function saveLocalCacheOnly(profile: UserOnboardingProfile): void {
+  try {
+    const key = `${STORAGE_PREFIX}_${profile.userId}`;
+    localStorage.setItem(key, JSON.stringify(profile));
+    registerUserIndex(profile.userId);
+  } catch {}
+}
+
+function rowToOnboardingProfile(row: any): UserOnboardingProfile {
+  return {
+    userId: row.user_key,
+    userName: row.user_name || row.user_key,
+    startedAt: row.started_at || new Date().toISOString(),
+    updatedAt: row.updated_at || new Date().toISOString(),
+    currentStepId: (row.current_step_id || 'step_1_videos') as OnboardingStepId,
+    progressPercent: Number(row.progress_percent ?? 0),
+    completedCount: Number(row.completed_count ?? 0),
+    isCompleted: Boolean(row.is_completed),
+    isApprovedByAdmin: Boolean(row.is_approved_by_admin),
+    approvedAt: row.approved_at || undefined,
+    approvedBy: row.approved_by || undefined,
+    steps: (row.steps && typeof row.steps === 'object' ? row.steps : {}) as Record<OnboardingStepId, OnboardingStepState>,
+  };
+}
+
+/**
+ * 온보딩 프로필을 Supabase DB에 동기화
+ */
+export async function syncOnboardingProfileToServer(profile: UserOnboardingProfile): Promise<void> {
+  if (!supabase) return;
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session) return;
+
+    const { data: existing } = await supabase
+      .from('training_onboarding_profiles')
+      .select('id')
+      .eq('user_key', profile.userId)
+      .maybeSingle();
+
+    const payload = {
+      user_key: profile.userId,
+      user_name: profile.userName,
+      current_step_id: profile.currentStepId,
+      progress_percent: profile.progressPercent,
+      completed_count: profile.completedCount,
+      is_completed: profile.isCompleted,
+      is_approved_by_admin: profile.isApprovedByAdmin,
+      approved_at: profile.approvedAt || null,
+      approved_by: profile.approvedBy || null,
+      steps: profile.steps,
+      started_at: profile.startedAt,
+      updated_at: profile.updatedAt,
+    };
+
+    if (existing?.id) {
+      await supabase
+        .from('training_onboarding_profiles')
+        .update(payload)
+        .eq('id', existing.id);
+    } else {
+      await supabase
+        .from('training_onboarding_profiles')
+        .insert(payload);
+    }
+  } catch (e) {
+    console.warn('Onboarding server sync skipped:', e);
+  }
+}
+
+/**
+ * 서버(Supabase)에서 본인 온보딩 프로필 조회 후 로컬 캐시 동기화
+ */
+export async function fetchOnboardingProfileFromServer(userId: string, userName?: string): Promise<UserOnboardingProfile> {
+  const localProfile = getOnboardingProfile(userId, userName);
+  if (!supabase) return localProfile;
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session) return localProfile;
+
+    const { data, error } = await supabase
+      .from('training_onboarding_profiles')
+      .select('*')
+      .eq('user_key', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Failed to fetch onboarding profile from server:', error.message);
+      return localProfile;
+    }
+
+    if (data) {
+      const serverProfile = syncExamResultsWithProfile(rowToOnboardingProfile(data));
+      saveLocalCacheOnly(serverProfile);
+      return serverProfile;
+    }
+
+    // 서버에 아직 없으면 현재 로컬 프로필을 서버에 초기 업로드
+    await syncOnboardingProfileToServer(localProfile);
+    return localProfile;
+  } catch (e) {
+    console.warn('fetchOnboardingProfileFromServer error:', e);
+    return localProfile;
+  }
+}
+
+/**
+ * 관리자용: 서버(Supabase)에서 소속 회사 전 직원의 온보딩 진척도 일괄 조회
+ */
+export async function fetchAllOnboardingProfilesFromServer(): Promise<UserOnboardingProfile[]> {
+  const localList = getAllOnboardingProfiles();
+  if (!supabase) return localList;
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session) return localList;
+
+    const { data, error } = await supabase
+      .from('training_onboarding_profiles')
+      .select('*')
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.warn('Failed to fetch all onboarding profiles from server:', error.message);
+      return localList;
+    }
+
+    const serverProfiles = (data || []).map(rowToOnboardingProfile);
+    serverProfiles.forEach(saveLocalCacheOnly);
+
+    // 서버 목록 + 아직 서버에 없는 로컬 전용 항목이 있으면 병합
+    const serverKeys = new Set(serverProfiles.map(p => p.userId));
+    const merged = [...serverProfiles];
+    localList.forEach(lp => {
+      if (!serverKeys.has(lp.userId)) {
+        merged.push(lp);
+      }
+    });
+    return merged;
+  } catch (e) {
+    console.warn('fetchAllOnboardingProfilesFromServer error:', e);
+    return localList;
   }
 }
 

@@ -117,6 +117,7 @@ export default function TrainingCenterPage() {
   // 코칭 허브 필터 상태
   const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>('all');
   const [searchAgentName, setSearchAgentName] = useState<string>('');
+  const [onlyPendingFeedback, setOnlyPendingFeedback] = useState<boolean>(false);
 
   // Mode Selection: 'onboarding' | 'random' | 'clinic' | 'standard' | 'education' | 'admin'
   const [activeTab, setActiveTab] = useState<TabMode>('onboarding');
@@ -187,6 +188,10 @@ export default function TrainingCenterPage() {
       const matchAgent = (r.agentName || '').toLowerCase().includes(q);
       const matchPersona = (r.personaName || '').toLowerCase().includes(q);
       if (!matchAgent && !matchPersona) return false;
+    }
+    // 3. 피드백 대기(미평가) 필터
+    if (onlyPendingFeedback && r.adminFeedback) {
+      return false;
     }
     return true;
   });
@@ -1319,6 +1324,42 @@ export default function TrainingCenterPage() {
         </div>
       </div>
 
+      {/* 일반 상담원 전용: 최근 팀장 코칭 피드백 즉시 알림 배너 */}
+      {isAgent && (() => {
+        const latestFeedbackSession = mySessions.find(s => s.adminFeedback);
+        if (!latestFeedbackSession?.adminFeedback) return null;
+        return (
+          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <Award className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-foreground flex items-center gap-2 flex-wrap">
+                  <span>팀장님 코칭 피드백이 도착했습니다</span>
+                  <span className="px-1.5 py-0.5 rounded bg-amber-500 text-white text-[10px] font-black">
+                    {latestFeedbackSession.adminFeedback.grade}등급
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                  {latestFeedbackSession.adminFeedback.comment || '모의 통화 평가가 등록되었습니다. 내용을 확인하고 다시 연습해 보세요.'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedAdminSession(latestFeedbackSession);
+                setCurrentReport(latestFeedbackSession.report);
+                setCurrentSessionRecord(latestFeedbackSession);
+                setShowModal(true);
+              }}
+              className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shrink-0 transition-colors cursor-pointer"
+            >
+              피드백 바로 보기
+            </button>
+          </div>
+        );
+      })()}
+
       {/* Mode Navigation Tabs */}
       <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-card border border-border overflow-x-auto shadow-xs">
         <button
@@ -1330,9 +1371,9 @@ export default function TrainingCenterPage() {
           }`}
         >
           <GraduationCap className="w-4 h-4" strokeWidth={1.75} />
-          <span>🌱 신입 온보딩 패스트트랙</span>
+          <span>🌱 신입 3일 완성 코스</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-primary/20 text-primary font-semibold">
-            3일 완성
+            필수
           </span>
         </button>
 
@@ -1345,7 +1386,7 @@ export default function TrainingCenterPage() {
           }`}
         >
           <Target className="w-4 h-4" strokeWidth={1.75} />
-          <span>🎯 6대 취약점 집중 클리닉</span>
+          <span>🎯 거절 대응 집중 연습</span>
         </button>
 
         <button
@@ -1360,7 +1401,7 @@ export default function TrainingCenterPage() {
           }`}
         >
           <Dice5 className="w-4 h-4" strokeWidth={1.75} />
-          <span>🎲 무규칙 실전 고객 생성</span>
+          <span>🎲 랜덤 가상 고객 연습</span>
         </button>
 
         <button
@@ -1372,7 +1413,7 @@ export default function TrainingCenterPage() {
           }`}
         >
           <Layers className="w-4 h-4" strokeWidth={1.75} />
-          <span>📋 기본 4단계 정규 코스</span>
+          <span>📋 단계별 기본 코스</span>
         </button>
 
         <button
@@ -1384,7 +1425,7 @@ export default function TrainingCenterPage() {
           }`}
         >
           <BookOpen className="w-4 h-4" strokeWidth={1.75} />
-          <span>📚 실전 교육자료 & 모범 녹취 허브</span>
+          <span>📚 교육자료 · 시험 · 모범녹취</span>
         </button>
 
         {isAgent ? (
@@ -1606,15 +1647,28 @@ export default function TrainingCenterPage() {
                 )}
               </div>
 
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="상담원명 또는 고객명 검색..."
-                  value={searchAgentName}
-                  onChange={(e) => setSearchAgentName(e.target.value)}
-                  className="text-xs pl-8 pr-3 py-1.5 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-56 sm:w-64"
-                />
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setOnlyPendingFeedback(prev => !prev)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
+                    onlyPendingFeedback
+                      ? 'bg-amber-500 text-white border-amber-500 shadow-2xs'
+                      : 'bg-background text-muted-foreground border-border hover:text-foreground'
+                  }`}
+                >
+                  {onlyPendingFeedback ? '✓ 피드백 대기(미평가)만 보는 중' : '피드백 대기(미평가)만 보기'}
+                </button>
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="상담원명 또는 고객명 검색..."
+                    value={searchAgentName}
+                    onChange={(e) => setSearchAgentName(e.target.value)}
+                    className="text-xs pl-8 pr-3 py-1.5 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-56 sm:w-64"
+                  />
+                </div>
               </div>
             </div>
 

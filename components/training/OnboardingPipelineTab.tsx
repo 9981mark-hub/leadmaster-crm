@@ -5,6 +5,7 @@ import {
   ONBOARDING_STEP_METAS,
   UserOnboardingProfile,
   getOnboardingProfile,
+  fetchOnboardingProfileFromServer,
   completeOnboardingStep,
   resetOnboardingProfile,
 } from '../../services/trainingOnboardingService';
@@ -54,9 +55,14 @@ export const OnboardingPipelineTab: React.FC<Props> = ({ onNavigateTab }) => {
 
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
-  // 프로필 최신화
+  // 프로필 최신화 (로컬 즉시 표시 후 서버 DB 동기화)
   useEffect(() => {
     setProfile(getOnboardingProfile(currentUserId, currentUserName));
+    let active = true;
+    fetchOnboardingProfileFromServer(currentUserId, currentUserName).then((serverProfile) => {
+      if (active) setProfile(serverProfile);
+    });
+    return () => { active = false; };
   }, [currentUserId, currentUserName]);
 
   // 특정 단계 완료 처리

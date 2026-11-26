@@ -4263,7 +4263,7 @@ export default function Settlement() {
                 <div>
                     <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
                         <DollarSign className="w-6 h-6 text-primary" strokeWidth={1.75} />
-                        <span>통합 정산 & 경영 손익(P&L) 센터</span>
+                        <span>통합 정산 · 손익 센터</span>
                         <span className="text-2xs px-2 py-0.5 rounded font-semibold tracking-tight bg-primary/10 text-primary border border-primary/20">
                             v4.5 Master
                         </span>
@@ -4543,7 +4543,7 @@ export default function Settlement() {
                     }`}
                 >
                     <TrendingUp className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
-                    <span>종합 손익 & P&L</span>
+                    <span>종합 손익계산서</span>
                     {!isOwner && !settlementPerms.allowIntegratedPnL && <Lock size={11} className="text-amber-500 shrink-0" strokeWidth={1.75} />}
                 </button>
 

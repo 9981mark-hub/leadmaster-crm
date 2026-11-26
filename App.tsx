@@ -174,7 +174,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // Version Cache Buster
   useEffect(() => {
-    const CURRENT_VERSION = "3.80";
+    const CURRENT_VERSION = "4.5.0";
     const savedVersion = localStorage.getItem("app_version");
     if (savedVersion !== CURRENT_VERSION) {
       console.log(`Version mismatch! Saved: ${savedVersion}, Current: ${CURRENT_VERSION}. Forcing reload.`);
@@ -334,7 +334,7 @@ const ProtectedRoutes = () => {
             <Route path="/new/full" element={<StandardRoute><NewCase /></StandardRoute>} />
             <Route path="/case/:caseId" element={<StandardRoute><CaseDetail /></StandardRoute>} />
             <Route path="/telegram" element={<TelegramSync />} />
-            <Route path="/auto-dial" element={<PlatformAdminOnly><AutoDial /></PlatformAdminOnly>} />
+            <Route path="/auto-dial" element={<AdminOnly><AutoDial /></AdminOnly>} />
             <Route path="/billing" element={<AdminOnly><BillingPage /></AdminOnly>} />
             <Route path="/settlement" element={<AdminOnly><Settlement /></AdminOnly>} />
             <Route path="/statistics" element={<AdminOnly><Statistics /></AdminOnly>} />

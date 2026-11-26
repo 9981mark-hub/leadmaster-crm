@@ -445,9 +445,9 @@ export default function LiteCallPage() {
           </div>
           <div>
             <h1 className="text-sm font-bold tracking-tight text-foreground flex items-center gap-1.5">
-              <span>LeadMaster Lite</span>
+              <span>간편 콜 모드</span>
               <span className="text-[11px] bg-muted text-muted-foreground border border-border px-1.5 py-0.2 rounded font-semibold">
-                간편 모드
+                집중 통화
               </span>
             </h1>
             <p className="text-[11px] text-muted-foreground">콜 & 텔레그램 전달 전용</p>

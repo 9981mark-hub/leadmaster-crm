@@ -174,7 +174,7 @@ const ProfitLossSection: React.FC<ProfitLossSectionProps> = ({ year, settlementD
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div>
                         <h3 className="font-bold text-foreground flex items-center gap-2 text-xs sm:text-sm">
-                            <span>📊 손익계산서 (P&L)</span>
+                            <span>📊 손익계산서</span>
                             {dataSource === 'invoice' && (
                                 <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 text-2xs rounded-md font-semibold">실제 세금계산서 기반</span>
                             )}

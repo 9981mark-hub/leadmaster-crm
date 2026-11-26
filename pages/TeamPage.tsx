@@ -460,7 +460,7 @@ export default function TeamPage() {
           }`}
         >
           <ShieldAlert size={13} strokeWidth={1.75} />
-          <span>수신거부 (DNC)</span>
+          <span>수신거부 (전화금지)</span>
         </button>
 
         <button
@@ -921,7 +921,7 @@ export default function TeamPage() {
                         className="inline-flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline"
                       >
                         <ShieldCheck size={13} />
-                        <span>관리자 권한 설정 (Tier {m.adminPermissions?.tier || 1})</span>
+                        <span>관리자 권한 설정 ({m.adminPermissions?.tier || 1}등급)</span>
                       </button>
                     </div>
                   )}

@@ -95,11 +95,11 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
     [activeCases, thisMonthStr]
   );
 
-  const estimatedLeadUnitCost = 35000; // 건당 기본 DB 원가
+  const estimatedLeadUnitCost = 0; // 건당 기본 DB 원가 (미입력 시 0원)
   const totalDbCost = thisMonthLeads.length * estimatedLeadUnitCost;
 
-  // 순마진 (매출 - DB원가 - 인프라비 약 100,000원)
-  const netProfit = Math.max(0, thisRevenue - totalDbCost - 100000);
+  // 순마진 (매출 - DB원가)
+  const netProfit = Math.max(0, thisRevenue - totalDbCost);
   const profitMargin = thisRevenue > 0 ? Math.round((netProfit / thisRevenue) * 100) : 0;
 
   // 전사 수임 전환율 (이번 달 리드 대비 수임 성사 건수 %)
@@ -239,7 +239,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
           count={`₩ ${totalDbCost.toLocaleString()} 원`}
           color="text-indigo-600 dark:text-indigo-400"
           icon={Layers}
-          subText={`당월 인입 ${thisMonthLeads.length}건 (건당 ₩ 3.5만원)`}
+          subText={`당월 인입 ${thisMonthLeads.length}건 (단가 미설정 시 0원)`}
           accentColor="#fdab3d"
         />
         <KPICard
@@ -247,7 +247,7 @@ export const OwnerDashboardView: React.FC<OwnerDashboardViewProps> = ({
           count={`${netProfit < 0 ? '-' : ''}₩ ${Math.abs(netProfit).toLocaleString()} 원`}
           color={netProfit >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-destructive'}
           icon={TrendingUp}
-          subText={`영업 마진율 ${profitMargin}% (인프라비 차감)`}
+          subText={`영업 마진율 ${profitMargin}%`}
           accentColor="#0073ea"
         />
         <KPICard
