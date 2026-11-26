@@ -14,6 +14,7 @@ export interface AutoDialCampaignPacing {
   retryIntervalMinutes: number;     // 재시도 간격 (기본 120분)
   dualSimRotation: boolean;         // 듀얼SIM 교차 발신 활성화 (SIM1 ↔ SIM2)
   autoSkipWrapUp: boolean;          // 후처리 제한시간 초과 시 자동 강제 다음 콜
+  validCallProtectSeconds?: number; // 유효 상담 자동 보호 기준 시간 (20~120초, 기본 40초)
 }
 
 export interface AutoDialCampaignFilter {
@@ -101,6 +102,7 @@ function rowToCampaign(row: any): AutoDialCampaign {
       retryIntervalMinutes: 120,
       dualSimRotation: true,
       autoSkipWrapUp: true,
+      validCallProtectSeconds: 40,
     },
     totalLeads: row.total_leads || 0,
     completedLeads: row.completed_leads || 0,

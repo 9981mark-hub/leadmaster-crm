@@ -220,7 +220,7 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
     enterWrapUpState(0);
   };
 
-  // 6. 후처리 (Wrap-up) 진입 & 카운트다운 가동 (40초 이상 유효 상담은 자동 전환 일시정지)
+  // 6. 후처리 (Wrap-up) 진입 & 카운트다운 가동 (회사 설정 기준 이상 유효 상담 시 자동 전환 일시정지)
   const enterWrapUpState = async (durationSec: number) => {
     clearAllTimers();
     if (!campaign || !allocation) return;
@@ -231,10 +231,11 @@ export const AutoDialAgentHUD: React.FC<AutoDialAgentHUDProps> = ({
       customerName: currentQueueItem?.customerName,
     });
 
-    if (durationSec >= 40) {
+    const protectThreshold = campaign.pacingSettings.validCallProtectSeconds ?? 40;
+    if (protectThreshold > 0 && durationSec >= protectThreshold) {
       setWrapUpPaused(true);
       setWrapUpSeconds(0);
-      showToast('유효 상담(40초 이상)으로 감지되어 자동 넘김을 일시정지했습니다.', 'info');
+      showToast(`유효 상담(${protectThreshold}초 이상)으로 감지되어 자동 넘김을 일시정지했습니다.`, 'info');
       return;
     }
 

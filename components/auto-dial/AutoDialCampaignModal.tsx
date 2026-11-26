@@ -6,7 +6,7 @@ import React, { useState, useMemo } from 'react';
 import {
   X, PhoneCall, Users, Settings2, Filter,
   CheckCircle2, AlertCircle, RefreshCw, Smartphone,
-  Clock, Zap, Check, ChevronRight
+  Clock, Zap, Check, ChevronRight, Shield
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { Case } from '../../types';
@@ -71,6 +71,7 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
     retryIntervalMinutes: 120,
     dualSimRotation: true,
     autoSkipWrapUp: true,
+    validCallProtectSeconds: 40,
   });
 
   // 사용 가능한 고유 회차 목록
@@ -520,6 +521,31 @@ export const AutoDialCampaignModal: React.FC<AutoDialCampaignModalProps> = ({
                 </select>
                 <p className="text-xs text-muted-foreground mt-1">통화 종료 후 카운트다운</p>
               </div>
+            </div>
+
+            {/* 유효 상담 자동 보호 기준 시간 (회사별 20초 ~ 120초 설정) */}
+            <div className="bg-card p-3.5 rounded-xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Shield size={13} className="text-primary" />
+                  유효 상담 자동 보호 (카운트다운 일시정지 기준)
+                </span>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  설정한 시간 이상 통화한 경우, AI 요약 확인·로펌 전달 중 다음 번호로 넘어가지 않도록 자동 일시정지합니다.
+                </p>
+              </div>
+              <select
+                value={pacing.validCallProtectSeconds ?? 40}
+                onChange={e => setPacing(prev => ({ ...prev, validCallProtectSeconds: parseInt(e.target.value, 10) }))}
+                className="w-full sm:w-44 text-xs font-bold p-2 bg-muted/40 border border-border rounded-lg text-foreground font-mono shrink-0"
+              >
+                {[20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120].map(sec => (
+                  <option key={sec} value={sec}>
+                    {sec}초 이상 통화 시 보호{sec === 40 ? ' (기본)' : ''}
+                  </option>
+                ))}
+                <option value={0}>사용 안 함 (항상 카운트다운)</option>
+              </select>
             </div>
 
             {/* 핵심 스위치: 듀얼 SIM & 강제 발신 */}
