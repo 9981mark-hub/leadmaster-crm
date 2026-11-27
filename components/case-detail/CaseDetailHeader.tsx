@@ -7,6 +7,9 @@ import { STATUS_COLOR_MAP } from '../../constants';
 import CallConfirmPopup from '../CallConfirmPopup';
 import { useEnqueueSmsMutation, useSmsTemplates } from '../../services/queries';
 import { CheckProgress } from '../../utils/intake';
+import { useAuth } from '../../contexts/AuthContext';
+import { canViewInboundPath, canViewRealPartnerName, getPartnerDisplayName } from '../../services/org';
+import { useVisibilityPolicy } from '../../services/visibilityPolicy';
 
 export type SaveState = { state: 'idle' | 'saving' | 'saved' | 'error'; at?: number };
 
@@ -82,6 +85,10 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
     onStatusChangeStart, onSecondaryStatusChangeStart, onTertiaryStatusChangeStart,
     onMissedCallIncrement, onDeliverClick, onAddCallReminder, onEngage, onBack, onOpenPalette, saveState, progress,
 }) => {
+    const { org } = useAuth();
+    const visibilityPolicy = useVisibilityPolicy();
+    const showInboundPath = canViewInboundPath(org, visibilityPolicy);
+    const showRealPartnerName = canViewRealPartnerName(org, visibilityPolicy);
     const warnings = getCaseWarnings(c, partner);
     const [showCallPopup, setShowCallPopup] = useState(false);
     const [menu, setMenu] = useState<'sms' | 'reminder' | null>(null);
@@ -167,8 +174,8 @@ export const CaseDetailHeader: React.FC<CaseDetailHeaderProps> = ({
                             </div>
                             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
                                 <span className="px-1.5 py-0.5 rounded-md bg-muted text-foreground font-medium border border-border text-[11px]">{c.caseType || '유형 미정'}</span>
-                                <span className={`px-1.5 py-0.5 rounded-md font-medium text-[11px] border ${partner ? 'bg-muted text-foreground border-border' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>{partner?.name || '거래처 미정'}</span>
-                                {c.inboundPath && <span className="text-muted-foreground text-[11px]">{c.inboundPath}</span>}
+                                <span className={`px-1.5 py-0.5 rounded-md font-medium text-[11px] border ${partner ? 'bg-muted text-foreground border-border' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>{partner ? getPartnerDisplayName(partner, showRealPartnerName) : '거래처 미정'}</span>
+                                {showInboundPath && c.inboundPath && <span className="text-muted-foreground text-[11px]">{c.inboundPath}</span>}
                                 {progress && progress.total > 0 && (
                                     <span className={`px-1.5 py-0.5 rounded-md font-medium text-[11px] border ${progress.done === progress.total ? 'bg-primary/10 text-primary border-primary/20' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'}`}
                                         title={progress.missing.length ? `확인 안 한 항목: ${progress.missing.join(', ')}` : '필수 확인 항목을 모두 입력했습니다'}>

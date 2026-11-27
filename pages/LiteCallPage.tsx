@@ -10,6 +10,8 @@ import { LiteDebtReliefCalculator } from '../components/lite/LiteDebtReliefCalcu
 import { LiteBattlecards } from '../components/lite/LiteBattlecards';
 import { LiteQuickSmsModal } from '../components/lite/LiteQuickSmsModal';
 import { useAuth } from '../contexts/AuthContext';
+import { canViewInboundPath, canViewRealPartnerName, getPartnerDisplayName } from '../services/org';
+import { useVisibilityPolicy } from '../services/visibilityPolicy';
 import { useToast } from '../contexts/ToastContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCases, usePartners, useUpdateCaseMutation } from '../services/queries';
@@ -54,6 +56,9 @@ const getStatusBadgeStyle = (status: string) => {
 export default function LiteCallPage() {
   const navigate = useNavigate();
   const { org, isAdmin, user } = useAuth();
+  const visibilityPolicy = useVisibilityPolicy();
+  const showInboundPath = canViewInboundPath(org, visibilityPolicy);
+  const showRealPartnerName = canViewRealPartnerName(org, visibilityPolicy);
   const { showToast } = useToast();
   const { theme, toggleTheme } = useTheme();
   const { startCall, callState } = useActiveCall();
@@ -741,8 +746,8 @@ export default function LiteCallPage() {
                     </h3>
                     <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
                       {c.region && <span>📍 {c.region}</span>}
-                      <span>유입: {c.inboundPath || '기타'}</span>
-                      {partner && <span>로펌: {partner.name}</span>}
+                      {showInboundPath && <span>유입: {c.inboundPath || '기타'}</span>}
+                      {partner && <span>로펌: {getPartnerDisplayName(partner, showRealPartnerName)}</span>}
                     </p>
                   </div>
 

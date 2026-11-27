@@ -256,7 +256,23 @@ export interface MemberSecurityProfile {
   appCaptureBlock: boolean;   // 2. 안드로이드 앱 캡처 차단 (FLAG_SECURE)
   masking: boolean;           // 3. 리드 목록 개인정보 마스킹 (전화번호/이름)
   anomalyAlert: boolean;      // 4. 비정상 대량 열람 시 대표 텔레그램 알림
+  showInboundPath?: boolean;  // 5. 리드 유입경로 열람 예외 허용 (undefined면 등급 정책 따름)
+  showRealPartnerName?: boolean; // 6. 실제 거래처명 열람 예외 허용 (undefined면 등급 정책 따름)
 }
+
+export interface OrgVisibilityPolicy {
+  teamLeadShowInboundPath: boolean;     // 팀장(Tier 1~2) 유입정보 표시 여부 (기본 false)
+  agentShowInboundPath: boolean;        // 일반 상담원 유입정보 표시 여부 (기본 false)
+  teamLeadShowRealPartnerName: boolean; // 팀장(Tier 1~2) 실제 거래처명 표시 여부 (false면 텔레그램 방명/별칭)
+  agentShowRealPartnerName: boolean;    // 일반 상담원 실제 거래처명 표시 여부 (false면 텔레그램 방명/별칭)
+}
+
+export const DEFAULT_ORG_VISIBILITY_POLICY: OrgVisibilityPolicy = {
+  teamLeadShowInboundPath: false,
+  agentShowInboundPath: false,
+  teamLeadShowRealPartnerName: true,
+  agentShowRealPartnerName: true,
+};
 
 // 신입/일반 상담원 기본값: 전체 보안 제한 활성화 (ON)
 export const DEFAULT_AGENT_SECURITY_PROFILE: MemberSecurityProfile = {
@@ -290,6 +306,54 @@ export interface OrgInfo {
 }
 
 export const HQ_ORG_ID = '00000000-0000-0000-0000-000000000001';
+
+/**
+ * TM대표(owner), 플랫폼 관리자, 총괄관리자(Tier 3)는 항상 전체 노출.
+ * 그 외(팀장 Tier 1~2, 일반 상담원)는 개별 예외(showInboundPath) → 등급 정책 순으로 판별.
+ */
+export const canViewInboundPath = (
+  org?: OrgInfo | null,
+  policy: OrgVisibilityPolicy = DEFAULT_ORG_VISIBILITY_POLICY
+): boolean => {
+  if (!org) return false;
+  if (org.isPlatformAdmin || org.role === 'owner') return true;
+  if (org.role === 'admin' && org.adminPermissions?.tier === 3) return true;
+  if (typeof org.securityProfile?.showInboundPath === 'boolean') {
+    return org.securityProfile.showInboundPath;
+  }
+  return org.role === 'admin' ? policy.teamLeadShowInboundPath : policy.agentShowInboundPath;
+};
+
+/**
+ * 실제 법률사무소/법무법인명 열람 가능 여부.
+ * false이면 거래처의 텔레그램 방명/별칭(telegramChatTitle)으로 대체 표시한다.
+ */
+export const canViewRealPartnerName = (
+  org?: OrgInfo | null,
+  policy: OrgVisibilityPolicy = DEFAULT_ORG_VISIBILITY_POLICY
+): boolean => {
+  if (!org) return true;
+  if (org.isPlatformAdmin || org.role === 'owner') return true;
+  if (org.role === 'admin' && org.adminPermissions?.tier === 3) return true;
+  if (typeof org.securityProfile?.showRealPartnerName === 'boolean') {
+    return org.securityProfile.showRealPartnerName;
+  }
+  return org.role === 'admin' ? policy.teamLeadShowRealPartnerName : policy.agentShowRealPartnerName;
+};
+
+/**
+ * 권한에 따른 거래처 표시명 반환 (실명 비노출 시 텔레그램 방명/별칭 우선)
+ */
+export const getPartnerDisplayName = (
+  partner?: { name?: string; telegramChatTitle?: string } | null,
+  showRealName = true
+): string => {
+  if (!partner) return '';
+  if (!showRealName && partner.telegramChatTitle?.trim()) {
+    return partner.telegramChatTitle.trim();
+  }
+  return partner.name || '';
+};
 
 const ORG_CACHE_KEY = 'lm_org_info';
 const CACHE_OWNER_KEY = 'lm_cache_owner';

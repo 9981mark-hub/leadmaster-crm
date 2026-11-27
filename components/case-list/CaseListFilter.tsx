@@ -2,6 +2,9 @@ import React from 'react';
 import { Search, Upload, Building, Filter, ChevronDown, Check, Settings, ArrowUpDown, LayoutList, LayoutGrid, ChevronLeft, Trash2, XCircle, Star, Archive, ShieldAlert, Eye, SlidersHorizontal, User } from 'lucide-react';
 import { Partner, CaseStatus } from '../../types';
 import { TeamMember } from '../../services/team';
+import { useAuth } from '../../contexts/AuthContext';
+import { canViewInboundPath, canViewRealPartnerName, getPartnerDisplayName } from '../../services/org';
+import { useVisibilityPolicy } from '../../services/visibilityPolicy';
 
 interface CaseListFilterProps {
     search: string;
@@ -68,6 +71,10 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
     companyMaskingPolicy = 'masked', onToggleCompanyMaskingPolicy,
     assigneeFilter = '', setAssigneeFilter, members = [], showAssignee = false
 }) => {
+    const { org } = useAuth();
+    const visibilityPolicy = useVisibilityPolicy();
+    const showInboundPath = canViewInboundPath(org, visibilityPolicy);
+    const showRealPartnerName = canViewRealPartnerName(org, visibilityPolicy);
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = React.useState(false);
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = React.useState(false);
 
@@ -238,10 +245,11 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             onChange={withReset(setPartnerFilter)}
                         >
                             <option value="">전체 거래처</option>
-                            {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
+                            {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{getPartnerDisplayName(p, showRealPartnerName)}</option>)}
                         </select>
                     </div>
 
+                    {showInboundPath && (
                     <div className="relative flex-1 min-w-0 md:min-w-[100px]">
                         <Filter className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} strokeWidth={1.75} />
                         <select
@@ -253,6 +261,7 @@ export const CaseListFilter: React.FC<CaseListFilterProps> = ({
                             {inboundPaths.map(p => <option key={p} value={p}>{p}</option>)}
                         </select>
                     </div>
+                    )}
                 </div>
 
                 {/* Status + Sort + Actions */}

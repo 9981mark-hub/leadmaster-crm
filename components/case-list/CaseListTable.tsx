@@ -15,6 +15,8 @@ import { STATUS_COLOR_MAP } from '../../constants';
 import { fetchCaseStatusLogs, fetchCases, fetchPhonesWithSmsOut } from '../../services/api';
 import { useActiveCall } from '../../contexts/ActiveCallContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { canViewInboundPath, canViewRealPartnerName, getPartnerDisplayName } from '../../services/org';
+import { useVisibilityPolicy } from '../../services/visibilityPolicy';
 import { logAccess } from '../../services/accessLog';
 
 // --- Shared Helper Components ---
@@ -168,6 +170,7 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
     memberName,
     density = 'standard',
 }) => {
+    const visibilityPolicy = useVisibilityPolicy();
     const isCompact = density === 'compact';
     const cellPadding = isCompact ? 'py-1.5 px-3' : 'py-3 px-4';
     const headerPadding = isCompact ? 'py-2 px-3' : 'py-3 px-4';
@@ -206,6 +209,8 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
 
     // [Security Feature 3] 회사별 리드 목록 개인정보 보호 정책 연동 (대표/총괄 관리자 선택 가능)
     const { org, isAdmin } = useAuth();
+    const showInboundPath = canViewInboundPath(org, visibilityPolicy);
+    const showRealPartnerName = canViewRealPartnerName(org, visibilityPolicy);
     const [companyMaskingPolicy, setCompanyMaskingPolicy] = useState<'masked' | 'unmasked'>(() => {
         return (localStorage.getItem('lm_company_list_masking_policy') as 'masked' | 'unmasked') || 'masked';
     });
@@ -590,8 +595,8 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
 
                             <div className="flex justify-between items-center mt-2 pt-2 border-t border-border gap-2">
                                 <div className="text-[11px] text-muted-foreground truncate min-w-0">
-                                    <span>{c.caseType} · {c.inboundPath}</span>
-                                    {partner?.name && <span> · {partner.name}</span>}
+                                    <span>{c.caseType}{showInboundPath && c.inboundPath ? ` · ${c.inboundPath}` : ''}</span>
+                                    {partner && <span> · {getPartnerDisplayName(partner, showRealPartnerName)}</span>}
                                 </div>
                                 <div className="flex gap-1.5 shrink-0">
                                     <button onClick={(e) => handlePhoneClick(e, c.customerName, c.phone, c.caseId)} className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary/20 active:scale-95 transition-all">
@@ -792,8 +797,8 @@ export const CaseListTable: React.FC<CaseListTableProps> = ({
                                                         <td className="px-3.5 py-[9px]">
                                                             <div className="flex flex-col gap-0.5">
                                                                 <span className="text-xs font-semibold text-[#323338] dark:text-foreground">{c.caseType}</span>
-                                                                <span className="text-[11px] text-[#676879] dark:text-muted-foreground">{c.inboundPath}</span>
-                                                                <span className="text-[11px] text-[#676879]/75 dark:text-muted-foreground/75">{partner?.name}</span>
+                                                                {showInboundPath && <span className="text-[11px] text-[#676879] dark:text-muted-foreground">{c.inboundPath}</span>}
+                                                                <span className="text-[11px] text-[#676879]/75 dark:text-muted-foreground/75">{partner ? getPartnerDisplayName(partner, showRealPartnerName) : ''}</span>
                                                             </div>
                                                         </td>
                                                         <td className="px-3.5 py-[9px]">

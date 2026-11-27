@@ -5,6 +5,9 @@ import { Case, CaseStatusLog, Partner } from '../../../types';
 import { CASE_TYPES } from '../../../constants';
 import { normalizeBirthYear, safeFormat } from '../../../utils';
 import { SectionCard, Field, Choice, FIELD_GRID, CONTROL, CONTROL_PLAIN } from '../detailUi';
+import { useAuth } from '../../../contexts/AuthContext';
+import { canViewInboundPath, canViewRealPartnerName, getPartnerDisplayName } from '../../../services/org';
+import { useVisibilityPolicy } from '../../../services/visibilityPolicy';
 
 interface CaseDetailPersonalInfoProps {
     c: Case;
@@ -39,6 +42,10 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
     inboundPaths,
     onUpdate
 }) => {
+    const { org } = useAuth();
+    const visibilityPolicy = useVisibilityPolicy();
+    const showInboundPath = canViewInboundPath(org, visibilityPolicy);
+    const showRealPartnerName = canViewRealPartnerName(org, visibilityPolicy);
     const partnerKnown = !!partners.find(p => p.partnerId === c.partnerId);
     const preInfo = parsePreInfo(c.preInfo);
     const partnerId = React.useId();
@@ -75,7 +82,7 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                             onChange={e => onUpdate('partnerId', e.target.value)}
                         >
                             <option value="">거래처를 선택하세요</option>
-                            {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{p.name}</option>)}
+                            {partners.map(p => <option key={p.partnerId} value={p.partnerId}>{getPartnerDisplayName(p, showRealPartnerName)}</option>)}
                         </select>
                         <Building className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={15} aria-hidden />
                     </div>
@@ -84,6 +91,7 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                     )}
                 </Field>
 
+                {showInboundPath && (
                 <Field label="유입 경로" htmlFor={inboundId}>
                     <select
                         id={inboundId}
@@ -95,6 +103,7 @@ export const CaseDetailPersonalInfo: React.FC<CaseDetailPersonalInfoProps> = ({
                         {inboundPaths.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                 </Field>
+                )}
 
                 <Choice
                     label="사건 유형"

@@ -25,6 +25,7 @@ import {
 } from '../services/team';
 import { Case } from '../types';
 import { checkOrgSeatLimit, OrgSeatStatus } from '../services/sessionGuard';
+import { useVisibilityPolicy, saveVisibilityPolicy } from '../services/visibilityPolicy';
 import TelegramBotSection from '../components/TelegramBotSection';
 import DistributionPanel from '../components/team/DistributionPanel';
 import ImportModal from '../components/ImportModal';
@@ -89,6 +90,15 @@ export default function TeamPage() {
   const queryClient = useQueryClient();
 
   const isOwner = org?.role === 'owner';
+  const visibilityPolicy = useVisibilityPolicy();
+  const handleToggleVisibilityPolicy = async (key: 'teamLeadShowInboundPath' | 'agentShowInboundPath' | 'teamLeadShowRealPartnerName' | 'agentShowRealPartnerName') => {
+    try {
+      await saveVisibilityPolicy({ [key]: !visibilityPolicy[key] });
+      showToast('직원 등급별 노출 정책이 저장되었습니다.', 'success');
+    } catch (e: any) {
+      showToast(e?.message || '정책 저장 실패', 'error');
+    }
+  };
   const myTeamPerms = isOwner
     ? OWNER_FULL_PERMISSIONS.team
     : (org?.adminPermissions?.team || DEFAULT_TIER1_PERMISSIONS.team);
@@ -878,6 +888,66 @@ export default function TeamPage() {
                 </span>
               </div>
             </div>
+            {/* TM대표 · 총괄관리자 전용: 등급별 유입경로 및 거래처명(방명) 노출 정책 */}
+            {(isOwner || org?.adminPermissions?.tier === 3) && (
+              <div className="px-4 py-3 border-b border-border bg-muted/30 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 text-xs">
+                <div className="flex items-center gap-2">
+                  <Lock size={14} className="text-primary shrink-0" />
+                  <div>
+                    <span className="font-bold text-foreground">등급별 영업기밀 노출 설정</span>
+                    <span className="text-2xs text-muted-foreground ml-2 hidden sm:inline">
+                      TM대표·총괄(Tier 3)은 항상 전체 노출 · 아래 토글로 팀장/상담원 노출 여부를 일괄 제어합니다 (개별 예외는 멤버별 [보안] 버튼).
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleVisibilityPolicy('teamLeadShowInboundPath')}
+                    className={`px-2.5 py-1 rounded-lg border text-2xs font-semibold transition-colors cursor-pointer ${
+                      visibilityPolicy.teamLeadShowInboundPath
+                        ? 'bg-primary/10 text-primary border-primary/30'
+                        : 'bg-card text-muted-foreground border-border'
+                    }`}
+                  >
+                    팀장 유입정보: {visibilityPolicy.teamLeadShowInboundPath ? '노출' : '숨김'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleVisibilityPolicy('agentShowInboundPath')}
+                    className={`px-2.5 py-1 rounded-lg border text-2xs font-semibold transition-colors cursor-pointer ${
+                      visibilityPolicy.agentShowInboundPath
+                        ? 'bg-primary/10 text-primary border-primary/30'
+                        : 'bg-card text-muted-foreground border-border'
+                    }`}
+                  >
+                    상담원 유입정보: {visibilityPolicy.agentShowInboundPath ? '노출' : '숨김'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleVisibilityPolicy('teamLeadShowRealPartnerName')}
+                    className={`px-2.5 py-1 rounded-lg border text-2xs font-semibold transition-colors cursor-pointer ${
+                      visibilityPolicy.teamLeadShowRealPartnerName
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                    }`}
+                  >
+                    팀장 거래처명: {visibilityPolicy.teamLeadShowRealPartnerName ? '실명' : '텔레그램 방명'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleVisibilityPolicy('agentShowRealPartnerName')}
+                    className={`px-2.5 py-1 rounded-lg border text-2xs font-semibold transition-colors cursor-pointer ${
+                      visibilityPolicy.agentShowRealPartnerName
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                    }`}
+                  >
+                    상담원 거래처명: {visibilityPolicy.agentShowRealPartnerName ? '실명' : '텔레그램 방명'}
+                  </button>
+                </div>
+              </div>
+            )}
             {/* Mobile card list */}
             <div className="md:hidden divide-y divide-border">
               {members.map(m => {

@@ -9,6 +9,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Case, Partner } from '../../types';
 import { STATUS_COLOR_MAP } from '../../constants';
 import { safeFormat } from '../../utils';
+import { useAuth } from '../../contexts/AuthContext';
+import { canViewInboundPath, canViewRealPartnerName, getPartnerDisplayName } from '../../services/org';
+import { useVisibilityPolicy } from '../../services/visibilityPolicy';
 
 interface CaseDetailDrawerProps {
   c: Case | null;
@@ -40,6 +43,8 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
   onDial,
 }) => {
   const navigate = useNavigate();
+  const { org } = useAuth();
+  const visibilityPolicy = useVisibilityPolicy();
   const [newMemo, setNewMemo] = useState('');
   const [submittingMemo, setSubmittingMemo] = useState(false);
 
@@ -212,13 +217,15 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
                     <span className="text-[#676879] dark:text-gray-400">결혼 / 자녀:</span>{' '}
                     <span className="font-semibold text-[#323338] dark:text-gray-200">{c.maritalStatus || '-'} / {c.childrenCount !== undefined ? `${c.childrenCount}명` : '-'}</span>
                   </div>
+                  {canViewInboundPath(org, visibilityPolicy) && (
                   <div>
                     <span className="text-[#676879] dark:text-gray-400">유입경로:</span>{' '}
                     <span className="font-semibold text-[#323338] dark:text-gray-200">{c.inboundPath || '-'}</span>
                   </div>
+                  )}
                   <div className="col-span-2">
                     <span className="text-[#676879] dark:text-gray-400">제휴 법무법인:</span>{' '}
-                    <span className="font-semibold text-[#0073ea] dark:text-indigo-400">{partner?.name || '미지정'}</span>
+                    <span className="font-semibold text-[#0073ea] dark:text-indigo-400">{partner ? getPartnerDisplayName(partner, canViewRealPartnerName(org, visibilityPolicy)) : '미지정'}</span>
                   </div>
                 </div>
               </div>

@@ -54,6 +54,7 @@ export const ORG_STORE_KEYS = [
   'trainingConfig',
   'trainingSessions',
   'trainingEducationMaterials',
+  'visibilityPolicy',
 ] as const;
 
 interface Entry {

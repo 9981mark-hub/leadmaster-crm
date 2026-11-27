@@ -241,6 +241,55 @@ export default function MemberSecurityModal({
                 }`} />
               </div>
             </div>
+
+            {/* 5. 리드 유입경로 열람 예외 허용 */}
+            <div
+              onClick={() => setProfile(prev => ({ ...prev, showInboundPath: !prev.showInboundPath }))}
+              className="p-3.5 rounded-xl border border-border hover:border-primary/50 bg-muted/20 transition-colors flex items-start justify-between cursor-pointer group"
+            >
+              <div className="space-y-0.5 pr-4">
+                <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                  <Eye size={15} className="text-amber-500" />
+                  <span>리드 유입경로(DB 출처) 열람 허용</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  끄면 케이스 목록·상세·간편콜에서 유입정보가 완전히 숨겨집니다. (TM대표·총괄관리자는 항상 표시)
+                </p>
+              </div>
+              <div className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors flex-shrink-0 ${
+                profile.showInboundPath ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+              }`}>
+                <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                  profile.showInboundPath ? 'translate-x-5' : 'translate-x-0'
+                }`} />
+              </div>
+            </div>
+
+            {/* 6. 실제 거래처명(법률사무소명) 열람 허용 */}
+            <div
+              onClick={() => setProfile(prev => ({
+                ...prev,
+                showRealPartnerName: prev.showRealPartnerName === undefined ? false : !prev.showRealPartnerName,
+              }))}
+              className="p-3.5 rounded-xl border border-border hover:border-primary/50 bg-muted/20 transition-colors flex items-start justify-between cursor-pointer group"
+            >
+              <div className="space-y-0.5 pr-4">
+                <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                  <Shield size={15} className="text-emerald-500" />
+                  <span>실제 거래처명(법률사무소명) 열람 허용</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  끄면 실제 법인명 대신 거래처 설정에 등록된 텔레그램 방명(예: 김대표방)으로 표시됩니다.
+                </p>
+              </div>
+              <div className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors flex-shrink-0 ${
+                profile.showRealPartnerName !== false ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+              }`}>
+                <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                  profile.showRealPartnerName !== false ? 'translate-x-5' : 'translate-x-0'
+                }`} />
+              </div>
+            </div>
           </div>
 
           {/* Danger Zone: Instant Session Revoke */}

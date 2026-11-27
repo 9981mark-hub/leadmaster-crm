@@ -572,10 +572,24 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                         description="이 거래처(변호사 사무실)의 전용 텔레그램 방입니다. 리드 상세의 [텔레그램 전달]은 이 방으로 전송되고, 이 방에서 수신된 피드백은 해당 거래처 고객과 자동 매칭됩니다."
                         icon={<MessageCircle size={18} strokeWidth={1.75} />}
                     >
-                        <TelegramChatPicker
-                            value={editingPartner.telegramChatId || ''}
-                            onChange={v => setEditingPartner({ ...editingPartner, telegramChatId: v })}
-                        />
+                        <div className="space-y-4">
+                            <TelegramChatPicker
+                                value={editingPartner.telegramChatId || ''}
+                                onChange={v => setEditingPartner({ ...editingPartner, telegramChatId: v })}
+                            />
+                            <SettingsRow
+                                label="직원 노출용 별칭 (텔레그램 방명)"
+                                description="멤버 설정에서 상담원에게 실제 법률사무소명 노출을 제한할 때 대신 표시될 이름입니다. (예: 김대표방, 안대표방)"
+                            >
+                                <input
+                                    type="text"
+                                    placeholder="예: 김대표방 (비워두면 실제 거래처명 표시)"
+                                    className="w-full sm:w-72 h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring font-medium"
+                                    value={editingPartner.telegramChatTitle || ''}
+                                    onChange={e => setEditingPartner({ ...editingPartner, telegramChatTitle: e.target.value })}
+                                />
+                            </SettingsRow>
+                        </div>
                     </SettingsCard>
                 </div>
             )}

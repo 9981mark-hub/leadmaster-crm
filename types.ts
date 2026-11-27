@@ -280,6 +280,7 @@ export interface Partner {
 
   // [NEW] 텔레그램 연동 방 관리
   telegramChatId?: string;           // 텔레그램 수신 연동 방 ID (채팅방 고유 ID)
+  telegramChatTitle?: string;        // 텔레그램 방명 또는 직원 노출용 별칭 (예: "김대표방")
 
   // [NEW B2B] 법률 파트너 인센티브 계약 설정
   incentiveType?: 'rate' | 'fixed' | 'tiered'; // 수수료 유형: 정률(%) / 정액(만원) / 기존구간제

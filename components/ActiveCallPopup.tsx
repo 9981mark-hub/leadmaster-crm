@@ -4,8 +4,14 @@ import { Phone, PhoneOff, X, ExternalLink, Loader2, PhoneCall, Clock, CheckCircl
 import { useActiveCall } from '../contexts/ActiveCallContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Case, MemoItem } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import { canViewInboundPath } from '../services/org';
+import { useVisibilityPolicy } from '../services/visibilityPolicy';
 
 const ActiveCallPopup: React.FC = () => {
+    const { org } = useAuth();
+    const visibilityPolicy = useVisibilityPolicy();
+    const showInboundPath = canViewInboundPath(org, visibilityPolicy);
     const { callState, dismissCall } = useActiveCall();
     const [elapsed, setElapsed] = useState(0);
     const [matchedCase, setMatchedCase] = useState<Case | null>(null);
@@ -496,6 +502,7 @@ const ActiveCallPopup: React.FC = () => {
                         <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-3">
                             <div className="flex gap-3">
                                 {/* 유입 경로 */}
+                                {showInboundPath && (
                                 <div className="flex-1 bg-purple-50 dark:bg-purple-900/20 p-2.5 rounded-xl border border-purple-100 dark:border-purple-800/30 text-center">
                                     <div className="text-xs font-semibold text-purple-600 dark:text-purple-400 dark:text-purple-500 mb-0.5 uppercase tracking-wider">
                                         유입 경로
@@ -504,6 +511,7 @@ const ActiveCallPopup: React.FC = () => {
                                         {matchedCase.inboundPath || '미지정'}
                                     </p>
                                 </div>
+                                )}
                                 {/* 최초 등록일시 */}
                                 <div className="flex-1 bg-teal-50 dark:bg-teal-900/20 p-2.5 rounded-xl border border-teal-100 dark:border-teal-800/30 text-center">
                                     <div className="text-xs font-semibold text-teal-600 dark:text-teal-400 dark:text-teal-500 mb-0.5 uppercase tracking-wider">
