@@ -297,16 +297,6 @@ export const CaseListHeader: React.FC<CaseListHeaderProps> = ({
                             <span className="text-xs text-muted-foreground font-normal whitespace-nowrap tabular-nums">({currentPage}/{totalPages}p)</span>
                         )}
                     </div>
-                    {onToggleDensity && (
-                        <button
-                            type="button"
-                            onClick={onToggleDensity}
-                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[4px] border border-[#d0d4e4] dark:border-border bg-white dark:bg-card text-[#323338] dark:text-foreground text-xs font-medium hover:bg-[#f6f7fb] dark:hover:bg-muted shadow-2xs active:scale-[0.97] transition-all whitespace-nowrap cursor-pointer"
-                            title={density === 'compact' ? '표준 보기로 전환' : '컴팩트(압축) 보기로 전환'}
-                        >
-                            <span>{density === 'compact' ? '표준 뷰' : '압축 뷰'}</span>
-                        </button>
-                    )}
                     {onOpenNewCaseModal && (
                         <button
                             type="button"
