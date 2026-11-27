@@ -37,14 +37,23 @@ export default function SecurityWatermark() {
   const identityLabel = emailLabel && agentLabel !== user?.email ? `${agentLabel}${emailLabel}` : (user?.email || agentLabel);
   const watermarkText = `${orgLabel} · ${identityLabel} · ${dateTimeStr}`;
 
+  const makeSvgBg = (hexColor: string) =>
+    `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='520' height='280'><text x='24' y='150' transform='rotate(-22 260 140)' fill='${encodeURIComponent(hexColor)}' font-size='12' font-weight='600' font-family='sans-serif'>${encodeURIComponent(watermarkText)}</text></svg>")`;
+
   return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-[99999] select-none overflow-hidden opacity-[0.045] dark:opacity-[0.07] transition-opacity"
-      style={{
-        backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='260'><text x='20' y='140' transform='rotate(-22 250 130)' fill='%23666666' font-size='12' font-weight='600' font-family='sans-serif'>${encodeURIComponent(watermarkText)}</text></svg>")`,
-        backgroundRepeat: 'repeat',
-      }}
-    />
+    <>
+      {/* 라이트 모드: 은은하지만 캡처 시 판독 가능한 5.5% 딥 슬레이트 */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-[99999] select-none overflow-hidden opacity-[0.055] dark:hidden"
+        style={{ backgroundImage: makeSvgBg('#1e293b'), backgroundRepeat: 'repeat' }}
+      />
+      {/* 다크 모드: 어두운 배경에서도 동일하게 은은히 보이는 5.5% 라이트 슬레이트 */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-[99999] select-none overflow-hidden opacity-[0.055] hidden dark:block"
+        style={{ backgroundImage: makeSvgBg('#e2e8f0'), backgroundRepeat: 'repeat' }}
+      />
+    </>
   );
 }
