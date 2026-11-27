@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Send, RefreshCw, CheckCircle2, AlertTriangle, Link2 } from 'lucide-react';
+import { Send, RefreshCw, CheckCircle2, AlertTriangle, Link2, BookOpen } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import { HQ_ORG_ID } from '../services/org';
 import {
   TelegramBotDbStatus, TelegramBotLiveStatus, fetchTelegramBotDbStatus, fetchTelegramBotLiveStatus,
   saveTelegramBotToken, saveTelegramOwnSenders, registerTelegramWebhook,
 } from '../services/telegramBot';
+import TelegramBotGuideModal from './telegram/TelegramBotGuideModal';
 
 /** 팀 관리 화면의 "텔레그램 봇 연결" 영역 (관리자 전용) */
 export default function TelegramBotSection({ orgId }: { orgId: string }) {
@@ -17,6 +18,7 @@ export default function TelegramBotSection({ orgId }: { orgId: string }) {
   const [token, setToken] = useState('');
   const [senders, setSenders] = useState('');
   const [busy, setBusy] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const load = useCallback(async () => {
     let hasBot = false;
@@ -87,13 +89,25 @@ export default function TelegramBotSection({ orgId }: { orgId: string }) {
 
   return (
     <section className="bg-card text-card-foreground rounded-xl border border-border shadow-xs">
-      <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+      <div className="px-5 py-4 border-b border-border flex flex-wrap items-center gap-2">
         <Send size={18} className="text-primary" />
         <h2 className="font-bold text-foreground">텔레그램 봇 연결</h2>
         <span className="text-xs text-muted-foreground">변호사 사무실 방의 피드백을 이 회사 리드에만 연결합니다</span>
-        <button onClick={checkLive} disabled={busy} className="ml-auto text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-          <RefreshCw size={14} className={busy ? 'animate-spin' : ''} /> 상태 확인
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          {!isHq && (
+            <button
+              type="button"
+              onClick={() => setShowGuide(true)}
+              className="px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/25 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <BookOpen size={13} />
+              <span>3분 완성! 봇 만들기 상세 설명서</span>
+            </button>
+          )}
+          <button onClick={checkLive} disabled={busy} className="text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+            <RefreshCw size={14} className={busy ? 'animate-spin' : ''} /> 상태 확인
+          </button>
+        </div>
       </div>
 
       <div className="p-5 space-y-4 text-xs">
@@ -128,12 +142,22 @@ export default function TelegramBotSection({ orgId }: { orgId: string }) {
               <button onClick={handleSaveToken} disabled={busy || !token.trim()}
                 className="px-4 py-2 font-semibold text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50 text-xs shadow-2xs cursor-pointer">저장하고 연결</button>
             </div>
-            <ol className="text-2xs text-muted-foreground list-decimal ml-4 space-y-0.5 leading-relaxed">
-              <li>텔레그램에서 <b>@BotFather</b>를 열고 <b>/newbot</b> → 봇 이름 입력 → 받은 토큰을 위 칸에 붙여넣습니다.</li>
-              <li>"저장하고 연결"을 누르면 이 회사 전용 웹훅이 자동으로 연결됩니다.</li>
-              <li>변호사 사무실 텔레그램 방 관리자에게 이 봇을 <b>방에 초대</b>해 달라고 요청합니다.</li>
-              <li>BotFather에서 <b>/setprivacy</b> → 봇 선택 → <b>Disable</b> 로 바꿔야 방의 모든 메시지를 받을 수 있습니다.</li>
-            </ol>
+            <div className="p-3 rounded-lg bg-muted/40 border border-border flex flex-wrap items-center justify-between gap-2">
+              <ol className="text-2xs text-muted-foreground list-decimal ml-4 space-y-0.5 leading-relaxed">
+                <li>텔레그램에서 <b>@BotFather</b>를 열고 <b>/newbot</b> → 봇 이름 입력 → 받은 토큰을 위 칸에 붙여넣습니다.</li>
+                <li>"저장하고 연결"을 누르면 이 회사 전용 웹훅이 자동으로 연결됩니다.</li>
+                <li>BotFather에서 <b>/setprivacy</b> → 봇 선택 → <b>Disable</b> 로 바꿔야 방의 모든 메시지를 받을 수 있습니다. <b>(필수)</b></li>
+                <li>변호사 사무실 텔레그램 방 관리자에게 이 봇을 <b>방에 초대</b>해 달라고 요청합니다.</li>
+              </ol>
+              <button
+                type="button"
+                onClick={() => setShowGuide(true)}
+                className="px-3 py-1.5 rounded-lg bg-card hover:bg-muted border border-border text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer"
+              >
+                <BookOpen size={13} />
+                <span>화면 예시 보며 따라하기</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -157,6 +181,8 @@ export default function TelegramBotSection({ orgId }: { orgId: string }) {
           </div>
         )}
       </div>
+
+      <TelegramBotGuideModal isOpen={showGuide} onClose={() => setShowGuide(false)} />
     </section>
   );
 }
