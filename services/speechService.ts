@@ -2,6 +2,19 @@
 // Web Speech API & 고음질 신경망 음성 서비스 (2026-11-09)
 // 크롬 Google 한국의 / 엣지 Natural 신경망 보이스 자동 우선 탑재 + 전화 수화기 통화 필터
 // ============================================
+import { supabase } from './supabase';
+
+async function getEdgeTtsHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  try {
+    if (supabase) {
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+    }
+  } catch {}
+  return headers;
+}
 
 export interface SpeechVoiceOptions {
   pitch?: number; // Web Speech용 (0.9 ~ 1.1)
@@ -270,9 +283,10 @@ class SpeechService {
     }
 
     try {
+      const headers = await getEdgeTtsHeaders();
       const res = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           text: cleanText,
           voice,
@@ -364,9 +378,10 @@ class SpeechService {
         apiUrl = isSameHost ? '/api/edge-tts' : 'https://www.lmaster.xyz/api/edge-tts';
       }
 
+      const headers = await getEdgeTtsHeaders();
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           text: cleanText,
           voice,
@@ -494,9 +509,10 @@ class SpeechService {
         apiUrl = isSameHost ? '/api/edge-tts' : 'https://www.lmaster.xyz/api/edge-tts';
       }
 
+      const headers = await getEdgeTtsHeaders();
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           text: cleanText,
           voice,

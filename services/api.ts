@@ -8,6 +8,7 @@ import {
   DATA_MODE,
   isSupabaseEnabled,
   fetchCasesFromSupabase,
+  fetchArchivedCasesFromSupabase,
   createCaseInSupabase,
   updateCaseInSupabase,
   deleteCaseFromSupabase,
@@ -48,6 +49,28 @@ let isInitialized = false;
 
 // [SYNC FIX] 동기화 상태 추적
 let syncStatus: 'ok' | 'session_expired' | 'fetch_failed' = 'ok';
+let archivedCasesLoaded = false;
+
+export const ensureArchivedCasesLoaded = async (): Promise<void> => {
+  if (archivedCasesLoaded || !isSupabaseEnabled()) return;
+  try {
+    const archived = await fetchArchivedCasesFromSupabase();
+    archivedCasesLoaded = true;
+    if (archived.length > 0) {
+      const byId = new Map(localCases.map(c => [c.caseId, c]));
+      for (const item of archived) {
+        byId.set(item.caseId, item);
+      }
+      localCases = Array.from(byId.values()).sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      saveToStorage();
+      notifyListeners();
+    }
+  } catch (err) {
+    console.warn('[API] Failed to lazy-load archived cases:', err);
+  }
+};
 let lastSyncAt: string | null = null;
 
 // Event Listeners for Real-time Updates
@@ -515,6 +538,7 @@ export const clearAllLocalDataCache = () => {
   localExpenses = [];
   expensesInitialized = false;
   isInitialized = false;
+  archivedCasesLoaded = false;
   syncStatus = 'ok';
   lastSyncAt = null;
 

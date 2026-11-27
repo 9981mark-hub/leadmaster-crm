@@ -18,7 +18,7 @@ import { Case, MissedCallIntervalTier } from '../types';
 
 // React Query Hooks
 import { useCases, usePartners, useInboundPaths, useStatuses, useSecondaryStatuses, useTertiaryStatuses, useUpdateCaseMutation, useDeleteCaseMutation } from '../services/queries';
-import { restoreCase, refreshData } from '../services/api';
+import { restoreCase, refreshData, ensureArchivedCasesLoaded } from '../services/api';
 import { archiveCases, restoreArchivedCases } from '../services/leadLifecycle';
 import { searchCommunicationLogsPhones } from '../services/supabase';
 import { exportSpecialCases } from '../utils/xlsxExport';
@@ -360,6 +360,13 @@ export default function CaseList() {
 
     // 필터가 바뀌면 선택 해제
     useEffect(() => { setSelected(new Set()); }, [deferredSearch, statusFilters, inboundPathFilter, partnerFilter, quickView, assigneeFilter, viewMode, showNewOnly, showOverdueMissedOnly, showStarredOnly]);
+
+    // 보관함 탭 진입 시에만 보관된 케이스 지연 로드
+    useEffect(() => {
+        if (viewMode === 'archived') {
+            ensureArchivedCasesLoaded();
+        }
+    }, [viewMode]);
 
     // 빠른 보기 숫자 (휴지통 제외, 상담원은 본인 배정 건만 집계)
     const viewCounts = useMemo(() => {

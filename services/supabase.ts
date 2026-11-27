@@ -266,6 +266,8 @@ export const fetchCasesFromSupabase = async (): Promise<Case[]> => {
             const { data, error } = await supabase
                 .from('cases')
                 .select('*')
+                .select('*')
+                .or('is_archived.is.null,is_archived.eq.false')
                 .order('created_at', { ascending: false })
                 .range(from, from + PAGE_SIZE - 1);
 
@@ -284,7 +286,7 @@ export const fetchCasesFromSupabase = async (): Promise<Case[]> => {
             }
         }
 
-        console.log(`[Supabase] Fetched total ${allData.length} cases (paginated)`);
+        console.log(`[Supabase] Fetched total ${allData.length} active cases (paginated)`);
         return allData.map(dbToCase);
     } catch (err) {
         console.error('[Supabase] Fetch failed:', err);
@@ -296,6 +298,43 @@ export const fetchCasesFromSupabase = async (): Promise<Case[]> => {
  * [EGRESS FIX] 지정 시각 이후 변경된 케이스만 조회 (증분 동기화)
  * cases.updated_at은 BEFORE UPDATE 트리거로 서버 시각이 기록된다.
  */
+export const fetchArchivedCasesFromSupabase = async (): Promise<Case[]> => {
+    if (!supabase) return [];
+
+    try {
+        const PAGE_SIZE = 1000;
+        let allData: any[] = [];
+        let from = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+            const { data, error } = await supabase
+                .from('cases')
+                .select('*')
+                .eq('is_archived', true)
+                .order('created_at', { ascending: false })
+                .range(from, from + PAGE_SIZE - 1);
+
+            if (error) throw error;
+
+            const rows = data || [];
+            allData = allData.concat(rows);
+
+            if (rows.length < PAGE_SIZE) {
+                hasMore = false;
+            } else {
+                from += PAGE_SIZE;
+            }
+        }
+
+        console.log(`[Supabase] Fetched total ${allData.length} archived cases (lazy)`);
+        return allData.map(dbToCase);
+    } catch (err) {
+        console.error('[Supabase] Fetch archived failed:', err);
+        throw err;
+    }
+};
+
 export const fetchCasesUpdatedSince = async (sinceIso: string): Promise<Case[]> => {
     if (!supabase) return [];
 

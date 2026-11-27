@@ -1,12 +1,54 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 
-// CORS 헤더 설정
-const CORS_HEADERS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+// 허용 오리진 화이트리스트 (서비스 도메인 및 로컬 개발 환경)
+const ALLOWED_ORIGINS = [
+  'https://www.lmaster.xyz',
+  'https://lmaster.xyz',
+  'https://leadmastercrm.vercel.app',
+  'https://9981mark-hub.github.io',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+];
+
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return true; // 동일 오리진 서버 호출/네이티브 앱 등 Origin 미포함 요청
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) return true;
+  return false;
+}
+
+function buildCorsHeaders(origin: string | undefined): Record<string, string> {
+  const allowOrigin = origin && isAllowedOrigin(origin) ? origin : 'https://www.lmaster.xyz';
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Vary': 'Origin',
+  };
+}
+
+async function verifySupabaseAuth(req: IncomingMessage): Promise<boolean> {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) return true; // 환경변수 미설정 환경 하위 호환
+
+  const authHeader = req.headers.authorization || '';
+  if (!authHeader.startsWith('Bearer ')) return false;
+
+  try {
+    const resp = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        Authorization: authHeader,
+        apikey: supabaseAnonKey,
+      },
+    });
+    return resp.ok;
+  } catch {
+    return false;
+  }
+}
 
 // 요청 바디 파서 헬퍼
 async function parseBody(req: IncomingMessage): Promise<any> {
@@ -28,6 +70,16 @@ async function parseBody(req: IncomingMessage): Promise<any> {
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  const origin = req.headers.origin;
+  const CORS_HEADERS = buildCorsHeaders(origin);
+
+  // 허용되지 않은 외부 도메인 차단
+  if (origin && !isAllowedOrigin(origin)) {
+    res.writeHead(403, { ...CORS_HEADERS, 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Forbidden origin' }));
+    return;
+  }
+
   // CORS 사전 비행 요청 처리
   if (req.method === 'OPTIONS') {
     res.writeHead(204, CORS_HEADERS);
@@ -38,6 +90,14 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   if (req.method !== 'POST') {
     res.writeHead(405, { ...CORS_HEADERS, 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Method not allowed. Use POST.' }));
+    return;
+  }
+
+  // 로그인 사용자 JWT 검증
+  const isAuthed = await verifySupabaseAuth(req);
+  if (!isAuthed) {
+    res.writeHead(401, { ...CORS_HEADERS, 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorized' }));
     return;
   }
 
