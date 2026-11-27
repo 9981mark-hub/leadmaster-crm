@@ -240,7 +240,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
     {
       id: 'welcome_1',
       role: 'assistant',
-      content: '안녕하세요! 도산 전문 법률 사수 AI입니다.\n\n개인회생·파산 자격 요건, 2025/2026년 가구원수별 최저생계비 계산, 주택임대차 최우선변제금, 그리고 "수임료가 비싸요" 같은 고객 거절 방어 화법 등 무엇이든 질문해 주세요. 사이트 내에서 즉시 1초 만에 답변해 드립니다.',
+      content: '안녕하세요! 도산 전문 법률 사수 AI입니다.\n\n개인회생·파산 자격 요건, 2026년 가구원수별 최저생계비 계산, 주택임대차 최우선변제금, 그리고 "수임료가 비싸요" 같은 고객 거절 방어 화법 등 무엇이든 질문해 주세요. 사이트 내에서 즉시 1초 만에 답변해 드립니다.',
       timestamp: '안내',
     },
   ]);
@@ -466,7 +466,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
               <span>📚 실전 교육자료 · 모범 녹취 · FAQ 허브</span>
             </h1>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              1차 표준 스크립트, 15대 필수 인계 서식, 2025 법정 기준표, 거절 극복 화법부터 모범 녹취 청취 및 다빈도 FAQ까지 스스로 학습하고 완벽히 숙달하세요.
+              1차 표준 스크립트, 15대 필수 인계 서식, 2026 법정 기준표, 거절 극복 화법부터 모범 녹취 청취 및 다빈도 FAQ까지 스스로 학습하고 완벽히 숙달하세요.
             </p>
           </div>
 
@@ -1614,13 +1614,10 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                     <Sparkles className="w-3 h-3" />
                     사이트 내 실시간 즉답 모드
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    2025 법정 기준표 & 교육자료(PDF 3종) 연동
-                  </span>
                 </div>
                 <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
                   <Bot className="w-5 h-5 text-primary" />
-                  <span>AI 법률 사수 실시간 Q&A (NotebookLM 내장 엔진)</span>
+                  <span>AI 법률 사수 실시간 Q&A</span>
                 </h2>
                 <p className="text-xs text-muted-foreground">
                   새 창으로 나갈 필요 없이, 질문을 입력하거나 아래 추천 질문을 클릭하면 1초 만에 법률 및 화법 답변을 받으실 수 있습니다.
@@ -1712,7 +1709,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   </div>
                   <div className="p-4 rounded-2xl bg-card border border-border rounded-tl-none text-xs text-muted-foreground flex items-center gap-2">
                     <Sparkles className="w-3.5 h-3.5 text-primary animate-spin" />
-                    <span>2025/2026년 법정 기준표와 실무준칙을 정밀 검색하여 최적의 답변을 작성하고 있습니다...</span>
+                    <span>2026년 법정 기준표와 실무준칙을 정밀 검색하여 최적의 답변을 작성하고 있습니다...</span>
                   </div>
                 </div>
               )}
@@ -1764,22 +1761,6 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   <span>질문하기</span>
                 </button>
               </form>
-
-              {/* Bottom Quick Link: Google Official NotebookLM Website */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  💡 구글 공식 웹사이트에서 더 방대한 서적 원문을 직접 검색하시려면?
-                </span>
-                <a
-                  href={materials.notebookLm.sharedUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary font-medium hover:underline inline-flex items-center gap-1 self-start sm:self-auto"
-                >
-                  <span>구글 공식 NotebookLM 새 창 열기</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
 
               {/* Admin URL Setting (When in edit mode) */}
               {isEditMode && (
