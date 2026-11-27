@@ -467,7 +467,7 @@ const INVITE_ROLE_LABELS: Record<string, string> = {
   agent: '상담원',
 };
 
-/** 팀원 초대 안내 HTML 이메일 템플릿 (클라이언트 폴백용) */
+/** 팀원 초대 안내 HTML 이메일 템플릿 (클라이언트 폴백용 — B2B 엔터프라이즈 화이트카드) */
 export const generateTeamInviteHtmlEmail = (params: {
   orgName: string;
   inviterName: string;
@@ -486,46 +486,89 @@ export const generateTeamInviteHtmlEmail = (params: {
   const inviteeLabel = params.inviteeName?.trim() || params.inviteeEmail.split('@')[0];
 
   return `<!DOCTYPE html>
-<html lang="ko">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#f8f9fa;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8f9fa;">
+<html lang="ko" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light">
+  <title>${params.orgName} 팀 워크스페이스 초대</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+  <style type="text/css">
+    body { margin: 0; padding: 0; width: 100% !important; -webkit-text-size-adjust: 100%; }
+    table { border-collapse: collapse; }
+    a { text-decoration: none; }
+    @media only screen and (max-width: 600px) {
+      .wrap { width: 100% !important; min-width: 100% !important; border-radius: 12px !important; }
+      .pad { padding-left: 24px !important; padding-right: 24px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;color:#111827;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f3f4f6;">
     <tr>
       <td align="center" style="padding:48px 16px;">
-        <table role="presentation" width="520" cellspacing="0" cellpadding="0" border="0" style="max-width:520px;width:100%;background-color:#ffffff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
-          <tr><td style="height:3px;background:linear-gradient(90deg,#2563eb,#6366f1);"></td></tr>
+        <table role="presentation" class="wrap" width="540" cellspacing="0" cellpadding="0" border="0" style="max-width:540px;width:100%;background-color:#ffffff;border-radius:16px;border:1px solid #e5e7eb;box-shadow:0 4px 24px rgba(15,23,42,0.05);overflow:hidden;">
+          <tr><td style="height:4px;background:linear-gradient(90deg,#0f172a 0%,#2563eb 55%,#4f46e5 100%);"></td></tr>
           <tr>
-            <td style="padding:32px 40px 0 40px;">
-              <span style="display:inline-block;width:28px;height:28px;background:#2563eb;border-radius:7px;text-align:center;line-height:28px;color:#fff;font-weight:800;font-size:13px;">LM</span>
-              <span style="margin-left:8px;font-size:16px;font-weight:800;color:#111827;">LeadMaster</span>
-              <span style="float:right;font-size:11px;color:#6b7280;line-height:28px;">${todayStr}</span>
+            <td class="pad" style="padding:28px 40px 0 40px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="vertical-align:middle;">
+                    <span style="display:inline-block;width:30px;height:30px;background:linear-gradient(135deg,#1d4ed8,#2563eb);border-radius:8px;text-align:center;line-height:30px;color:#ffffff;font-weight:800;font-size:13px;vertical-align:middle;">LM</span>
+                    <span style="margin-left:8px;font-size:16px;font-weight:800;color:#0f172a;vertical-align:middle;">LeadMaster</span>
+                    <span style="margin-left:4px;font-size:12px;font-weight:600;color:#64748b;vertical-align:middle;">CRM</span>
+                  </td>
+                  <td align="right" style="vertical-align:middle;">
+                    <span style="display:inline-block;padding:4px 9px;background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;font-size:10px;font-weight:700;color:#64748b;letter-spacing:0.6px;">INVITATION &middot; ${todayStr}</span>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
-          <tr><td style="padding:20px 40px 0 40px;"><div style="height:1px;background-color:#f3f4f6;"></div></td></tr>
+          <tr><td class="pad" style="padding:20px 40px 0 40px;"><div style="height:1px;background-color:#f1f5f9;"></div></td></tr>
           <tr>
-            <td style="padding:32px 40px 0 40px;">
-              <span style="display:inline-block;padding:4px 10px;background-color:#eff6ff;color:#2563eb;font-size:11px;font-weight:700;border-radius:999px;">팀 워크스페이스 초대</span>
-              <h1 style="margin:14px 0 12px 0;font-size:22px;font-weight:800;color:#111827;line-height:1.35;">${params.orgName} 팀에 초대되었습니다</h1>
-              <p style="margin:0;font-size:14px;color:#4b5563;line-height:1.7;">
-                안녕하세요, <strong>${inviteeLabel}</strong>님.<br>
-                <strong>${params.inviterName}</strong>님이 <strong>${params.orgName}</strong> 워크스페이스에 <strong>${roleLabel}</strong> 역할로 초대했습니다.<br>
-                아래 버튼을 눌러 초대받은 구글 계정으로 로그인하면 자동으로 팀에 합류됩니다.
+            <td class="pad" style="padding:28px 40px 0 40px;">
+              <span style="display:inline-block;padding:4px 11px;background-color:#eff6ff;border:1px solid #dbeafe;color:#1d4ed8;font-size:11px;font-weight:700;border-radius:999px;">팀 워크스페이스 초대</span>
+              <h1 style="margin:12px 0 14px 0;font-size:22px;font-weight:800;color:#0f172a;line-height:1.38;letter-spacing:-0.6px;word-break:keep-all;">${params.orgName} 팀에 초대되었습니다</h1>
+              <p style="margin:0;font-size:15px;color:#475569;line-height:1.7;word-break:keep-all;">
+                안녕하세요, <strong style="color:#0f172a;">${inviteeLabel}</strong>님.<br>
+                <strong style="color:#0f172a;">${params.inviterName}</strong>님이 <strong style="color:#0f172a;">${params.orgName}</strong> 워크스페이스에 <strong style="color:#2563eb;">${roleLabel}</strong> 권한으로 초대했습니다.
+                별도 회원가입 없이 초대된 Google 계정으로 로그인하면 즉시 합류됩니다.
               </p>
             </td>
           </tr>
           <tr>
-            <td style="padding:24px 40px 0 40px;">
-              <div style="background-color:#f9fafb;border:1px solid #f3f4f6;border-radius:10px;padding:16px 20px;font-size:13px;color:#374151;line-height:1.8;">
-                <div>초대 회사: <strong>${params.orgName}</strong></div>
-                <div>부여 역할: <strong>${roleLabel}</strong></div>
-                <div>로그인 계정: <strong>${params.inviteeEmail}</strong></div>
-                <div>초대 유효기간: ${expStr}까지 (14일)</div>
-              </div>
+            <td class="pad" style="padding:24px 40px 0 40px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+                <tr>
+                  <td style="padding:18px 22px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size:13.5px;">
+                      <tr><td style="padding:7px 0;color:#64748b;width:104px;">소속 회사</td><td style="padding:7px 0;font-weight:700;color:#0f172a;">${params.orgName}</td></tr>
+                      <tr><td colspan="2" style="height:1px;background-color:#e2e8f0;"></td></tr>
+                      <tr><td style="padding:7px 0;color:#64748b;">초대자</td><td style="padding:7px 0;font-weight:600;color:#334155;">${params.inviterName}</td></tr>
+                      <tr><td colspan="2" style="height:1px;background-color:#e2e8f0;"></td></tr>
+                      <tr><td style="padding:7px 0;color:#64748b;">부여 권한</td><td style="padding:7px 0;"><span style="display:inline-block;padding:2px 9px;background-color:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-size:12px;font-weight:700;border-radius:6px;">${roleLabel}</span></td></tr>
+                      <tr><td colspan="2" style="height:1px;background-color:#e2e8f0;"></td></tr>
+                      <tr><td style="padding:7px 0;color:#64748b;">로그인 계정</td><td style="padding:7px 0;font-family:'SF Mono',Consolas,monospace;font-size:13px;font-weight:600;color:#2563eb;">${params.inviteeEmail}</td></tr>
+                      <tr><td colspan="2" style="height:1px;background-color:#e2e8f0;"></td></tr>
+                      <tr><td style="padding:7px 0;color:#64748b;">초대 유효기간</td><td style="padding:7px 0;color:#334155;font-weight:500;">${expStr}까지 (14일간 유효)</td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           <tr>
-            <td style="padding:28px 40px 32px 40px;">
-              <a href="${loginUrl}" style="display:inline-block;padding:13px 26px;background-color:#2563eb;color:#ffffff;font-size:14px;font-weight:700;border-radius:8px;text-decoration:none;">구글 계정으로 시작하기 &rarr;</a>
+            <td class="pad" style="padding:26px 40px 28px 40px;">
+              <a href="${loginUrl}" target="_blank" style="display:block;width:100%;padding:14px 0;background-color:#2563eb;color:#ffffff;font-size:15px;font-weight:700;text-align:center;text-decoration:none;border-radius:10px;box-sizing:border-box;">Google 계정으로 팀 합류하기 &rarr;</a>
+              <p style="margin:12px 0 0 0;text-align:center;font-size:11.5px;color:#94a3b8;">버튼이 동작하지 않으면 아래 주소를 복사하세요<br><a href="${loginUrl}" style="color:#64748b;font-family:monospace;font-size:11px;text-decoration:underline;">${loginUrl}</a></p>
+            </td>
+          </tr>
+          <tr>
+            <td class="pad" style="padding:20px 40px 26px 40px;background-color:#f8fafc;border-top:1px solid #f1f5f9;font-size:12px;color:#64748b;line-height:1.6;">
+              도움이 필요하시면 <a href="mailto:support@lmaster.xyz" style="color:#2563eb;text-decoration:underline;">support@lmaster.xyz</a>로 문의해 주세요.<br>
+              <span style="font-size:11px;color:#94a3b8;">본 메일은 ${params.orgName} 관리자의 팀원 초대에 따라 발송되는 보안 안내 메일입니다.</span>
             </td>
           </tr>
         </table>
