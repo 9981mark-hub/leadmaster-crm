@@ -97,13 +97,10 @@ export default function MyPage() {
     const myTeamName = (user as any)?.teamName || (org as any)?.teamName || '1팀';
 
     // -------------------------------------------------------------
-    // CRM 표시 이름 & 직통 내선 번호 설정
+    // CRM 표시 이름 설정
     // -------------------------------------------------------------
     const [managerName, setManagerName] = useState(() => {
         return (user as any)?.managerName || localStorage.getItem('leadmaster_manager_name') || user?.name || '';
-    });
-    const [directExtension, setDirectExtension] = useState(() => {
-        return (user as any)?.extension || localStorage.getItem('leadmaster_direct_extension') || '';
     });
 
     const handleSaveName = () => {
@@ -113,11 +110,6 @@ export default function MyPage() {
         }
         localStorage.setItem('leadmaster_manager_name', managerName.trim());
         showToast('CRM 표시 이름이 로컬에 저장되었습니다.');
-    };
-
-    const handleSaveExtension = () => {
-        localStorage.setItem('leadmaster_direct_extension', directExtension.trim());
-        showToast('직통 내선 번호가 로컬에 저장되었습니다.');
     };
 
     // -------------------------------------------------------------
@@ -468,7 +460,7 @@ export default function MyPage() {
                         </div>
                     </div>
 
-                    {/* 1-2. 활동명 & 직통 내선 번호 콤팩트 인라인 폼 */}
+                    {/* 1-2. 활동명 콤팩트 인라인 폼 */}
                     <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5 w-full md:w-auto">
                         <div className="flex items-center justify-between gap-1.5 bg-muted/60 p-1.5 pl-3 rounded-xl border border-border shadow-2xs">
                             <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -487,26 +479,6 @@ export default function MyPage() {
                                 className="btn-tactile px-2.5 py-1 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors shrink-0"
                             >
                                 저장
-                            </button>
-                        </div>
-
-                        <div className="flex items-center justify-between gap-1.5 bg-muted/60 p-1.5 pl-3 rounded-xl border border-border shadow-2xs">
-                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                <Phone size={13} className="text-muted-foreground shrink-0" />
-                                <input
-                                    type="text"
-                                    placeholder="직통 내선 (예: 101)"
-                                    value={directExtension}
-                                    onChange={(e) => setDirectExtension(e.target.value)}
-                                    className="bg-transparent text-xs font-bold text-foreground outline-none w-full sm:w-36 placeholder:text-muted-foreground"
-                                />
-                            </div>
-                            <button
-                                type="button"
-                                onClick={handleSaveExtension}
-                                className="btn-tactile px-2.5 py-1 bg-secondary text-secondary-foreground rounded-lg text-xs font-bold hover:bg-secondary/80 transition-colors shrink-0"
-                            >
-                                등록
                             </button>
                         </div>
                     </div>

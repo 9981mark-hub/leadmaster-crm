@@ -10,7 +10,6 @@ export type TableDensityType = 'normal' | 'compact';
 export interface UserPreferences {
   // 통화 및 발신 환경
   callMethod: CallMethodType;
-  directPhoneExtension: string; // 직통 내선 번호
 
   // 알림 및 사운드
   soundEnabled: boolean;
@@ -32,7 +31,6 @@ const PREFS_STORAGE_KEY = 'lm_user_preferences_v2';
 
 export const DEFAULT_USER_PREFS: UserPreferences = {
   callMethod: 'android_bridge',
-  directPhoneExtension: '',
   soundEnabled: true,
   soundType: 'dingdong',
   soundVolume: 80,
