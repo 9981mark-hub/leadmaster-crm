@@ -1272,7 +1272,7 @@ export default function TrainingCenterPage() {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-xl bg-card border border-border shadow-xs">
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 bg-primary/10 text-primary border border-primary/20">
-            {trainingMode === 'inbound_lead' ? '광고' : '전화'}
+            {trainingMode === 'inbound_lead' ? 'IN' : 'OUT'}
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -1284,7 +1284,7 @@ export default function TrainingCenterPage() {
                   ? 'bg-primary/10 text-primary border border-primary/20'
                   : 'bg-muted text-muted-foreground border border-border'
               }`}>
-                {trainingMode === 'inbound_lead' ? '📋 광고 보고 신청한 고객' : '📞 일반 전화 영업'}
+                {trainingMode === 'inbound_lead' ? '📋 인바운드' : '📞 아웃바운드'}
               </span>
             </div>
             <p className="hidden sm:block text-xs text-muted-foreground mt-0.5">
@@ -1306,7 +1306,7 @@ export default function TrainingCenterPage() {
             }`}
           >
             <PhoneCall className="w-3.5 h-3.5" strokeWidth={1.75} />
-            <span>📞 일반 전화</span>
+            <span>📞 아웃바운드</span>
           </button>
 
           <button
@@ -1318,7 +1318,7 @@ export default function TrainingCenterPage() {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" strokeWidth={1.75} />
-            <span>📋 광고 신청 고객</span>
+            <span>📋 인바운드</span>
           </button>
         </div>
       </div>
