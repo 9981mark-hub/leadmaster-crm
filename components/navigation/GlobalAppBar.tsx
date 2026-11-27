@@ -3,14 +3,17 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Building2, Search, Bell, Moon, Sun, User, LogOut, 
   ChevronDown, ExternalLink, Shield, CheckCircle2, 
-  Menu, Sparkles, MessageSquare, AlertCircle, ArrowRight, Crown, LayoutDashboard
+  Menu, Sparkles, MessageSquare, AlertCircle, ArrowRight, Crown, LayoutDashboard, Archive
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
 import { ROLE_LABEL, getStandardRoleInfo } from '../../services/org';
 import { AttendanceHeaderWidget } from '../hr/AttendanceHeaderWidget';
 import { fetchOrgApplications } from '../../services/orgApplicationService';
 import { fetchSeatExpansionRequests, subscribeToPlatformAlerts } from '../../services/seatExpansionService';
+import { fetchExpiringRecordings } from '../../services/recordings';
+import RecordingBackupCenterModal from '../recordings/RecordingBackupCenterModal';
 
 interface GlobalAppBarProps {
   onOpenSearch: () => void;
@@ -46,10 +49,18 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
   const navigate = useNavigate();
   const { user, org, isAdmin, isPlatformAdmin, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { showToast } = useToast();
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [platformPendingCount, setPlatformPendingCount] = useState(0);
+  const [expiringRecSummary, setExpiringRecSummary] = useState<{ total: number; grace: number }>({ total: 0, grace: 0 });
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+
+  // TM대표(owner) 또는 총괄관리자(super) 여부 (5개월차 녹음 백업 알림 대상)
+  const isRecordingBackupManager = Boolean(
+    org?.orgId && (org.role === 'owner' || isPlatformAdmin || (isAdmin && org?.adminPermissions?.tier === 'super'))
+  );
 
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -75,6 +86,29 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
     });
     return unsubscribe;
   }, [isPlatformAdmin]);
+
+  // TM대표·총괄관리자 전용: 5개월째(D-30)부터 만료/유예 통화 녹음 백업 알림 조회
+  useEffect(() => {
+    if (!isRecordingBackupManager || !org?.orgId) {
+      setExpiringRecSummary({ total: 0, grace: 0 });
+      return;
+    }
+    let alive = true;
+    const loadExpiring = async () => {
+      try {
+        const items = await fetchExpiringRecordings(org.orgId, 30);
+        if (!alive) return;
+        const graceCount = items.filter(it => it.daysLeft <= 0).length;
+        setExpiringRecSummary({ total: items.length, grace: graceCount });
+      } catch {}
+    };
+    loadExpiring();
+    const timer = setInterval(loadExpiring, 60 * 60 * 1000);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+    };
+  }, [isRecordingBackupManager, org?.orgId]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -106,6 +140,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
   const userInitial = user?.name ? user.name.slice(0, 1) : (user?.email?.slice(0, 1).toUpperCase() || 'U');
 
   return (
+    <>
     <header className="sticky top-0 z-40 w-full h-12 bg-white/95 dark:bg-background/95 backdrop-blur-md border-b border-[#d0d4e4] dark:border-border transition-colors">
       <div className="h-full px-3 md:px-4 flex items-center justify-between gap-3">
         
@@ -188,7 +223,7 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
               title="알림 센터"
             >
               <Bell size={17} strokeWidth={1.75} />
-              {pendingTgCount > 0 && (
+              {(pendingTgCount > 0 || (isRecordingBackupManager && expiringRecSummary.total > 0)) && (
                 <span className="absolute top-1 right-1 flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
@@ -217,6 +252,31 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                 </div>
 
                 <div className="p-3 space-y-2 max-h-80 overflow-y-auto">
+                  {/* TM대표·총괄관리자 전용: 5개월차 통화 녹음 백업 알림 */}
+                  {isRecordingBackupManager && expiringRecSummary.total > 0 && (
+                    <div
+                      onClick={() => { setIsNotifOpen(false); setIsBackupModalOpen(true); }}
+                      className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 hover:bg-rose-500/15 transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <Archive size={16} strokeWidth={1.75} className="text-rose-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-bold text-foreground">
+                              통화 녹음 백업 필요 ({expiringRecSummary.total}건)
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {expiringRecSummary.grace > 0
+                                ? `만료 유예 ${expiringRecSummary.grace}건 포함 · 3주 유예 후 자동 삭제됩니다.`
+                                : '6개월 보존 만료 30일 전입니다. 클릭하여 ZIP 백업하세요.'}
+                            </p>
+                          </div>
+                        </div>
+                        <ArrowRight size={14} strokeWidth={1.75} className="text-rose-500 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Telegram Pending Notification */}
                   {pendingTgCount > 0 ? (
                     <div 
@@ -425,5 +485,14 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
         </div>
       </div>
     </header>
+    {isRecordingBackupManager && org?.orgId && (
+      <RecordingBackupCenterModal
+        orgId={org.orgId}
+        isOpen={isBackupModalOpen}
+        onClose={() => setIsBackupModalOpen(false)}
+        showToast={showToast}
+      />
+    )}
+    </>
   );
 };

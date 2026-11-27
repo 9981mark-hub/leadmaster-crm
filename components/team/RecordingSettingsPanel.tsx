@@ -73,10 +73,10 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
           <label className="flex items-center gap-2 font-semibold text-foreground cursor-pointer">
             <input type="checkbox" checked={s.autoUpload} onChange={e => setS({ ...s, autoUpload: e.target.checked })} className="accent-primary" /> 리드 통화 녹음 자동 업로드
           </label>
-          <p className="text-2xs text-muted-foreground -mt-1 leading-relaxed">앱이 통화가 끝나면 폰의 통화 녹음 파일(삼성 전화·T전화)을 찾아, <b className="text-foreground">리드 번호와의 통화만</b> 회사의 안전한 <b className="text-foreground">Supabase Storage(call-recordings 버킷)</b>에 1년간 암호화 보관합니다. 0.1초 고속 스트리밍 및 대화록 싱크 청취를 지원합니다.</p>
+          <p className="text-2xs text-muted-foreground -mt-1 leading-relaxed">앱이 통화가 끝나면 폰의 통화 녹음 파일(삼성 전화·T전화)을 찾아, <b className="text-foreground">리드 번호와의 통화만</b> 회사의 안전한 <b className="text-foreground">Supabase Storage(call-recordings 버킷)</b>에 6개월(180일) 암호화 보관합니다. 0.1초 고속 스트리밍 및 대화록 싱크 청취를 지원합니다.</p>
           <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-xs text-primary flex flex-wrap items-center gap-1.5 shadow-2xs">
             <span className="font-bold shrink-0">⚡ 32kbps AAC 모노 H/W 가속 압축 활성화</span>
-            <span className="text-2xs text-primary/80">· 원본 대비 용량 75% 절감 (100GB 무료 한도 1년 보관 완비)</span>
+            <span className="text-2xs text-primary/80">· 원본 대비 용량 75% 절감 (6개월 보관 + 만료 30일 전 알림 + 만료 후 3주 유예)</span>
           </div>
           <label className="flex items-center gap-2 text-foreground cursor-pointer">
             <input type="checkbox" checked={s.autoAnalyze} onChange={e => setS({ ...s, autoAnalyze: e.target.checked })} disabled={!s.autoUpload} className="accent-primary" /> 올리면 바로 AI 정리 (요약·대화록·채무 정리)
@@ -90,24 +90,13 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
           </label>
         </div>
         <div className="space-y-3 text-xs">
-          {/* 데이터 및 녹음 보관 기간 설정 (6개월, 1년, 2년 선택) */}
+          {/* 데이터 및 녹음 보관 기간 (6개월 고정 정책) */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-32 text-muted-foreground">데이터 보존 기간</span>
-            <select
-              value={s.retentionDays || 365}
-              onChange={e => setS({ ...s, retentionDays: parseInt(e.target.value, 10) || 365 })}
-              className={`${input} font-medium`}
-            >
-              <option value={180}>6개월 (180일)</option>
-              <option value={365}>1년 (365일 - 기본값)</option>
-              <option value={730}>2년 (730일 - 법적 권장)</option>
-              {s.retentionDays && ![180, 365, 730].includes(s.retentionDays) && (
-                <option value={s.retentionDays}>
-                  {s.retentionDays === 3650 ? '10년 (3650일 - 기존 설정)' : `${s.retentionDays}일 (기존 설정)`}
-                </option>
-              )}
-            </select>
-            <span className="text-2xs text-muted-foreground">설정 기간 경과 시 자동 정리</span>
+            <span className="px-2.5 py-1.5 rounded-lg bg-muted border border-border text-xs font-bold text-foreground">
+              6개월 (180일) 고정
+            </span>
+            <span className="text-2xs text-muted-foreground">5개월차(D-30) 백업 알림 · 만료 후 3주 유예 뒤 삭제</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-32 text-muted-foreground">하루 AI 정리 상한</span>

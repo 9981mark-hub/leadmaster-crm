@@ -195,11 +195,11 @@ export default function RecordingBackupCenterModal({
               <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 통화 녹음 만료 & 백업 센터
                 <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-primary/15 text-primary border border-primary/30">
-                  1년 보관 정책
+                  6개월 보관 · 3주 유예
                 </span>
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                1년(365일)이 지난 오디오 파일은 자동 정리되므로, 만료 30일 전 PC나 외장하드로 일괄 백업하세요.
+                6개월(180일) 만료 30일 전(5개월차)부터 알림을 드리며, 만료 후 3주(21일) 유예 기간이 지나면 오디오 파일이 자동 삭제됩니다.
               </p>
             </div>
           </div>
@@ -390,7 +390,12 @@ export default function RecordingBackupCenterModal({
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      {isUrgent ? (
+                      {it.daysLeft <= 0 ? (
+                        <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1">
+                          <AlertTriangle size={13} />
+                          <span>유예 {Math.max(0, 21 + it.daysLeft)}일 남음</span>
+                        </span>
+                      ) : isUrgent ? (
                         <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center gap-1">
                           <AlertTriangle size={13} />
                           <span>D-{it.daysLeft} 만료</span>

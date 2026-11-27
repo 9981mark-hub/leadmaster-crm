@@ -83,8 +83,11 @@ export interface RecordingSettings {
   wifiOnly: boolean;
   exists: boolean;
 }
+export const RECORDING_RETENTION_DAYS = 180; // 6개월 고정
+export const RECORDING_GRACE_DAYS = 21; // 만료 후 3주(21일) 유예
+
 export const DEFAULT_RECORDING_SETTINGS: RecordingSettings = {
-  autoUpload: false, autoAnalyze: false, minDurationSec: 40, retentionDays: 3650, dailyAnalyzeCap: 300, wifiOnly: false, exists: false,
+  autoUpload: false, autoAnalyze: false, minDurationSec: 40, retentionDays: RECORDING_RETENTION_DAYS, dailyAnalyzeCap: 300, wifiOnly: false, exists: false,
 };
 
 export interface RecordingUsage {
@@ -334,7 +337,7 @@ export const fetchRecordingSettings = async (): Promise<RecordingSettings> => {
   if (!data) return { ...DEFAULT_RECORDING_SETTINGS };
   return {
     autoUpload: !!data.auto_upload, autoAnalyze: !!data.auto_analyze, minDurationSec: data.min_duration_sec,
-    retentionDays: data.retention_days, dailyAnalyzeCap: data.daily_analyze_cap, wifiOnly: !!data.wifi_only, exists: true,
+    retentionDays: RECORDING_RETENTION_DAYS, dailyAnalyzeCap: data.daily_analyze_cap, wifiOnly: !!data.wifi_only, exists: true,
   };
 };
 
@@ -344,7 +347,7 @@ export const saveRecordingSettings = async (orgId: string, s: RecordingSettings)
     auto_upload: s.autoUpload,
     auto_analyze: s.autoAnalyze,
     min_duration_sec: Math.min(Math.max(Math.round(s.minDurationSec || 0), 0), 3600),
-    retention_days: Math.min(Math.max(Math.round(s.retentionDays || 3650), 1), 3650),
+    retention_days: RECORDING_RETENTION_DAYS,
     daily_analyze_cap: Math.min(Math.max(Math.round(s.dailyAnalyzeCap || 0), 0), 100000),
     wifi_only: s.wifiOnly,
     updated_at: new Date().toISOString(),
