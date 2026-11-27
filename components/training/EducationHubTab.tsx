@@ -1620,7 +1620,7 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   <span>AI 법률 사수 실시간 Q&A</span>
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  새 창으로 나갈 필요 없이, 질문을 입력하거나 아래 추천 질문을 클릭하면 1초 만에 법률 및 화법 답변을 받으실 수 있습니다.
+                  새 창으로 나갈 필요 없이, 질문을 입력하면 1초 만에 법률 및 화법 답변을 받으실 수 있습니다.
                 </p>
               </div>
 
@@ -1713,26 +1713,6 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Quick Prompts Carousel */}
-            <div className="px-5 md:px-6 py-2.5 bg-muted/30 border-t border-border">
-              <div className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-primary" />
-                <span>추천 질문 (클릭 시 사이트 내 즉시 질문):</span>
-              </div>
-              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
-                {materials.notebookLm.sampleQuestions.map((q, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSendQuestion(q)}
-                    disabled={isAnswering}
-                    className="shrink-0 text-left px-3 py-1.5 rounded-lg bg-card border border-border hover:border-primary/40 text-xs text-foreground font-medium transition-colors hover:bg-muted active:scale-95 disabled:opacity-50 shadow-2xs"
-                  >
-                    💬 {q.length > 30 ? q.slice(0, 30) + '...' : q}
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Input Bar */}
