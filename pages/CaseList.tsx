@@ -1014,7 +1014,7 @@ export default function CaseList() {
                     {([
                         { k: 'all', label: '전체', n: viewCounts.all },
                         { k: 'today', label: '오늘 할 일', n: viewCounts.today, hint: '오늘까지 잡힌 일정 · 신규 · 다시 걸 부재' },
-                        { k: 'paralegal', label: '🤝 사무장 인계 큐', n: viewCounts.paralegal, hint: '1차 상담 완료 후 사무장 심사 및 수임 판정 대기 사건' },
+                        { k: 'paralegal', label: '🤝 사무장 심사 대기', n: viewCounts.paralegal, hint: '1차 상담 완료 후 사무장 심사 및 수임 판정 대기 사건' },
                         ...(isAdmin && org?.userId && viewCounts.mine > 0 ? [{ k: 'mine', label: '내 담당', n: viewCounts.mine }] : []),
                         ...(isAdmin ? [{ k: 'unassigned', label: '미배정', n: viewCounts.unassigned }] : []),
                     ] as { k: QuickView; label: string; n: number; hint?: string }[]).map(v => (

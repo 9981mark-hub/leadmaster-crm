@@ -95,7 +95,7 @@ export const ParalegalPipelineWidget: React.FC<ParalegalPipelineWidgetProps> = (
                     onClick={() => handleGoToParalegalQueue()}
                     className="px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary hover:bg-secondary/80 text-foreground border border-border flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
                 >
-                    <span>사무장 인계 큐 전체보기</span>
+                    <span>사무장 심사 대기 전체보기</span>
                     <ArrowUpRight size={14} strokeWidth={1.75} />
                 </button>
             </div>
