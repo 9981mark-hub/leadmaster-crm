@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { supabase, getCurrentUserId, ownPendingCallFilter } from '../services/supabase';
+import { useAuth } from './AuthContext';
 
 // ============================================
 // Active Call State Management
@@ -58,6 +59,8 @@ const findCustomerByPhone = async (phone: string): Promise<{ name: string; caseI
 const normalizePhone = (phone: string) => phone.replace(/[^0-9]/g, '');
 
 export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { org } = useAuth();
+    const orgId = org?.orgId;
     const [callState, setCallState] = useState<ActiveCallState>(initialState);
     const channelRef = useRef<any>(null);
     const pendingCallChannelRef = useRef<any>(null);
@@ -83,13 +86,14 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // Supabase Realtime: communication_logs 구독
     // ============================================
     useEffect(() => {
-        if (!supabase) return;
+        if (!supabase || !orgId) return;
 
+        const orgFilter = `org_id=eq.${orgId}`;
         channelRef.current = supabase
-            .channel('active-call-monitor')
+            .channel(`active-call-monitor-${orgId}`)
             .on(
                 'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'communication_logs' },
+                { event: 'INSERT', schema: 'public', table: 'communication_logs', filter: orgFilter },
                 async (payload: any) => {
                     const row = payload.new;
                     if (!row) return;
@@ -148,7 +152,7 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             // [EGRESS FIX] call-duration-monitor 채널을 여기에 통합 (5채널 → 4채널)
             .on(
                 'postgres_changes',
-                { event: 'UPDATE', schema: 'public', table: 'communication_logs' },
+                { event: 'UPDATE', schema: 'public', table: 'communication_logs', filter: orgFilter },
                 (payload: any) => {
                     const row = payload.new;
                     if (!row || row.type !== 'CALL_OUT') return;
@@ -176,7 +180,7 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 supabase.removeChannel(channelRef.current);
             }
         };
-    }, []);
+    }, [orgId]);
 
     // ============================================
     // Supabase Realtime: pending_calls 구독
@@ -184,13 +188,13 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // dialed → calling 모드, ended → ended 모드 (자동 dismiss)
     // ============================================
     useEffect(() => {
-        if (!supabase) return;
+        if (!supabase || !orgId) return;
 
         pendingCallChannelRef.current = supabase
-            .channel('pending-call-monitor')
+            .channel(`pending-call-monitor-${orgId}`)
             .on(
                 'postgres_changes',
-                { event: 'UPDATE', schema: 'public', table: 'pending_calls' },
+                { event: 'UPDATE', schema: 'public', table: 'pending_calls', filter: `org_id=eq.${orgId}` },
                 (payload: any) => {
                     const row = payload.new;
                     if (!row) return;
@@ -266,7 +270,7 @@ export const ActiveCallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 supabase.removeChannel(pendingCallChannelRef.current);
             }
         };
-    }, []);
+    }, [orgId]);
 
     // ============================================
     // 통화 종료 후 자동 dismiss (5초) + pending_calls 잔여 row 정리

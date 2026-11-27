@@ -386,11 +386,18 @@ const showToastNotification = (title: string, desc: string) => {
 
 // [NEW] Realtime Subscription Setup
 let unsubscribeRealtime: (() => void) | null = null;
+let subscribedOrgId: string | undefined = undefined;
 
 const setupRealtimeSubscription = () => {
-  if (unsubscribeRealtime) return; // Already subscribed
+  const currentOrgId = loadCachedOrg()?.orgId;
+  if (unsubscribeRealtime && subscribedOrgId === currentOrgId) return; // Already subscribed for same org
+  if (unsubscribeRealtime) {
+    unsubscribeRealtime();
+    unsubscribeRealtime = null;
+  }
+  subscribedOrgId = currentOrgId;
 
-  console.log("[Realtime] Setting up subscription...");
+  console.log("[Realtime] Setting up subscription...", currentOrgId ? `(org: ${currentOrgId})` : '(no org)');
   unsubscribeRealtime = subscribeToCases(
     // On Insert
     (newCase) => {
@@ -488,7 +495,8 @@ const setupRealtimeSubscription = () => {
     () => {
       console.log('[Realtime] Reconnected - fetching missed updates (incremental)...');
       performIncrementalFetch();
-    }
+    },
+    currentOrgId
   );
 };
 

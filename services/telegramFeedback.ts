@@ -399,18 +399,21 @@ export async function deleteFeedbacksByDateRange(startDate: string, endDate: str
 
 /** 텔레그램 피드백 실시간 구독 */
 export function subscribeTelegramFeedbacks(
-  onInsert: (feedback: TelegramFeedback) => void
+  onInsert: (feedback: TelegramFeedback) => void,
+  orgId?: string
 ) {
   if (!supabase) return null;
 
+  const orgFilter = orgId ? { filter: `org_id=eq.${orgId}` } : {};
   const channel = supabase
-    .channel('telegram-feedbacks-realtime')
+    .channel(orgId ? `telegram-feedbacks-realtime-${orgId}` : 'telegram-feedbacks-realtime')
     .on(
       'postgres_changes',
       {
         event: 'INSERT',
         schema: 'public',
         table: 'telegram_feedbacks',
+        ...orgFilter,
       },
       (payload) => {
         if (payload.new) {

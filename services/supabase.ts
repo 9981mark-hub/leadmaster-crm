@@ -517,7 +517,8 @@ export const subscribeToCases = (
     onUpdate: (updatedCase: Case) => void,
     onDelete: (caseId: string) => void,
     onAnyChange?: () => void, // Partners/Settings 변경 시에만 호출
-    onReconnected?: () => void // 끊겼다가 다시 연결됐을 때 (놓친 변경분 조회용)
+    onReconnected?: () => void,
+    orgId?: string // [SCALE FIX] 500명 동시 접속 시 타 팀 RLS 평가 방지용 org_id 필터
 ): (() => void) => {
     if (!supabase) {
         console.warn('[Supabase] Real-time not available - client not configured');
@@ -540,16 +541,17 @@ export const subscribeToCases = (
     }
 
     const generation = ++channelGeneration;
+    const orgFilter = orgId ? { filter: `org_id=eq.${orgId}` } : {};
 
     casesChannel = supabase
-        .channel('app-realtime')
+        .channel(orgId ? `app-realtime-${orgId}` : 'app-realtime')
         // --- Cases Listeners ---
         // [EGRESS FIX] Cases 이벤트에서 onAnyChange 제거
         // onInsert/onUpdate/onDelete가 이미 케이스 데이터를 직접 처리하므로
         // partners/settings를 불필요하게 재조회할 필요 없음
         .on(
             'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'cases' },
+            { event: 'INSERT', schema: 'public', table: 'cases', ...orgFilter },
             (payload) => {
                 console.log('[Supabase] New case:', payload.new);
                 onInsert(dbToCase(payload.new as DbCase));
@@ -557,7 +559,7 @@ export const subscribeToCases = (
         )
         .on(
             'postgres_changes',
-            { event: 'UPDATE', schema: 'public', table: 'cases' },
+            { event: 'UPDATE', schema: 'public', table: 'cases', ...orgFilter },
             (payload) => {
                 console.log('[Supabase] Updated case:', payload.new);
                 onUpdate(dbToCase(payload.new as DbCase));
@@ -565,7 +567,7 @@ export const subscribeToCases = (
         )
         .on(
             'postgres_changes',
-            { event: 'DELETE', schema: 'public', table: 'cases' },
+            { event: 'DELETE', schema: 'public', table: 'cases', ...orgFilter },
             (payload) => {
                 console.log('[Supabase] Deleted case:', payload.old);
                 onDelete((payload.old as any).case_id);
@@ -574,7 +576,7 @@ export const subscribeToCases = (
         // --- Partners Listeners ---
         .on(
             'postgres_changes',
-            { event: '*', schema: 'public', table: 'partners' },
+            { event: '*', schema: 'public', table: 'partners', ...orgFilter },
             (payload) => {
                 console.log('[Supabase] Partners changed:', payload.eventType);
                 if (onAnyChange) onAnyChange();
@@ -583,7 +585,7 @@ export const subscribeToCases = (
         // --- Settings Listeners ---
         .on(
             'postgres_changes',
-            { event: '*', schema: 'public', table: 'settings' },
+            { event: '*', schema: 'public', table: 'settings', ...orgFilter },
             (payload) => {
                 console.log('[Supabase] Settings changed:', payload.eventType);
                 if (onAnyChange) onAnyChange();

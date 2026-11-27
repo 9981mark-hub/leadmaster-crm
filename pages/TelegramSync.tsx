@@ -280,17 +280,18 @@ export default function TelegramSync() {
 
     // Realtime subscription
     useEffect(() => {
+        if (!org?.orgId) return;
         const channel = subscribeTelegramFeedbacks((newFeedback) => {
             if (newFeedback.applyMode === 'pending' && !newFeedback.isConfirmed) {
                 setPendingFeedbacks(prev => [newFeedback, ...prev]);
                 showToast(`새로운 텔레그램 피드백: ${newFeedback.senderName} (${newFeedback.customerName || '고객'})`);
             }
-        });
+        }, org.orgId);
 
         return () => {
             if (channel) channel.unsubscribe();
         };
-    }, [showToast]);
+    }, [org?.orgId, showToast]);
 
     // Helper: Find case for feedback
     const getCaseForFeedback = useCallback((f: TelegramFeedback): Case | undefined => {
