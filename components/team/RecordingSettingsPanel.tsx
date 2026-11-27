@@ -73,16 +73,6 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
           <label className="flex items-center gap-2 font-semibold text-foreground cursor-pointer">
             <input type="checkbox" checked={s.autoUpload} onChange={e => setS({ ...s, autoUpload: e.target.checked })} className="accent-primary" /> 리드 통화 녹음 자동 업로드
           </label>
-          <p className="text-2xs text-muted-foreground -mt-1 leading-relaxed">앱이 통화가 끝나면 폰의 통화 녹음 파일(삼성 전화·T전화)을 찾아, <b className="text-foreground">리드 번호와의 통화만</b> 회사의 안전한 <b className="text-foreground">Supabase Storage(call-recordings 버킷)</b>에 6개월(180일) 암호화 보관합니다. 0.1초 고속 스트리밍 및 대화록 싱크 청취를 지원합니다.</p>
-          <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-xs text-primary flex flex-col gap-1 shadow-2xs">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="font-bold shrink-0">⚡ 32kbps AAC 모노 H/W 가속 압축 활성화</span>
-              <span className="text-2xs text-primary/80">· 원본 대비 용량 75% 절감 (분당 약 0.24MB · 6개월 보관 + 만료 30일 전 알림 + 3주 유예)</span>
-            </div>
-            <div className="text-2xs text-primary/85">
-              📊 <b>30초 이상 녹음만 업로드 시 예상 용량·비용</b>: 1인당 월 약 260~400MB · 500명(10팀) 6개월+3주 최대 누적 약 0.85~1.3TB (Supabase Pro 초과 스토리지 기준 전사 월 약 $16~$25)
-            </div>
-          </div>
           <label className="flex items-center gap-2 text-foreground cursor-pointer">
             <input type="checkbox" checked={s.autoAnalyze} onChange={e => setS({ ...s, autoAnalyze: e.target.checked })} disabled={!s.autoUpload} className="accent-primary" /> 올리면 바로 AI 정리 (요약·대화록·채무 정리)
           </label>
@@ -111,8 +101,6 @@ export default function RecordingSettingsPanel({ orgId }: { orgId: string }) {
             <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground grid grid-cols-2 gap-1 font-mono">
               <span>스토리지 보관 녹음</span><b className="text-foreground">{usage.files.toLocaleString()}개 · {fmtBytes(usage.bytes)}</b>
               <span>오늘 올라온 녹음</span><b className="text-foreground">{usage.uploadedToday.toLocaleString()}개</b>
-              <span>오늘 / 이번 달 AI 정리</span><b className="text-foreground">{usage.analyzedToday.toLocaleString()} / {usage.analyzedMonth.toLocaleString()}건</b>
-              <span>이번 달 AI 사용량</span><b className="text-foreground">입력 {(usage.tokensInMonth / 1e6).toFixed(2)}M · 출력 {(usage.tokensOutMonth / 1e6).toFixed(2)}M 토큰</b>
               {usage.failed7d > 0 && <><span className="text-destructive font-bold">최근 7일 실패</span><b className="text-destructive font-bold">{usage.failed7d}건</b></>}
             </div>
           )}
