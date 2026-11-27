@@ -8,17 +8,20 @@ import { useAuth } from '../contexts/AuthContext';
  * pointer-events-none 설정으로 모든 마우스 클릭/스크롤/터치는 100% 정상 투과됩니다.
  * 모니터를 스마트폰 카메라로 촬영하거나 화면 캡처 시 유출자의 신원이 영구 박제됩니다.
  */
+const formatWatermarkTime = () => {
+  const d = new Date();
+  const date = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${date} ${time}`;
+};
+
 export default function SecurityWatermark() {
-  const { org } = useAuth();
-  const [dateStr, setDateStr] = useState(() => {
-    const d = new Date();
-    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-  });
+  const { org, user } = useAuth();
+  const [dateTimeStr, setDateTimeStr] = useState(formatWatermarkTime);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const d = new Date();
-      setDateStr(`${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`);
+      setDateTimeStr(formatWatermarkTime());
     }, 60000);
     return () => clearInterval(timer);
   }, []);
@@ -28,16 +31,18 @@ export default function SecurityWatermark() {
     return null;
   }
 
-  const agentLabel = org.displayName || '상담원';
   const orgLabel = org.orgName || '리드마스터';
-  const watermarkText = `${orgLabel} · ${agentLabel} · ${dateStr}`;
+  const agentLabel = org.displayName || '상담원';
+  const emailLabel = user?.email ? `(${user.email})` : '';
+  const identityLabel = emailLabel && agentLabel !== user?.email ? `${agentLabel}${emailLabel}` : (user?.email || agentLabel);
+  const watermarkText = `${orgLabel} · ${identityLabel} · ${dateTimeStr}`;
 
   return (
     <div
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-[99999] select-none overflow-hidden opacity-[0.045] dark:opacity-[0.07] transition-opacity"
       style={{
-        backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='380' height='220'><text x='30' y='120' transform='rotate(-22 190 110)' fill='%23666666' font-size='13' font-weight='600' font-family='sans-serif'>${encodeURIComponent(watermarkText)}</text></svg>")`,
+        backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='260'><text x='20' y='140' transform='rotate(-22 250 130)' fill='%23666666' font-size='12' font-weight='600' font-family='sans-serif'>${encodeURIComponent(watermarkText)}</text></svg>")`,
         backgroundRepeat: 'repeat',
       }}
     />
