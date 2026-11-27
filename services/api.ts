@@ -558,6 +558,18 @@ export const clearAllLocalDataCache = () => {
     localStorage.removeItem('lm_last_backup_date');
     localStorage.removeItem('lm_cache_owner');
     localStorage.removeItem('managerName');
+    // 회사별 UI/운영 설정 캐시 키도 함께 초기화 (동일 브라우저 회사 전환 시 잔존 방지)
+    [
+      'lm_company_list_masking_policy',
+      'lm_missedStatus',
+      'lm_hiddenStatuses',
+      'lm_missedCallIntervalTiers',
+      'lm_aiKeywords',
+      'lm_managerName',
+      'lm_statuses',
+      'lm_owner_dashboard_view_mode',
+      'lm_schedule_active_mode',
+    ].forEach(k => { try { localStorage.removeItem(k); } catch {} });
   } catch (e) {
     console.warn('[Cache] localStorage clear error:', e);
   }
