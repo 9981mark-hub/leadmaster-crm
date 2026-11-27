@@ -472,14 +472,13 @@ export default function EducationHubTab({ initialSubView }: EducationHubTabProps
 
           {/* Action Hub: NotebookLM & Admin CMS Toggle */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            {/* NotebookLM 법률 AI 사수 버튼 */}
+            {/* 법률 AI 사수 버튼 */}
             <button
               onClick={() => setShowNotebookModal(true)}
               className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-card border border-border hover:bg-muted text-foreground font-semibold text-xs shadow-xs transition-colors cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-primary" strokeWidth={1.75} />
-              <span>NotebookLM 법률 AI 사수</span>
-              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>법률 AI 사수</span>
             </button>
 
             {/* 관리자 CMS 편집 모드 토글 (관리자만 노출) */}
