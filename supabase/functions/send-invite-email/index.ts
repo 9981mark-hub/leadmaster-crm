@@ -5,7 +5,7 @@
  * Brevo API(support@lmaster.xyz)로 초대 안내 메일을 발송합니다.
  * - 테넌트 대표/관리자가 호출해도 본사 Brevo API 키가 브라우저에 노출되지 않도록 서버에서 조회/발송합니다.
  *
- * Deploy: npx supabase functions deploy send-invite-email --project-ref cenksfblktflfurxjmtv
+ * Deploy: npx supabase functions deploy send-invite-email --no-verify-jwt --use-api --project-ref cenksfblktflfurxjmtv
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -139,6 +139,7 @@ serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ ok: false, error: 'POST only' }, 405);
 
+  try {
   const authHeader = req.headers.get('Authorization') || '';
   if (!authHeader.startsWith('Bearer ')) return json({ ok: false, error: '로그인이 필요합니다' }, 401);
 
@@ -255,4 +256,9 @@ serve(async (req: Request) => {
     failedCount: failed.length,
     failed,
   });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[send-invite-email] unhandled error:', msg);
+    return json({ ok: false, error: `서버 오류: ${msg}` }, 500);
+  }
 });

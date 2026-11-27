@@ -554,6 +554,7 @@ export const sendTeamInviteEmails = async (params: {
   }
 
   // 1차: Edge Function 호출
+  let edgeErrorReason = '';
   if (supabase) {
     try {
       const { data, error } = await supabase.functions.invoke('send-invite-email', {
@@ -580,9 +581,23 @@ export const sendTeamInviteEmails = async (params: {
             failed: Array.isArray(data.failed) ? data.failed : [],
           };
         }
+        if (data.error) {
+          edgeErrorReason = String(data.error);
+        }
+      } else if (error) {
+        const ctx = (error as any)?.context;
+        const status = typeof ctx?.status === 'number' ? ctx.status : undefined;
+        let serverMsg = '';
+        try {
+          const errJson = await ctx?.json?.();
+          if (errJson?.error) serverMsg = String(errJson.error);
+        } catch {}
+        edgeErrorReason = serverMsg || (status ? `Edge Function 오류 (HTTP ${status})` : error.message || 'Edge Function 호출 실패');
+        console.warn('[MailService] send-invite-email error:', edgeErrorReason, error);
       }
-    } catch (e) {
-      console.warn('[MailService] send-invite-email edge function failed, trying fallback:', e);
+    } catch (e: any) {
+      edgeErrorReason = e?.message || 'Edge Function 네트워크 오류';
+      console.warn('[MailService] send-invite-email exception:', e);
     }
   }
 
@@ -593,7 +608,10 @@ export const sendTeamInviteEmails = async (params: {
       sentCount: 0,
       failedCount: params.invites.length,
       notConfigured: true,
-      failed: params.invites.map(i => ({ email: i.email, reason: '메일 발송 서버(Edge Function) 미연결' })),
+      failed: params.invites.map(i => ({
+        email: i.email,
+        reason: edgeErrorReason || '메일 발송 서버(Edge Function) 미연결',
+      })),
     };
   }
 
