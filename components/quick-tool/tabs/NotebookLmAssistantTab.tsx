@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bot, Send, Sparkles, ExternalLink, Copy, Check, BookOpen, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Bot, Send, Sparkles, Copy, Check, BookOpen, ShieldCheck, HelpCircle } from 'lucide-react';
 
 interface NotebookLmAssistantTabProps {
   onInsertToMemo?: (text: string) => void;
@@ -144,7 +144,7 @@ export const NotebookLmAssistantTab: React.FC<NotebookLmAssistantTabProps> = ({
 
   return (
     <div className="space-y-4 text-xs">
-      {/* 1. 사수 헤더 & 무료 NotebookLM 링크 안내 */}
+      {/* 1. 법률 AI 사수 헤더 */}
       <div className="bg-card p-3.5 rounded-xl border border-border flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/25 text-emerald-400">
@@ -152,26 +152,13 @@ export const NotebookLmAssistantTab: React.FC<NotebookLmAssistantTabProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-xs text-foreground">NotebookLM 법률 AI 사수</span>
-              <span className="px-1.5 py-0.2 rounded text-3xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                100% 무료
-              </span>
+              <span className="font-bold text-xs text-foreground">법률 AI 사수</span>
             </div>
             <p className="text-2xs text-muted-foreground mt-0.5">
-              회생법원 실무준칙 원문 기반 0% 환각 법률 가이드
+              회생법원 실무준칙 원문 기반 법률 가이드
             </p>
           </div>
         </div>
-
-        <a
-          href="https://notebooklm.google.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-2xs font-semibold bg-muted hover:bg-muted/80 text-foreground border border-border transition-colors shrink-0"
-        >
-          <ExternalLink className="w-3 h-3 text-primary" />
-          <span>공식 스튜디오</span>
-        </a>
       </div>
 
       {/* 2. 단골 질문 퀵 프롬프트 칩스 */}

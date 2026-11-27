@@ -284,7 +284,7 @@ export const ConsultationQuickDesk: React.FC = () => {
               }`}
             >
               <Bot className="w-3 h-3" />
-              <span>NotebookLM 사수</span>
+              <span>법률 AI 사수</span>
             </button>
 
             <button
