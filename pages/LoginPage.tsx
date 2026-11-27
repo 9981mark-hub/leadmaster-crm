@@ -126,10 +126,10 @@ export default function LoginPage() {
                             <span>로펌 · TM 법인을 위한 실전 영업 자동화 CRM</span>
                         </div>
 
-                        <h1 className="text-3xl sm:text-4xl lg:text-[46px] font-black tracking-tight text-slate-900 dark:text-white leading-[1.18] break-keep">
+                        <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-black tracking-tight text-slate-900 dark:text-white leading-[1.34] break-keep">
                             상담원은 통화만 하세요,
                             <br />
-                            <span className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 dark:from-blue-400 dark:via-indigo-300 dark:to-cyan-300 bg-clip-text text-transparent">
+                            <span className="mt-1 inline-block bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 dark:from-blue-400 dark:via-indigo-300 dark:to-cyan-300 bg-clip-text text-transparent">
                                 정리는 AI가 다 합니다
                             </span>
                         </h1>
@@ -142,77 +142,85 @@ export default function LoginPage() {
                     </div>
 
                     {/* 4대 핵심 특장점 Bento 그리드 */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* 1. 관리자 통제 */}
-                        <div className="p-4.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700/70 transition-all space-y-2.5">
+                        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700/70 transition-all flex flex-col gap-3">
                             <div className="flex items-center justify-between">
                                 <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-100 dark:border-indigo-500/25 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                                     <Users size={18} />
                                 </div>
-                                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800/60">
+                                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800/60">
                                     실시간 AI 채점
                                 </span>
                             </div>
-                            <h3 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 break-keep">
-                                수백 명도 관리자 혼자 완벽 통제
-                            </h3>
-                            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed break-keep">
-                                전 상담원의 콜 수·녹음과 상세 활동 내역을 실시간 확인하고, AI가 상담 품질 점수를 즉시 채점합니다.
-                            </p>
+                            <div className="space-y-1.5">
+                                <h3 className="font-bold text-[15px] text-slate-900 dark:text-slate-100 break-keep">
+                                    수백 명도 관리자 혼자 완벽 통제
+                                </h3>
+                                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed break-keep">
+                                    전 상담원의 콜 수·녹음과 상세 활동 내역을 실시간 확인하고, AI가 상담 품질 점수를 즉시 채점합니다.
+                                </p>
+                            </div>
                         </div>
 
                         {/* 2. 원클릭 접수 */}
-                        <div className="p-4.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700/70 transition-all space-y-2.5">
+                        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700/70 transition-all flex flex-col gap-3">
                             <div className="flex items-center justify-between">
                                 <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/15 border border-blue-100 dark:border-blue-500/25 flex items-center justify-center text-blue-600 dark:text-blue-400">
                                     <Send size={18} />
                                 </div>
-                                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800/60">
+                                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800/60">
                                     1초 텔방 전송
                                 </span>
                             </div>
-                            <h3 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 break-keep">
-                                상담원은 통화만, 접수는 원클릭
-                            </h3>
-                            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed break-keep">
-                                통화 종료 즉시 AI가 법률사무소 전달용 핵심 요약을 생성합니다. 확인 후 버튼 한 번으로 텔방에 즉시 전송됩니다.
-                            </p>
+                            <div className="space-y-1.5">
+                                <h3 className="font-bold text-[15px] text-slate-900 dark:text-slate-100 break-keep">
+                                    상담원은 통화만, 접수는 원클릭
+                                </h3>
+                                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed break-keep">
+                                    통화 종료 즉시 AI가 법률사무소 전달용 핵심 요약을 생성합니다. 확인 후 버튼 한 번으로 텔방에 즉시 전송됩니다.
+                                </p>
+                            </div>
                         </div>
 
                         {/* 3. AI 가상 고객 훈련 */}
-                        <div className="p-4.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700/70 transition-all space-y-2.5">
+                        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700/70 transition-all flex flex-col gap-3">
                             <div className="flex items-center justify-between">
                                 <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-100 dark:border-emerald-500/25 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                                     <GraduationCap size={18} />
                                 </div>
-                                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60">
+                                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60">
                                     12,000+ 페르소나
                                 </span>
                             </div>
-                            <h3 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 break-keep">
-                                1만 2천 명 AI와 실전 전화 연습
-                            </h3>
-                            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed break-keep">
-                                채무·자산·소득·성격이 모두 다른 1만 2천 명 가상 고객과 실제 음성으로 훈련해 거절 반론을 완벽히 극복합니다.
-                            </p>
+                            <div className="space-y-1.5">
+                                <h3 className="font-bold text-[15px] text-slate-900 dark:text-slate-100 break-keep">
+                                    1만 2천 명 AI와 실전 전화 연습
+                                </h3>
+                                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed break-keep">
+                                    채무·자산·소득·성격이 모두 다른 1만 2천 명 가상 고객과 실제 음성으로 훈련해 거절 반론을 완벽히 극복합니다.
+                                </p>
+                            </div>
                         </div>
 
                         {/* 4. 1초 자동 정산 */}
-                        <div className="p-4.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:shadow-md hover:border-amber-300 dark:hover:border-amber-700/70 transition-all space-y-2.5">
+                        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:shadow-md hover:border-amber-300 dark:hover:border-amber-700/70 transition-all flex flex-col gap-3">
                             <div className="flex items-center justify-between">
                                 <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-500/15 border border-amber-100 dark:border-amber-500/25 flex items-center justify-center text-amber-600 dark:text-amber-400">
                                     <Calculator size={18} />
                                 </div>
-                                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800/60">
+                                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800/60">
                                     엑셀 야근 Zero
                                 </span>
                             </div>
-                            <h3 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 break-keep">
-                                골치 아픈 엑셀 정산 제로, 1초 정산
-                            </h3>
-                            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed break-keep">
-                                거래처별 DB 단가와 상담원 급여를 자동 계산해 청구서까지 1초 만에 완성하고 실시간 수익률을 확인합니다.
-                            </p>
+                            <div className="space-y-1.5">
+                                <h3 className="font-bold text-[15px] text-slate-900 dark:text-slate-100 break-keep">
+                                    골치 아픈 엑셀 정산 제로, 1초 정산
+                                </h3>
+                                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed break-keep">
+                                    거래처별 DB 단가와 상담원 급여를 자동 계산해 청구서까지 1초 만에 완성하고 실시간 수익률을 확인합니다.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
