@@ -446,3 +446,186 @@ export const generateApprovalHtmlEmail = (params: {
 </html>
   `.trim();
 };
+
+export interface TeamInviteEmailItem {
+  email: string;
+  displayName?: string;
+  role: string;
+  expiresAt?: string;
+}
+
+export interface TeamInviteEmailResult {
+  sentCount: number;
+  failedCount: number;
+  notConfigured?: boolean;
+  failed: { email: string; reason: string }[];
+}
+
+const INVITE_ROLE_LABELS: Record<string, string> = {
+  owner: '대표이사',
+  admin: '관리자',
+  agent: '상담원',
+};
+
+/** 팀원 초대 안내 HTML 이메일 템플릿 (클라이언트 폴백용) */
+export const generateTeamInviteHtmlEmail = (params: {
+  orgName: string;
+  inviterName: string;
+  inviteeEmail: string;
+  inviteeName?: string;
+  role: string;
+  expiresAt?: string;
+  loginUrl?: string;
+}): string => {
+  const loginUrl = params.loginUrl || `${typeof window !== 'undefined' ? window.location.origin : 'https://www.lmaster.xyz'}/login`;
+  const roleLabel = INVITE_ROLE_LABELS[params.role] || '상담원';
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+  const expDate = params.expiresAt ? new Date(params.expiresAt) : new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+  const expStr = `${expDate.getFullYear()}년 ${expDate.getMonth() + 1}월 ${expDate.getDate()}일`;
+  const inviteeLabel = params.inviteeName?.trim() || params.inviteeEmail.split('@')[0];
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f8f9fa;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8f9fa;">
+    <tr>
+      <td align="center" style="padding:48px 16px;">
+        <table role="presentation" width="520" cellspacing="0" cellpadding="0" border="0" style="max-width:520px;width:100%;background-color:#ffffff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
+          <tr><td style="height:3px;background:linear-gradient(90deg,#2563eb,#6366f1);"></td></tr>
+          <tr>
+            <td style="padding:32px 40px 0 40px;">
+              <span style="display:inline-block;width:28px;height:28px;background:#2563eb;border-radius:7px;text-align:center;line-height:28px;color:#fff;font-weight:800;font-size:13px;">LM</span>
+              <span style="margin-left:8px;font-size:16px;font-weight:800;color:#111827;">LeadMaster</span>
+              <span style="float:right;font-size:11px;color:#6b7280;line-height:28px;">${todayStr}</span>
+            </td>
+          </tr>
+          <tr><td style="padding:20px 40px 0 40px;"><div style="height:1px;background-color:#f3f4f6;"></div></td></tr>
+          <tr>
+            <td style="padding:32px 40px 0 40px;">
+              <span style="display:inline-block;padding:4px 10px;background-color:#eff6ff;color:#2563eb;font-size:11px;font-weight:700;border-radius:999px;">팀 워크스페이스 초대</span>
+              <h1 style="margin:14px 0 12px 0;font-size:22px;font-weight:800;color:#111827;line-height:1.35;">${params.orgName} 팀에 초대되었습니다</h1>
+              <p style="margin:0;font-size:14px;color:#4b5563;line-height:1.7;">
+                안녕하세요, <strong>${inviteeLabel}</strong>님.<br>
+                <strong>${params.inviterName}</strong>님이 <strong>${params.orgName}</strong> 워크스페이스에 <strong>${roleLabel}</strong> 역할로 초대했습니다.<br>
+                아래 버튼을 눌러 초대받은 구글 계정으로 로그인하면 자동으로 팀에 합류됩니다.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px 0 40px;">
+              <div style="background-color:#f9fafb;border:1px solid #f3f4f6;border-radius:10px;padding:16px 20px;font-size:13px;color:#374151;line-height:1.8;">
+                <div>초대 회사: <strong>${params.orgName}</strong></div>
+                <div>부여 역할: <strong>${roleLabel}</strong></div>
+                <div>로그인 계정: <strong>${params.inviteeEmail}</strong></div>
+                <div>초대 유효기간: ${expStr}까지 (14일)</div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 40px 32px 40px;">
+              <a href="${loginUrl}" style="display:inline-block;padding:13px 26px;background-color:#2563eb;color:#ffffff;font-size:14px;font-weight:700;border-radius:8px;text-decoration:none;">구글 계정으로 시작하기 &rarr;</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`.trim();
+};
+
+/**
+ * 팀원 초대 이메일 발송 (단건/대량 공용)
+ * 1차: Supabase Edge Function(send-invite-email) 호출 (테넌트 대표도 API 키 노출 없이 발송)
+ * 2차: Edge Function 미배포/오류 시 로컬 또는 HQ Brevo API 키가 있으면 직접 발송 폴백
+ */
+export const sendTeamInviteEmails = async (params: {
+  orgName: string;
+  inviterName: string;
+  invites: TeamInviteEmailItem[];
+}): Promise<TeamInviteEmailResult> => {
+  const loginUrl =
+    typeof window !== 'undefined' ? `${window.location.origin}/login` : 'https://www.lmaster.xyz/login';
+
+  if (params.invites.length === 0) {
+    return { sentCount: 0, failedCount: 0, failed: [] };
+  }
+
+  // 1차: Edge Function 호출
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-invite-email', {
+        body: {
+          orgName: params.orgName,
+          inviterName: params.inviterName,
+          loginUrl,
+          invites: params.invites,
+        },
+      });
+      if (!error && data) {
+        if (data.code === 'BREVO_NOT_CONFIGURED') {
+          return {
+            sentCount: 0,
+            failedCount: params.invites.length,
+            notConfigured: true,
+            failed: params.invites.map(i => ({ email: i.email, reason: 'Brevo API 키 미설정' })),
+          };
+        }
+        if (typeof data.sentCount === 'number') {
+          return {
+            sentCount: data.sentCount,
+            failedCount: Number(data.failedCount || 0),
+            failed: Array.isArray(data.failed) ? data.failed : [],
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('[MailService] send-invite-email edge function failed, trying fallback:', e);
+    }
+  }
+
+  // 2차 폴백: 클라이언트 키가 있는 경우 직접 Brevo API 호출
+  const localKey = await getBrevoApiKey();
+  if (!localKey) {
+    return {
+      sentCount: 0,
+      failedCount: params.invites.length,
+      notConfigured: true,
+      failed: params.invites.map(i => ({ email: i.email, reason: '메일 발송 서버(Edge Function) 미연결' })),
+    };
+  }
+
+  let sentCount = 0;
+  const failed: { email: string; reason: string }[] = [];
+  for (const inv of params.invites) {
+    try {
+      const roleLabel = INVITE_ROLE_LABELS[inv.role] || '상담원';
+      await sendBrevoEmail({
+        toEmail: inv.email,
+        toName: inv.displayName || inv.email,
+        subject: `[LeadMaster] ${params.orgName} 팀에 초대되었습니다`,
+        textContent: `[LeadMaster CRM] ${params.inviterName}님이 ${params.orgName} 워크스페이스에 ${roleLabel} 역할로 초대했습니다.\n로그인 주소: ${loginUrl}\n반드시 ${inv.email} 구글 계정으로 로그인해 주세요.`,
+        htmlContent: generateTeamInviteHtmlEmail({
+          orgName: params.orgName,
+          inviterName: params.inviterName,
+          inviteeEmail: inv.email,
+          inviteeName: inv.displayName,
+          role: inv.role,
+          expiresAt: inv.expiresAt,
+          loginUrl,
+        }),
+      });
+      sentCount++;
+    } catch (err: any) {
+      failed.push({ email: inv.email, reason: err?.message || '발송 실패' });
+    }
+  }
+
+  return {
+    sentCount,
+    failedCount: failed.length,
+    failed,
+  };
+};

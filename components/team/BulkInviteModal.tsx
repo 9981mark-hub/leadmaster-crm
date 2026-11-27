@@ -2,9 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { X, Users, AlertCircle, CheckCircle2, UserPlus, Upload, Shield } from 'lucide-react';
 import { OrgRole, ROLE_LABEL } from '../../services/org';
 import { BulkInviteInput, bulkInviteMembers } from '../../services/team';
+import { sendTeamInviteEmails } from '../../services/mailService';
 
 interface BulkInviteModalProps {
   orgId: string;
+  orgName?: string;
+  inviterName?: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -19,6 +22,8 @@ interface ParsedEntry extends BulkInviteInput {
 
 export default function BulkInviteModal({
   orgId,
+  orgName,
+  inviterName,
   isOpen,
   onClose,
   onSuccess,
@@ -138,15 +143,31 @@ export default function BulkInviteModal({
       );
 
       if (res.failedCount === 0) {
+        const mailRes = await sendTeamInviteEmails({
+          orgName: orgName || 'LeadMaster CRM',
+          inviterName: inviterName || '관리자',
+          invites: validEntries.map(e => ({ email: e.email, displayName: e.displayName, role: e.role })),
+        });
         setResultMsg({
           type: 'success',
-          text: `총 ${res.successCount}명의 상담원 초대를 성공적으로 발송했습니다!`
+          text: mailRes.sentCount > 0
+            ? `총 ${res.successCount}명의 초대 등록 및 ${mailRes.sentCount}건의 초대 메일 발송을 완료했습니다!`
+            : `총 ${res.successCount}명의 초대를 등록했습니다. (메일 발송 보류: ${mailRes.failed[0]?.reason || '이메일 설정 확인 필요'})`,
         });
         setTimeout(() => {
           onSuccess();
           onClose();
-        }, 1200);
+        }, 1400);
       } else {
+        const failedSet = new Set(res.errors.map(e => e.email));
+        const succeeded = validEntries.filter(e => !failedSet.has(e.email));
+        if (succeeded.length > 0) {
+          await sendTeamInviteEmails({
+            orgName: orgName || 'LeadMaster CRM',
+            inviterName: inviterName || '관리자',
+            invites: succeeded.map(e => ({ email: e.email, displayName: e.displayName, role: e.role })),
+          });
+        }
         setResultMsg({
           type: 'error',
           text: `성공 ${res.successCount}건 / 실패 ${res.failedCount}건 (${res.errors.map(e => e.email).join(', ')})`

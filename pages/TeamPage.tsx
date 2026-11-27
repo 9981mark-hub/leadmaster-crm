@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   UserCog, UserPlus, Users, Shuffle, RefreshCw, X, Check, Ban, RotateCcw,
   FileUp, History, Award, SlidersHorizontal, Layers, ShieldAlert, PhoneCall, Archive, GraduationCap, Shield,
-  Lock, ShieldCheck, UserCheck, Sparkles
+  Lock, ShieldCheck, UserCheck, Sparkles, Mail
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -26,6 +26,7 @@ import {
 import { Case } from '../types';
 import { checkOrgSeatLimit, OrgSeatStatus } from '../services/sessionGuard';
 import { useVisibilityPolicy, saveVisibilityPolicy } from '../services/visibilityPolicy';
+import { sendTeamInviteEmails } from '../services/mailService';
 import TelegramBotSection from '../components/TelegramBotSection';
 import DistributionPanel from '../components/team/DistributionPanel';
 import ImportModal from '../components/ImportModal';
@@ -259,13 +260,44 @@ export default function TeamPage() {
     if (!org) return;
     setBusy(true);
     try {
+      const cleanEmail = inviteEmail.trim().toLowerCase();
       await createInvite(org.orgId, inviteEmail, inviteRole, inviteName);
-      showToast(`${inviteEmail} 초대를 만들었습니다. 이 구글 계정으로 로그인하면 자동으로 연결됩니다.`, 'success');
+      const mailRes = await sendTeamInviteEmails({
+        orgName: org.orgName || 'LeadMaster CRM',
+        inviterName: org.displayName || user?.email || '관리자',
+        invites: [{ email: cleanEmail, displayName: inviteName.trim() || undefined, role: inviteRole }],
+      });
+      if (mailRes.sentCount > 0) {
+        showToast(`${cleanEmail}님에게 초대 메일을 발송했습니다. 구글 계정 로그인 시 자동 연결됩니다.`, 'success');
+      } else {
+        showToast(`${cleanEmail} 초대가 등록되었습니다. (메일 발송 보류: ${mailRes.failed[0]?.reason || '발송 설정 확인 필요'} — 해당 구글 계정 로그인 시 자동 연결됩니다)`, 'info');
+      }
       setInviteEmail('');
       setInviteName('');
       await reload();
     } catch (e: any) {
       showToast(`초대 실패: ${e.message}`, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleResendInviteEmail = async (inv: TeamInvite) => {
+    if (!org) return;
+    setBusy(true);
+    try {
+      const mailRes = await sendTeamInviteEmails({
+        orgName: org.orgName || 'LeadMaster CRM',
+        inviterName: org.displayName || user?.email || '관리자',
+        invites: [{ email: inv.email, displayName: inv.displayName, role: inv.role, expiresAt: inv.expiresAt }],
+      });
+      if (mailRes.sentCount > 0) {
+        showToast(`${inv.email}님에게 초대 메일을 다시 발송했습니다.`, 'success');
+      } else {
+        showToast(`메일 발송 실패: ${mailRes.failed[0]?.reason || '발송 설정을 확인해주세요.'}`, 'error');
+      }
+    } catch (e: any) {
+      showToast(`메일 발송 실패: ${e.message}`, 'error');
     } finally {
       setBusy(false);
     }
@@ -1385,16 +1417,25 @@ export default function TeamPage() {
                       <span className="text-foreground">
                         {inv.email} <span className="text-muted-foreground">· {ROLE_LABEL[inv.role]}{inv.displayName ? ` · ${inv.displayName}` : ''} · {fmtDate(inv.expiresAt)}까지</span>
                       </span>
-                      <button
-                        disabled={busy}
-                        onClick={async () => {
-                          await cancelInvite(inv.id).catch(e => showToast(e.message, 'error'));
-                          reload();
-                        }}
-                        className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-0.5 transition-colors cursor-pointer"
-                      >
-                        <X size={13} /> 취소
-                      </button>
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          disabled={busy}
+                          onClick={() => handleResendInviteEmail(inv)}
+                          className="text-xs text-primary hover:underline flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          <Mail size={12} /> 메일 재발송
+                        </button>
+                        <button
+                          disabled={busy}
+                          onClick={async () => {
+                            await cancelInvite(inv.id).catch(e => showToast(e.message, 'error'));
+                            reload();
+                          }}
+                          className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-0.5 transition-colors cursor-pointer"
+                        >
+                          <X size={13} /> 취소
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1434,6 +1475,8 @@ export default function TeamPage() {
       {/* 상담원 대량 초대 모달 */}
       <BulkInviteModal
         orgId={org.orgId}
+        orgName={org.orgName}
+        inviterName={org.displayName || user?.email || undefined}
         isOpen={showBulkInvite}
         onClose={() => setShowBulkInvite(false)}
         onSuccess={() => {
