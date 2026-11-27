@@ -19,6 +19,7 @@ interface IntegrationsSettingsTabProps {
     setAiKeywords: (keywords: string) => void;
     onSaveAiKeywords: () => void;
     isAdmin: boolean;
+    isPlatformAdmin?: boolean;
 }
 
 export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = ({
@@ -29,7 +30,8 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
     aiKeywords,
     setAiKeywords,
     onSaveAiKeywords,
-    isAdmin
+    isAdmin,
+    isPlatformAdmin = false
 }) => {
     const { showToast } = useToast();
     const [newRoomName, setNewRoomName] = useState('');
@@ -59,6 +61,10 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
     };
 
     const handleResetKeywords = () => {
+        if (!isPlatformAdmin) {
+            showToast('최고 서비스 관리자만 변경할 수 있습니다.', 'error');
+            return;
+        }
         const defaultStr = REHABILITATION_DOMAIN_KEYWORDS.join(', ');
         setAiKeywords(defaultStr);
         localStorage.setItem('lm_aiKeywords', defaultStr);
@@ -159,7 +165,8 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
                 </div>
             </SettingsCard>
 
-            {/* 2. AI 사용량 & 도메인 사전 */}
+            {/* 2. AI 사용량 & 도메인 사전 (최고 서비스 관리자 전용) */}
+            {isPlatformAdmin && (
             <SettingsCard
                 title="AI 엔진 및 음성인식(STT) 도메인 사전"
                 description="Google Gemini AI 사용량 및 법률/회생/파산 전문 용어 인식 보정 사전을 관리합니다."
@@ -224,6 +231,7 @@ export const IntegrationsSettingsTab: React.FC<IntegrationsSettingsTabProps> = (
                     </div>
                 </SettingsRow>
             </SettingsCard>
+            )}
         </div>
     );
 };

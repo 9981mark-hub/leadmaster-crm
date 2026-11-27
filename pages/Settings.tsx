@@ -273,15 +273,15 @@ export default function SettingsPage() {
         loadInitialData();
     }, []);
 
-    // Load AI Usage for Admin
+    // Load AI Usage for Platform Admin only
     useEffect(() => {
-        if (!isAdmin) return;
+        if (!isPlatformAdmin) return;
         let alive = true;
         fetchAiUsage()
             .then(u => { if (alive) setAiUsage(u); })
             .catch(e => console.warn('[AI] 사용량 조회 실패:', e?.message || e));
         return () => { alive = false; };
-    }, [isAdmin]);
+    }, [isPlatformAdmin]);
 
     // Partner Selection Change
     useEffect(() => {
@@ -590,6 +590,10 @@ export default function SettingsPage() {
     };
 
     const handleSaveAiKeywords = async () => {
+        if (!isPlatformAdmin) {
+            showToast('최고 서비스 관리자만 설정할 수 있습니다.', 'error');
+            return;
+        }
         localStorage.setItem('lm_aiKeywords', aiKeywords);
         try {
             await saveGlobalSettings({ aiKeywords });
@@ -951,6 +955,7 @@ export default function SettingsPage() {
                         setAiKeywords={setAiKeywords}
                         onSaveAiKeywords={handleSaveAiKeywords}
                         isAdmin={isOwner || settingsPerms.allowIntegrations}
+                        isPlatformAdmin={isPlatformAdmin}
                     />
                 )}
 
