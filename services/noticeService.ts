@@ -144,21 +144,26 @@ export async function createNotice(payload: {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) throw new Error('로그인이 필요합니다.');
 
-  const { data, error } = await sb
-    .from('notices')
-    .insert([{
-      ...payload,
-      created_by: user.id,
-      notice_type: payload.notice_type || 'general',
-      display_mode: payload.display_mode || 'banner',
-      target_team_name: payload.target_team_name || null,
-      is_platform_notice: !!payload.is_platform_notice,
-      platform_target_role: payload.platform_target_role || 'all',
-      target_org_ids: payload.target_org_ids || [],
-      require_popup_lock: !!payload.require_popup_lock
-    }])
-    .select()
-    .single();
+  const row = {
+    ...payload,
+    created_by: user.id,
+    notice_type: payload.notice_type || 'general',
+    display_mode: payload.display_mode || 'banner',
+    target_team_name: payload.target_team_name || null,
+    is_platform_notice: !!payload.is_platform_notice,
+    platform_target_role: payload.platform_target_role || 'all',
+    target_org_ids: payload.target_org_ids || [],
+    require_popup_lock: !!payload.require_popup_lock
+  };
+
+  let { data, error } = await sb.from('notices').insert([row]).select().single();
+
+  if (error && /target_team_name/i.test(error.message || '')) {
+    const { target_team_name: _omit, ...fallbackRow } = row;
+    const retry = await sb.from('notices').insert([fallbackRow]).select().single();
+    data = retry.data;
+    error = retry.error;
+  }
 
   if (error) throw error;
   return data;
@@ -224,17 +229,22 @@ export async function createDirective(payload: {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) throw new Error('로그인이 필요합니다.');
 
-  const { data, error } = await sb
-    .from('directives')
-    .insert([{
-      ...payload,
-      created_by: user.id,
-      assigned_team_name: payload.assigned_team_name || null,
-      priority: payload.priority || 'normal',
-      status: 'pending'
-    }])
-    .select()
-    .single();
+  const row = {
+    ...payload,
+    created_by: user.id,
+    assigned_team_name: payload.assigned_team_name || null,
+    priority: payload.priority || 'normal',
+    status: 'pending' as const
+  };
+
+  let { data, error } = await sb.from('directives').insert([row]).select().single();
+
+  if (error && /assigned_team_name/i.test(error.message || '')) {
+    const { assigned_team_name: _omit, ...fallbackRow } = row;
+    const retry = await sb.from('directives').insert([fallbackRow]).select().single();
+    data = retry.data;
+    error = retry.error;
+  }
 
   if (error) throw error;
   return data;
