@@ -150,25 +150,33 @@ serve(async (req: Request) => {
   const user = userData?.user;
   if (userError || !user?.email) return json({ ok: false, error: '로그인 정보를 확인할 수 없습니다' }, 401);
 
-  const { data: orgId } = await userClient.rpc('current_org_id');
+  const [{ data: orgId }, { data: isAdmin }] = await Promise.all([
+    userClient.rpc('current_org_id'),
+    userClient.rpc('is_org_admin'),
+  ]);
   if (!orgId) return json({ ok: false, error: '소속 회사가 없거나 사용 중지된 계정입니다' }, 403);
 
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
-  const { data: member } = await admin
+  const { data: member, error: memberError } = await admin
     .from('org_members')
     .select('role, display_name, admin_permissions')
     .eq('org_id', orgId)
     .eq('user_id', user.id)
-    .is('disabled_at', null)
     .maybeSingle();
 
-  if (!member) return json({ ok: false, error: '활성 멤버 정보를 찾을 수 없습니다' }, 403);
+  if (memberError) {
+    console.warn('[send-invite-email] member lookup warning:', memberError.message);
+  }
+  if (!member && !isAdmin) {
+    return json({ ok: false, error: '활성 멤버 정보를 찾을 수 없습니다' }, 403);
+  }
 
-  const perms = (member.admin_permissions || {}) as { tier?: number; canInviteMembers?: boolean };
+  const perms = ((member?.admin_permissions || {}) as { tier?: number; canInviteMembers?: boolean });
   const canInvite =
-    member.role === 'owner' ||
-    member.role === 'admin' ||
+    Boolean(isAdmin) ||
+    member?.role === 'owner' ||
+    member?.role === 'admin' ||
     Boolean(perms.canInviteMembers) ||
     Number(perms.tier || 1) >= 2;
   if (!canInvite) return json({ ok: false, error: '팀원 초대 권한이 없습니다' }, 403);
@@ -196,7 +204,7 @@ serve(async (req: Request) => {
 
   const { data: orgRow } = await admin.from('organizations').select('name').eq('id', orgId).maybeSingle();
   const orgName = String(body?.orgName || orgRow?.name || 'LeadMaster CRM');
-  const inviterName = String(body?.inviterName || member.display_name || user.email);
+  const inviterName = String(body?.inviterName || member?.display_name || user.email);
   const loginUrl = String(body?.loginUrl || 'https://www.lmaster.xyz/login');
 
   let sentCount = 0;
