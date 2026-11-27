@@ -127,10 +127,10 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
               <img
                 src={org.orgLogo}
                 alt="Logo"
-                className="w-4.5 h-4.5 rounded-[4px] object-cover border border-[#d0d4e4] dark:border-border shrink-0"
+                className="w-5 h-5 rounded-[4px] object-cover border border-[#d0d4e4] dark:border-border shrink-0"
               />
             ) : (
-              <div className="w-4.5 h-4.5 rounded-[4px] bg-[#0073ea]/10 text-[#0073ea] dark:bg-primary/10 dark:text-primary flex items-center justify-center shrink-0">
+              <div className="w-5 h-5 rounded-[4px] bg-[#0073ea]/10 text-[#0073ea] dark:bg-primary/10 dark:text-primary flex items-center justify-center shrink-0">
                 <Building2 size={12} strokeWidth={1.75} />
               </div>
             )}

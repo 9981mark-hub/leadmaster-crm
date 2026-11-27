@@ -167,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <img 
                   src={theme === 'dark' ? `${import.meta.env.BASE_URL}leadmaster_logo_horizontal_dark.png` : `${import.meta.env.BASE_URL}leadmaster_logo_horizontal.png`} 
                   alt="LeadMaster CRM" 
-                  className="h-5.5 w-auto object-contain shrink-0 group-hover:opacity-90 transition-opacity" 
+                  className="h-6 w-auto object-contain shrink-0 group-hover:opacity-90 transition-opacity" 
                 />
               </Link>
               <button 
@@ -196,10 +196,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <img
                     src={org.orgLogo}
                     alt={orgName}
-                    className="w-5.5 h-5.5 rounded-[4px] object-cover border border-[#d0d4e4] dark:border-border shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
+                    className="w-6 h-6 rounded-[4px] object-cover border border-[#d0d4e4] dark:border-border shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
                   />
                 ) : (
-                  <div className="w-5.5 h-5.5 rounded-[4px] bg-[#0073ea]/10 text-[#0073ea] dark:bg-primary/10 dark:text-primary flex items-center justify-center shrink-0">
+                  <div className="w-6 h-6 rounded-[4px] bg-[#0073ea]/10 text-[#0073ea] dark:bg-primary/10 dark:text-primary flex items-center justify-center shrink-0">
                     <Building2 size={12} strokeWidth={1.75} />
                   </div>
                 )}
