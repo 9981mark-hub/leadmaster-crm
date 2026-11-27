@@ -96,10 +96,10 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
         showToast('입금자명 키워드가 삭제되었습니다.');
     };
 
-    // 정산 파트너 프리셋 추가/삭제 핸들러
+    // 수당 보낼 계좌(지급처) 추가/삭제 핸들러
     const handleAddPreset = () => {
         if (!newPresetName.trim() || !newPresetAccount.trim()) {
-            showToast('파트너명과 계좌정보는 필수입니다.', 'error');
+            showToast('받는 분 이름과 계좌정보를 입력해주세요.', 'error');
             return;
         }
         const current = editingPartner.payoutPartnerPresets || [];
@@ -116,7 +116,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
         setNewPresetName('');
         setNewPresetAccount('');
         setNewPresetAmount('');
-        showToast('정산 파트너 프리셋이 추가되었습니다.');
+        showToast('수당 보낼 계좌가 등록되었습니다.');
     };
 
     const handleDeletePreset = (id: string) => {
@@ -125,7 +125,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
             ...editingPartner,
             payoutPartnerPresets: current.filter(p => p.id !== id)
         });
-        showToast('프리셋이 삭제되었습니다.');
+        showToast('등록된 계좌가 삭제되었습니다.');
     };
 
     return (
@@ -485,14 +485,14 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                         </SettingsRow>
                     </SettingsCard>
 
-                    {/* 정산 파트너 프리셋 */}
+                    {/* 수당·수수료 보낼 계좌 목록 */}
                     <SettingsCard
-                        title="정산 파트너 프리셋 (수수료 지급처 계좌 목록)"
-                        description="3단계 수당 지급 처리 시 빠르게 선택할 수 있는 협력 변호사/팀장의 계좌 및 기본 지급액 프리셋입니다."
+                        title="수당·수수료 보낼 계좌 목록 (송금 대상)"
+                        description="거래처 정산 후 협력 변호사, 팀장, 소개자 등에게 수당을 보낼 때 빠르게 불러올 계좌를 미리 저장합니다. (TM 사무실 입금 계좌 아님)"
                         icon={<Users size={18} strokeWidth={1.75} />}
                     >
                         <div className="space-y-4">
-                            {/* 프리셋 목록 */}
+                            {/* 등록된 계좌 목록 */}
                             <div className="space-y-2">
                                 {(editingPartner.payoutPartnerPresets || []).map(preset => (
                                     <div
@@ -512,7 +512,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                             type="button"
                                             onClick={() => handleDeletePreset(preset.id)}
                                             className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
-                                            title="프리셋 삭제"
+                                            title="삭제"
                                         >
                                             <Trash2 size={13} strokeWidth={1.75} />
                                         </button>
@@ -520,34 +520,34 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                 ))}
                                 {(editingPartner.payoutPartnerPresets || []).length === 0 && (
                                     <div className="text-center py-6 text-xs text-muted-foreground bg-muted/20 rounded-xl border border-dashed border-border">
-                                        등록된 지급처 프리셋이 없습니다. 아래에서 추가하세요.
+                                        등록된 송금 계좌가 없습니다. 아래에서 수당을 보낼 분의 계좌를 추가하세요.
                                     </div>
                                 )}
                             </div>
 
-                            {/* 신규 프리셋 등록 폼 */}
+                            {/* 수당 보낼 계좌 추가 폼 */}
                             <div className="p-4 bg-muted/40 rounded-xl border border-border">
-                                <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">
-                                    + 새 지급 파트너 프리셋 등록
+                                <h4 className="text-xs font-semibold text-foreground tracking-wider mb-3">
+                                    + 수당 보낼 계좌 추가
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                                     <input
                                         type="text"
-                                        placeholder="파트너명 (예: 안철형 변호사)"
+                                        placeholder="받는 분 이름 (예: 홍길동 팀장)"
                                         className="h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring font-medium"
                                         value={newPresetName}
                                         onChange={e => setNewPresetName(e.target.value)}
                                     />
                                     <input
                                         type="text"
-                                        placeholder="은행 및 계좌번호 (국민 123-45-6789)"
+                                        placeholder="은행 및 계좌번호 (예: 국민 123-45-6789)"
                                         className="h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring font-mono"
                                         value={newPresetAccount}
                                         onChange={e => setNewPresetAccount(e.target.value)}
                                     />
                                     <input
                                         type="number"
-                                        placeholder="기본 지급액 (만원, 선택사항)"
+                                        placeholder="기본 보낼 금액 (만원, 선택사항)"
                                         className="h-9 px-3 text-xs bg-background text-foreground border border-input rounded-lg outline-none focus:ring-1 focus:ring-ring tabular-nums"
                                         value={newPresetAmount}
                                         onChange={e => setNewPresetAmount(e.target.value === '' ? '' : Number(e.target.value))}
@@ -559,7 +559,7 @@ export const PartnerSettingsTab: React.FC<PartnerSettingsTabProps> = ({
                                         onClick={handleAddPreset}
                                         className="h-8 px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-lg shadow-2xs transition-colors"
                                     >
-                                        프리셋 추가
+                                        계좌 추가
                                     </button>
                                 </div>
                             </div>
