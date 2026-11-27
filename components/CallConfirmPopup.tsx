@@ -147,11 +147,9 @@ const CallConfirmPopup: React.FC<CallConfirmPopupProps> = ({
                                 </motion.div>
                             )}
 
-                            {!sent && (
+                            {!sent && isMobile && (
                                 <p className="text-muted-foreground text-xs font-mono mt-3">
-                                    {isMobile
-                                        ? '이 고객에게 전화를 거시겠습니까?'
-                                        : '등록된 안드로이드 단말로 발신 신호를 전송합니다'}
+                                    이 고객에게 전화를 거시겠습니까?
                                 </p>
                             )}
                         </div>
