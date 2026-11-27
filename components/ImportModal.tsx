@@ -890,18 +890,21 @@ export default function ImportModal({ isOpen, onClose, onSuccess, partners, inbo
                             <FileText size={15} /> 엑셀 대량 업로드
                         </div>
                     </button>
-                    <button
-                        onClick={() => setActiveTab('ocr')}
-                        className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
-                            activeTab === 'ocr'
-                                ? 'border-primary text-primary bg-primary/5'
-                                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                        }`}
-                    >
-                        <div className="flex items-center justify-center gap-2">
-                            <ImageIcon size={15} /> 이미지/PDF 인식 (AI)
-                        </div>
-                    </button>
+                    {/* 이미지/PDF 인식 (AI) 탭 숨김 처리 (사용 빈도 낮음) */}
+                    {false && (
+                        <button
+                            onClick={() => setActiveTab('ocr')}
+                            className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
+                                activeTab === 'ocr'
+                                    ? 'border-primary text-primary bg-primary/5'
+                                    : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                            }`}
+                        >
+                            <div className="flex items-center justify-center gap-2">
+                                <ImageIcon size={15} /> 이미지/PDF 인식 (AI)
+                            </div>
+                        </button>
+                    )}
                     <button
                         onClick={() => setActiveTab('sheet')}
                         className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
