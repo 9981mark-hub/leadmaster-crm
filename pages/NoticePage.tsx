@@ -29,10 +29,12 @@ import {
   Tag,
   FileCheck,
   UserCheck,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
+import { supabase } from '../services/supabase';
 import {
   fetchNotices,
   createNotice,
@@ -184,7 +186,25 @@ export const NoticePage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [isAdmin, isPlatformAdmin]);
+  }, [isAdmin, isPlatformAdmin, org?.orgId, user?.id]);
+
+  // 공지/업무지시 실시간 동기화 (대표/관리자 하달 시 상담원 화면 즉시 갱신)
+  useEffect(() => {
+    if (!supabase || !org?.orgId) return;
+    const channel = supabase
+      .channel(`notices-directives-${org.orgId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'directives' }, () => {
+        loadData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notices' }, () => {
+        loadData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [org?.orgId, isAdmin, isPlatformAdmin]);
 
   // 팀 및 멤버 맵핑 헬퍼
   const availableTeams = useMemo(() => {
@@ -469,6 +489,16 @@ export const NoticePage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => loadData()}
+            disabled={loadingNotices || loadingDirectives}
+            title="새로고침"
+            className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-card border border-border hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={loadingNotices || loadingDirectives ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">새로고침</span>
+          </button>
           {/* Admin Create Buttons */}
           {isAdmin && (isOwner || noticePerms.canCreateNotice) && (
             <button
