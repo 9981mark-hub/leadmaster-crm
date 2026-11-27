@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Sparkles, Copy, Check, BookOpen, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Send, Sparkles, BookOpen, ShieldCheck, HelpCircle } from 'lucide-react';
 
 interface NotebookLmAssistantTabProps {
   onInsertToMemo?: (text: string) => void;
@@ -123,25 +123,6 @@ export const NotebookLmAssistantTab: React.FC<NotebookLmAssistantTabProps> = ({
     }, 600);
   };
 
-  // 복사
-  const handleCopyScript = (scriptText: string) => {
-    navigator.clipboard.writeText(scriptText);
-    setCopied(true);
-    if (showToast) showToast('상담 스크립트가 복사되었습니다.', 'success');
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  // 메모 삽입
-  const handleInsertMemo = (summary: string, scriptText: string) => {
-    const fullText = `[AI 사수 가이드] ${summary}\n(고객안내: ${scriptText})`;
-    if (onInsertToMemo) {
-      onInsertToMemo(fullText);
-      if (showToast) showToast('상담 메모에 반영되었습니다.', 'success');
-    } else {
-      handleCopyScript(fullText);
-    }
-  };
-
   return (
     <div className="space-y-4 text-xs">
       {/* 1. 단골 질문 퀵 프롬프트 칩스 */}
@@ -202,22 +183,6 @@ export const NotebookLmAssistantTab: React.FC<NotebookLmAssistantTabProps> = ({
           <p className="text-xs text-foreground/90 leading-relaxed break-keep">
             "{selectedQa.script}"
           </p>
-        </div>
-
-        <div className="flex gap-2 pt-1">
-          <button
-            onClick={() => handleCopyScript(selectedQa.script)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-card hover:bg-muted text-foreground border border-border rounded-lg text-xs font-semibold shadow-2xs transition-colors"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? '복사 완료' : '스크립트 복사'}
-          </button>
-          <button
-            onClick={() => handleInsertMemo(selectedQa.summary, selectedQa.script)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-xs font-semibold shadow-2xs transition-colors"
-          >
-            상담 메모에 반영
-          </button>
         </div>
       </div>
 
