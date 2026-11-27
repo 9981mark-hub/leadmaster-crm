@@ -21,10 +21,11 @@ const getLivingCost = (count: number): number => {
 interface Props {
   c: Case;
   onSaveResultToMemo?: (resultText: string) => void;
+  defaultOpen?: boolean;
 }
 
-export const LiteDebtReliefCalculator: React.FC<Props> = ({ c, onSaveResultToMemo }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const LiteDebtReliefCalculator: React.FC<Props> = ({ c, onSaveResultToMemo, defaultOpen = false }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const [copied, setCopied] = useState(false);
 
   // 초기값: 케이스 데이터에서 스마트하게 추출

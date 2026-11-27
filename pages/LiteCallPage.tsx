@@ -762,7 +762,7 @@ export default function LiteCallPage() {
                 {/* 카드별 인라인 탕감 계산기 (펼쳐졌을 때) */}
                 {expandedCalcCaseId === c.caseId && (
                   <div className="mb-2.5">
-                    <LiteDebtReliefCalculator c={c} />
+                    <LiteDebtReliefCalculator c={c} defaultOpen />
                   </div>
                 )}
 
