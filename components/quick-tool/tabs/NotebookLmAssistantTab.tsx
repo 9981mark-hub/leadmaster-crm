@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bot, Send, Sparkles, Copy, Check, BookOpen, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Send, Sparkles, Copy, Check, BookOpen, ShieldCheck, HelpCircle } from 'lucide-react';
 
 interface NotebookLmAssistantTabProps {
   onInsertToMemo?: (text: string) => void;
@@ -144,24 +144,7 @@ export const NotebookLmAssistantTab: React.FC<NotebookLmAssistantTabProps> = ({
 
   return (
     <div className="space-y-4 text-xs">
-      {/* 1. 법률 AI 사수 헤더 */}
-      <div className="bg-card p-3.5 rounded-xl border border-border flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/25 text-emerald-400">
-            <Bot className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-xs text-foreground">법률 AI 사수</span>
-            </div>
-            <p className="text-2xs text-muted-foreground mt-0.5">
-              회생법원 실무준칙 원문 기반 법률 가이드
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. 단골 질문 퀵 프롬프트 칩스 */}
+      {/* 1. 단골 질문 퀵 프롬프트 칩스 */}
       <div>
         <label className="block text-2xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
           <Sparkles className="w-3 h-3 text-primary" /> 상담원 자주 묻는 질문 칩 (클릭 시 즉시 답변)
