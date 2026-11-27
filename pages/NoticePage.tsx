@@ -186,7 +186,7 @@ export const NoticePage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [isAdmin, isPlatformAdmin, org?.orgId, user?.id]);
+  }, [isAdmin, isPlatformAdmin, org?.orgId, org?.userId]);
 
   // 공지/업무지시 실시간 동기화 (대표/관리자 하달 시 상담원 화면 즉시 갱신)
   useEffect(() => {
@@ -407,18 +407,19 @@ export const NoticePage: React.FC = () => {
   }, [roleFilteredNotices]);
 
   const roleFilteredDirectives = useMemo(() => {
+    const myUserId = org?.userId;
     return directives.filter(d => {
       if (canViewAll) return true;
       if (isTeamScope) {
         if (d.assigned_team_name && d.assigned_team_name === myTeam) return true;
         if (myTeamMemberIds.has(d.assigned_to)) return true;
-        if (d.created_by === user?.id) return true;
+        if (myUserId && d.created_by === myUserId) return true;
         return false;
       }
       // 일반 상담원은 오직 본인 배정 건만 열람
-      return d.assigned_to === user?.id;
+      return !!myUserId && d.assigned_to === myUserId;
     });
-  }, [directives, canViewAll, isTeamScope, user, myTeam, myTeamMemberIds]);
+  }, [directives, canViewAll, isTeamScope, org?.userId, myTeam, myTeamMemberIds]);
 
   const filteredDirectives = useMemo(() => {
     return roleFilteredDirectives.filter(d => {
@@ -908,7 +909,7 @@ export const NoticePage: React.FC = () => {
                 const assignedMember = members.find(m => m.userId === directive.assigned_to);
                 const assignedName = directive.assigned_to_name || assignedMember?.displayName || assignedMember?.email || '상담원';
                 const assignedTeam = directive.assigned_team_name || assignedMember?.teamName || myTeam;
-                const isForMe = directive.assigned_to === user?.id;
+                const isForMe = !!org?.userId && directive.assigned_to === org.userId;
 
                 return (
                   <div
