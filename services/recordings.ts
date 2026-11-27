@@ -87,7 +87,7 @@ export const RECORDING_RETENTION_DAYS = 180; // 6개월 고정
 export const RECORDING_GRACE_DAYS = 21; // 만료 후 3주(21일) 유예
 
 export const DEFAULT_RECORDING_SETTINGS: RecordingSettings = {
-  autoUpload: false, autoAnalyze: false, minDurationSec: 40, retentionDays: RECORDING_RETENTION_DAYS, dailyAnalyzeCap: 300, wifiOnly: false, exists: false,
+  autoUpload: false, autoAnalyze: false, minDurationSec: 30, retentionDays: RECORDING_RETENTION_DAYS, dailyAnalyzeCap: 300, wifiOnly: false, exists: false,
 };
 
 export interface RecordingUsage {
