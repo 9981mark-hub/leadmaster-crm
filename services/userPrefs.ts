@@ -10,7 +10,6 @@ export type TableDensityType = 'normal' | 'compact';
 export interface UserPreferences {
   // 통화 및 발신 환경
   callMethod: CallMethodType;
-  callCooldownSeconds: number; // 0, 10, 30, 60
   directPhoneExtension: string; // 직통 내선 번호
 
   // 알림 및 사운드
@@ -33,7 +32,6 @@ const PREFS_STORAGE_KEY = 'lm_user_preferences_v2';
 
 export const DEFAULT_USER_PREFS: UserPreferences = {
   callMethod: 'android_bridge',
-  callCooldownSeconds: 15,
   directPhoneExtension: '',
   soundEnabled: true,
   soundType: 'dingdong',

@@ -12,7 +12,6 @@ import {
     Globe,
     Phone,
     Bell,
-    Clock,
     Mic,
     Volume2,
     Play,
@@ -632,37 +631,6 @@ export default function MyPage() {
                                         고객 전화번호 클립보드 복사 및 팝업창 수동 확인
                                     </p>
                                 </button>
-                            </div>
-
-                            {/* 통화 후 메모 정리 쿨다운 (자동 대기) */}
-                            <div className="p-3.5 bg-muted/50 border border-border rounded-xl mb-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                                        <Clock size={14} className="text-blue-600 dark:text-blue-400" /> 통화 후 메모 쿨다운
-                                    </span>
-                                    <span className="text-xs text-muted-foreground font-semibold">
-                                        {prefs.callCooldownSeconds === 0 ? '즉시 배정' : `${prefs.callCooldownSeconds}초 대기`}
-                                    </span>
-                                </div>
-                                <div className="grid grid-cols-4 gap-1.5">
-                                    {[0, 10, 30, 60].map((sec) => (
-                                        <button
-                                            key={sec}
-                                            type="button"
-                                            onClick={() => updatePref({ callCooldownSeconds: sec })}
-                                            className={`btn-tactile py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                                prefs.callCooldownSeconds === sec
-                                                    ? 'bg-primary text-primary-foreground shadow-2xs'
-                                                    : 'bg-card border border-border text-foreground hover:bg-muted'
-                                            }`}
-                                        >
-                                            {sec === 0 ? '즉시' : `${sec}초`}
-                                        </button>
-                                    ))}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                                    통화 직후 다음 콜이 울리지 않도록 메모를 작성할 안전 시간입니다.
-                                </p>
                             </div>
 
                             {/* 헤드셋 마이크 입력 테스트 */}
