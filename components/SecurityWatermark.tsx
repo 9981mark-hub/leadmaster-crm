@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+
+/** 고객 개인정보·DB가 직접 노출되는 경로만 워터마크 표시 */
+const CUSTOMER_INFO_PREFIXES = ['/cases', '/case/', '/lite', '/auto-dial', '/schedule', '/new'];
 
 /**
  * [Security Feature 1] 동적 화면 보안 워터마크
@@ -16,7 +20,8 @@ const formatWatermarkTime = () => {
 };
 
 export default function SecurityWatermark() {
-  const { org, user } = useAuth();
+  const { org, user, isPlatformAdmin } = useAuth();
+  const { pathname } = useLocation();
   const [dateTimeStr, setDateTimeStr] = useState(formatWatermarkTime);
 
   useEffect(() => {
@@ -26,8 +31,19 @@ export default function SecurityWatermark() {
     return () => clearInterval(timer);
   }, []);
 
-  // 비로그인 또는 워터마크 비활성화(팀장급 해제/대표/관리자)인 경우 미노출
-  if (!org || org.securityProfile?.watermark === false) {
+  // 1. 서비스 총괄 관리자, TM 대표(owner), 총괄 관리자(Tier 3)는 워터마크 제외
+  const isExecutiveOrPlatform =
+    isPlatformAdmin ||
+    org?.role === 'owner' ||
+    org?.adminPermissions?.tier === 3;
+
+  // 2. 고객 정보가 노출되는 페이지에서만 표시
+  const isCustomerPage = CUSTOMER_INFO_PREFIXES.some(
+    prefix => pathname === prefix || pathname.startsWith(prefix),
+  );
+
+  // 비로그인 · 제외 직급 · 비고객 페이지 · 개별 워터마크 해제 시 미노출
+  if (!org || isExecutiveOrPlatform || !isCustomerPage || org.securityProfile?.watermark === false) {
     return null;
   }
 
@@ -42,16 +58,16 @@ export default function SecurityWatermark() {
 
   return (
     <>
-      {/* 라이트 모드: 은은하지만 캡처 시 판독 가능한 5.5% 딥 슬레이트 */}
+      {/* 라이트 모드: 업무 방해 없는 초저대비 2.5% */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-[99999] select-none overflow-hidden opacity-[0.055] dark:hidden"
+        className="pointer-events-none fixed inset-0 z-[99999] select-none overflow-hidden opacity-[0.025] dark:hidden"
         style={{ backgroundImage: makeSvgBg('#1e293b'), backgroundRepeat: 'repeat' }}
       />
-      {/* 다크 모드: 어두운 배경에서도 동일하게 은은히 보이는 5.5% 라이트 슬레이트 */}
+      {/* 다크 모드: 업무 방해 없는 초저대비 2.5% */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-[99999] select-none overflow-hidden opacity-[0.055] hidden dark:block"
+        className="pointer-events-none fixed inset-0 z-[99999] select-none overflow-hidden opacity-[0.025] hidden dark:block"
         style={{ backgroundImage: makeSvgBg('#e2e8f0'), backgroundRepeat: 'repeat' }}
       />
     </>
