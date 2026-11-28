@@ -322,108 +322,112 @@ export default function PlatformPage() {
       {/* 4대 핵심 재무 & 인프라 KPI 카드 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {/* KPI 1: 유료 고객사 */}
-        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider">유료 고객사</span>
-            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary">
-              <Building2 size={16} strokeWidth={1.75} />
+        <div className="bg-card p-3.5 sm:p-4 rounded-xl border border-border shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">유료 고객사</span>
+            <div className="p-1.5 sm:p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary shrink-0">
+              <Building2 size={15} strokeWidth={1.75} />
             </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
+          <div className="mt-2 flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums whitespace-nowrap">
               {animatedActiveOrgs}
             </span>
-            <span className="text-2xs text-muted-foreground font-mono tabular-nums">/ 총 {billingSummary.totalOrgs}개사</span>
+            <span className="text-2xs text-muted-foreground font-mono tabular-nums whitespace-nowrap">/ 총 {billingSummary.totalOrgs}개사</span>
           </div>
-          <div className="mt-2 text-2xs text-primary font-mono font-medium flex items-center gap-1">
-            <CheckCircle2 size={13} /> {billingSummary.activeOrgs > 0 ? '정상 서비스 가동 중' : '첫 고객사 유치 대기'}
+          <div className="mt-2 text-2xs text-primary font-mono font-medium flex items-center gap-1 break-keep">
+            <CheckCircle2 size={12} className="shrink-0" />
+            <span>{billingSummary.activeOrgs > 0 ? '정상 서비스 가동 중' : '첫 고객사 유치 대기'}</span>
           </div>
         </div>
 
         {/* KPI 2: 과금 상담원 */}
-        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider">과금 상담원 (합계)</span>
-            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary">
-              <Users size={16} strokeWidth={1.75} />
+        <div className="bg-card p-3.5 sm:p-4 rounded-xl border border-border shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+              과금 상담원 <span className="hidden sm:inline">(합계)</span>
+            </span>
+            <div className="p-1.5 sm:p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary shrink-0">
+              <Users size={15} strokeWidth={1.75} />
             </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
+          <div className="mt-2 flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums whitespace-nowrap">
               {animatedTotalSeats}
             </span>
-            <span className="text-2xs text-muted-foreground font-mono">석 (활성 계정)</span>
+            <span className="text-2xs text-muted-foreground font-mono whitespace-nowrap">석 (활성)</span>
           </div>
-          <div className="mt-2 text-2xs text-muted-foreground font-mono">
-            좌석당 단가: <span className="font-semibold text-foreground">₩ 48,000 / 월</span>
+          <div className="mt-2 text-2xs text-muted-foreground font-mono break-keep">
+            좌석당 단가: <span className="font-semibold text-foreground whitespace-nowrap">₩ 48,000/월</span>
           </div>
         </div>
 
         {/* KPI 3: 당월 총 예상 매출 */}
-        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider">당월 총 예상 매출</span>
-            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary">
-              <DollarSign size={16} strokeWidth={1.75} />
+        <div className="bg-card p-3.5 sm:p-4 rounded-xl border border-border shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">당월 예상 매출</span>
+            <div className="p-1.5 sm:p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary shrink-0">
+              <DollarSign size={15} strokeWidth={1.75} />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-2xl font-semibold tracking-tight text-primary font-mono tabular-nums">
+            <span className="text-lg sm:text-2xl font-semibold tracking-tight text-primary font-mono tabular-nums whitespace-nowrap">
               ₩ {animatedRevenue.toLocaleString()}
             </span>
           </div>
-          <div className="mt-2 text-2xs text-muted-foreground font-mono">
+          <div className="mt-2 text-2xs text-muted-foreground font-mono break-keep">
             VAT 별도 공급가액 기준
           </div>
         </div>
 
         {/* KPI 4: 인프라 원가 & 순마진 */}
-        <div className="bg-card p-4 rounded-xl border border-border shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider">인프라 원가 & 순마진</span>
-            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary">
-              <TrendingUp size={16} strokeWidth={1.75} />
+        <div className="bg-card p-3.5 sm:p-4 rounded-xl border border-border shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="text-2xs font-mono font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">원가 & 순마진</span>
+            <div className="p-1.5 sm:p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary shrink-0">
+              <TrendingUp size={15} strokeWidth={1.75} />
             </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums">
+          <div className="mt-2 flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-lg sm:text-2xl font-semibold tracking-tight text-foreground font-mono tabular-nums whitespace-nowrap">
               ₩ {animatedNetMargin.toLocaleString()}
             </span>
-            <span className="text-2xs font-semibold text-primary font-mono tabular-nums">
+            <span className="text-2xs font-semibold text-primary font-mono tabular-nums whitespace-nowrap">
               ({billingSummary.marginPercent}%)
             </span>
           </div>
-          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-mono">
-            <Server size={12} /> Pro 인프라 비용: ₩ {billingSummary.estimatedInfraCost.toLocaleString()}/월
+          <div className="mt-2 text-2xs sm:text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-mono break-keep">
+            <Server size={12} className="shrink-0" />
+            <span>Pro 인프라: <span className="whitespace-nowrap">₩{billingSummary.estimatedInfraCost.toLocaleString()}/월</span></span>
           </div>
         </div>
       </div>
 
       {/* ⚡ 1. 라이선스 좌석(Seat) 증설 신청 대기열 */}
-      <section className="bg-card rounded-xl border border-border p-4 space-y-4 shadow-xs">
+      <section className="bg-card rounded-xl border border-border p-4 space-y-3.5 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <h2 className="font-bold text-foreground flex items-center gap-2 text-base">
-              <Users size={18} className="text-amber-500" />
+          <div className="flex items-center justify-between sm:justify-start gap-2 min-w-0">
+            <h2 className="font-bold text-foreground flex items-center gap-2 text-sm sm:text-base break-keep min-w-0">
+              <Users size={18} className="text-amber-500 shrink-0" />
               <span>라이선스 좌석(Seat) 증설 신청 관제 대기열</span>
             </h2>
             {seatRequests.filter(r => r.status === 'pending').length > 0 ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 animate-pulse">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 animate-pulse whitespace-nowrap shrink-0">
                 대기 {seatRequests.filter(r => r.status === 'pending').length}건
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground whitespace-nowrap shrink-0">
                 대기 0건
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-muted/60 p-0.5 rounded-lg text-2xs font-medium border border-border">
+          <div className="flex items-center justify-between sm:justify-end gap-2">
+            <div className="flex items-center bg-muted/60 p-0.5 rounded-lg text-2xs font-medium border border-border overflow-x-auto">
               {(['all', 'pending', 'approved', 'rejected'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setSeatFilter(tab)}
-                  className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                  className={`px-2 sm:px-2.5 py-1 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
                     seatFilter === tab
                       ? 'bg-card text-foreground font-bold shadow-2xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -437,7 +441,7 @@ export default function PlatformPage() {
             <button
               onClick={reload}
               disabled={loading}
-              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer"
+              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
             >
               <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침
             </button>
@@ -445,8 +449,8 @@ export default function PlatformPage() {
         </div>
 
         {seatRequests.length === 0 ? (
-          <div className="p-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-xl">
-            접수된 좌석 증설 신청이 없습니다. 팀 대표가 [멤버 & 설정] 또는 [정산 & 빌링]에서 좌석 증설을 요청하면 여기에 실시간 표시됩니다.
+          <div className="p-5 sm:p-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-xl break-keep leading-relaxed">
+            접수된 좌석 증설 신청이 없습니다. 팀 대표가 [멤버 &amp; 설정] 또는 [정산 &amp; 빌링]에서 좌석 증설을 요청하면 여기에 실시간 표시됩니다.
           </div>
         ) : (
           <div className="space-y-3">
@@ -545,19 +549,19 @@ export default function PlatformPage() {
       </section>
 
       {/* 🏢 2. 신규 TM 회사 가입 신청 대기열 (옵션 A 실시간 승인 체계) */}
-      <section className="bg-card rounded-xl border border-border p-4 space-y-4 shadow-xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Building2 size={18} className="text-indigo-600 dark:text-indigo-400" /> 
-              신규 TM 회사 가입 신청 대기열
+      <section className="bg-card rounded-xl border border-border p-4 space-y-3.5 shadow-xs">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
+            <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm sm:text-base break-keep">
+              <Building2 size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <span>신규 TM 회사 가입 신청 대기열</span>
             </h2>
             {applications.filter(a => a.status === 'pending').length > 0 ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse whitespace-nowrap shrink-0">
                 대기 {applications.filter(a => a.status === 'pending').length}건
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 whitespace-nowrap shrink-0">
                 대기 0건
               </span>
             )}
@@ -565,14 +569,14 @@ export default function PlatformPage() {
           <button
             onClick={reload}
             disabled={loading}
-            className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-600 dark:text-gray-300 flex items-center gap-1 cursor-pointer"
+            className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 dark:text-gray-300 flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
           >
             <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 새로고침
           </button>
         </div>
 
         {applications.length === 0 ? (
-          <div className="p-8 text-center text-xs text-gray-500 dark:text-gray-400 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+          <div className="p-5 sm:p-8 text-center text-xs text-gray-500 dark:text-gray-400 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl break-keep leading-relaxed">
             접수된 가입 신청이 없습니다. 로그인 페이지에서 [TM 회사 가입 신청]이 접수되면 여기에 실시간 표시됩니다.
           </div>
         ) : (
@@ -681,12 +685,13 @@ export default function PlatformPage() {
 
       {/* 새 고객 회사 등록 폼 (TM 표준 프리셋 원클릭 지원) */}
       <section className="bg-card rounded-xl border border-border p-4 space-y-4 shadow-xs">
-        <div className="flex items-center justify-between">
-          <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Plus size={18} className="text-blue-600 dark:text-blue-400" /> 신규 고객 회사 등록 (테넌트 생성)
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm sm:text-base break-keep">
+            <Plus size={18} className="text-blue-600 dark:text-blue-400 shrink-0" />
+            <span>신규 고객 회사 등록 (테넌트 생성)</span>
           </h2>
-          <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full border border-blue-100 dark:border-blue-900/40">
-            <Sparkles size={13} /> TM 사무실 실무 프리셋 자동 주입 지원
+          <span className="self-start sm:self-auto text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 font-semibold inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full border border-blue-100 dark:border-blue-900/40 whitespace-nowrap">
+            <Sparkles size={12} className="shrink-0" /> TM 사무실 실무 프리셋 자동 주입 지원
           </span>
         </div>
 
@@ -706,40 +711,42 @@ export default function PlatformPage() {
           <button
             onClick={handleCreate}
             disabled={busy || !name.trim() || !ownerEmail.trim()}
-            className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/20 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+            className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/20 disabled:opacity-50 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            <Plus size={16} /> 회사 만들기 & 초대
+            <Plus size={16} /> 회사 만들기 &amp; 초대
           </button>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
-          <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 cursor-pointer">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2.5 border-t border-gray-100 dark:border-gray-700">
+          <label className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-gray-300 cursor-pointer">
             <input
               type="checkbox"
               checked={applyTmPreset}
               onChange={e => setApplyTmPreset(e.target.checked)}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0"
             />
-            <span className="font-semibold text-gray-800 dark:text-gray-200">
-              TM 표준 프리셋 자동 적용
-            </span>
-            <span className="text-gray-500 dark:text-gray-400">
-              (10종 1·2차 상태, 법률 첫인사 스크립트, 10년 녹음 보존 설정 일괄 주입)
-            </span>
+            <div className="leading-relaxed break-keep">
+              <span className="font-semibold text-gray-800 dark:text-gray-200 mr-1.5">
+                TM 표준 프리셋 자동 적용
+              </span>
+              <span className="text-gray-500 dark:text-gray-400 text-[11px] sm:text-xs">
+                (10종 1·2차 상태, 법률 첫인사 스크립트, 10년 녹음 보존 설정 일괄 주입)
+              </span>
+            </div>
           </label>
 
-          <div className="flex flex-wrap gap-2 text-xs">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 text-xs shrink-0">
             <button
               onClick={() => copy(appUrl)}
-              className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center gap-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="px-2.5 sm:px-3 py-2 sm:py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-center gap-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
             >
-              <Copy size={12} /> 웹 로그인 주소 복사
+              <Copy size={12} className="shrink-0" /> 웹 로그인 주소 복사
             </button>
             <button
               onClick={() => copy(apkUrl)}
-              className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center gap-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="px-2.5 sm:px-3 py-2 sm:py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-center gap-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
             >
-              <Copy size={12} /> 안드로이드 정식 APK 주소 복사
+              <Copy size={12} className="shrink-0" /> 안드로이드 APK 복사
             </button>
           </div>
         </div>
@@ -747,16 +754,16 @@ export default function PlatformPage() {
 
       {/* 고객 회사 목록 및 실시간 과금 테이블 */}
       <section className="bg-card rounded-xl border border-border overflow-hidden shadow-xs">
-        <div className="px-4 py-3 border-b border-border bg-card flex items-center justify-between">
-          <h3 className="font-semibold text-foreground text-xs flex items-center gap-2">
+        <div className="px-4 py-3 border-b border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h3 className="font-semibold text-foreground text-sm sm:text-xs flex items-center gap-2 whitespace-nowrap">
             <span>고객사 테넌트 목록 및 월간 청구 현황</span>
-            <span className="px-2 py-0.5 rounded text-2xs font-mono font-medium bg-primary/10 text-primary border border-primary/20">
+            <span className="px-2 py-0.5 rounded text-2xs font-mono font-medium bg-primary/10 text-primary border border-primary/20 shrink-0">
               {orgs.length}
             </span>
           </h3>
-          <span className="text-2xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border inline-flex items-center gap-1.5 shadow-2xs">
+          <span className="text-[11px] sm:text-2xs font-mono text-muted-foreground bg-muted px-2.5 py-1 sm:py-0.5 rounded border border-border inline-flex items-center gap-1.5 shadow-2xs break-keep leading-relaxed">
             <FileText size={12} className="text-primary shrink-0" />
-            청구서 복사 버튼으로 정산용 공식 마크다운 서식을 바로 추출할 수 있습니다.
+            <span>청구서 복사 버튼으로 정산용 공식 마크다운 서식을 바로 추출할 수 있습니다.</span>
           </span>
         </div>
 
