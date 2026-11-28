@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { GoogleLogin } from '@react-oauth/google';
 import {
     Smartphone,
@@ -23,14 +24,15 @@ import CustomAlertModal from '../components/common/CustomAlertModal';
 import CompanySignupModal from '../components/CompanySignupModal';
 import PricingModal from '../components/pricing/PricingModal';
 
-const MOBILE_TRUST_ITEMS = [
-    { icon: PhoneCall, label: '010 자동연동', colorClass: 'text-blue-600 dark:text-blue-400' },
-    { icon: Sparkles, label: '1초 AI 요약', colorClass: 'text-indigo-600 dark:text-indigo-400' },
-    { icon: ShieldCheck, label: 'DB 유출차단', colorClass: 'text-emerald-600 dark:text-emerald-400' },
+const MOBILE_CAPABILITIES = [
+    { icon: PhoneCall, label: '010 자동연동', colorClass: 'text-blue-400' },
+    { icon: Sparkles, label: '1초 AI 요약', colorClass: 'text-indigo-300' },
+    { icon: ShieldCheck, label: 'DB 유출차단', colorClass: 'text-emerald-400' },
 ] as const;
 
 export default function LoginPage() {
     const { loginWithGoogle, authNotice, closeAuthNotice, openAuthNotice } = useAuth();
+    const { theme } = useTheme();
     const [showGuide, setShowGuide] = useState(false);
     const [showSignupModal, setShowSignupModal] = useState(false);
     const [showPricingModal, setShowPricingModal] = useState(false);
@@ -61,7 +63,7 @@ export default function LoginPage() {
     const renderGoogleButton = (buttonWidth: string) => (
         <div className="w-full flex justify-center">
             <div
-                className="w-full flex justify-center rounded-full overflow-hidden shadow-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+                className="w-full flex justify-center rounded-full overflow-hidden shadow-md"
                 style={{ maxWidth: `${buttonWidth}px` }}
             >
                 <GoogleLogin
@@ -80,7 +82,7 @@ export default function LoginPage() {
                     }}
                     shape="pill"
                     size="large"
-                    theme="filled_black"
+                    theme={theme === 'dark' ? 'outline' : 'filled_black'}
                     text="continue_with"
                     width={buttonWidth}
                 />
@@ -89,140 +91,148 @@ export default function LoginPage() {
     );
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090D16] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative overflow-hidden">
+        <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative overflow-hidden">
 
             {!isDesktop ? (
-                /* ================= 모바일 전용 로그인 (A안 내용 + C안 디자인) ================= */
-                <div className="flex-1 flex flex-col justify-between bg-[#F1F5F9] dark:bg-[#090D16]">
-                    <div>
-                        {/* 상단 딥 네이비 히어로 밴드 (앱 상단바와 자연스럽게 연결) */}
-                        <section className="relative bg-gradient-to-br from-[#0F172A] via-[#111D38] to-[#172554] text-white px-5 pt-5 pb-14 overflow-hidden">
-                            <div
-                                className="pointer-events-none absolute inset-0 opacity-45"
-                                style={{
-                                    backgroundImage: 'radial-gradient(rgba(255,255,255,0.14) 1px, transparent 1px)',
-                                    backgroundSize: '16px 16px',
-                                }}
-                            />
-                            <div className="pointer-events-none absolute -top-12 -right-12 w-52 h-52 rounded-full bg-blue-500/20 blur-3xl" />
+                /* ================= 모바일 전용 로그인 (고대비 슬림 포털) ================= */
+                <div className="flex-1 flex flex-col justify-between relative bg-[#F8FAFC] dark:bg-[#0B1120]">
+                    {/* 다크 모드 전용 연속 오로라 & 도트 페이드 배경 (경계선 뚝 끊김 방지) */}
+                    <div
+                        className="pointer-events-none hidden dark:block absolute inset-0"
+                        style={{
+                            background:
+                                'radial-gradient(ellipse 95% 42% at 50% 0%, rgba(37, 99, 235, 0.24) 0%, rgba(30, 58, 138, 0.12) 45%, rgba(11, 17, 32, 0) 78%)',
+                        }}
+                    />
+                    <div
+                        className="pointer-events-none hidden dark:block absolute inset-x-0 top-0 h-72 opacity-40"
+                        style={{
+                            backgroundImage: 'radial-gradient(rgba(148,163,184,0.22) 1px, transparent 1px)',
+                            backgroundSize: '18px 18px',
+                            maskImage: 'linear-gradient(to bottom, #000 0%, transparent 100%)',
+                            WebkitMaskImage: 'linear-gradient(to bottom, #000 0%, transparent 100%)',
+                        }}
+                    />
 
-                            <div className="relative z-10 max-w-md mx-auto space-y-3">
-                                {/* 일반 모바일 웹에서만 단일 브랜드 로고 노출 (앱 내부에서는 네이티브 상단바와 중복 방지) */}
-                                {!isAndroidApp && (
-                                    <div className="flex items-center justify-between pb-1">
-                                        <img
-                                            src={`${import.meta.env.BASE_URL}leadmaster_logo_horizontal_dark.png`}
-                                            alt="LeadMaster CRM"
-                                            className="h-6 w-auto object-contain"
-                                        />
-                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/15 text-blue-200 border border-blue-400/25">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                            TLS 보안 연결
-                                        </span>
-                                    </div>
-                                )}
+                    {/* 상단 히어로 영역: 라이트 모드에선 곡선 네이비 밴드, 다크 모드에선 투명하게 배경과 일체화 */}
+                    <section className="relative z-10 bg-gradient-to-br from-[#0F172A] via-[#111D38] to-[#172554] dark:bg-none rounded-b-[28px] dark:rounded-none text-white px-5 pt-6 pb-8 shadow-[0_14px_34px_-12px_rgba(15,23,42,0.35)] dark:shadow-none overflow-hidden">
+                        <div
+                            className="pointer-events-none dark:hidden absolute inset-0 opacity-35"
+                            style={{
+                                backgroundImage: 'radial-gradient(rgba(255,255,255,0.16) 1px, transparent 1px)',
+                                backgroundSize: '16px 16px',
+                            }}
+                        />
 
-                                {isAndroidApp && (
-                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/15 border border-blue-400/25 text-[11px] font-semibold text-blue-200">
+                        <div className="relative z-10 max-w-md mx-auto space-y-4">
+                            {/* 일반 모바일 웹에서만 단일 브랜드 로고 노출 (앱 내부에서는 네이티브 상단바와 중복 방지) */}
+                            {!isAndroidApp ? (
+                                <div className="flex items-center justify-between">
+                                    <img
+                                        src={`${import.meta.env.BASE_URL}leadmaster_logo_horizontal_dark.png`}
+                                        alt="LeadMaster CRM"
+                                        className="h-6 w-auto object-contain"
+                                    />
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-white/10 text-blue-200 border border-white/15">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                        <span>Enterprise Cloud · TLS 보안 연결</span>
-                                    </div>
-                                )}
-
-                                <div className="space-y-1.5">
-                                    <h1 className="text-[23px] font-black tracking-tight leading-[1.3] text-white break-keep">
-                                        상담원은 통화만 하세요
-                                    </h1>
-                                    <p className="text-xs text-slate-300 leading-relaxed break-keep">
-                                        승인된 사내 Google 계정으로 로그인하면
-                                        <br />
-                                        AI 통화 요약 및 팀 워크스페이스가 연결됩니다
-                                    </p>
+                                        사내 전용
+                                    </span>
                                 </div>
-                            </div>
-                        </section>
+                            ) : (
+                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/15 border border-blue-400/25 text-[11px] font-semibold text-blue-200">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                    <span>Enterprise Cloud · 사내 전용</span>
+                                </div>
+                            )}
 
-                        {/* 부유하는 고대비 스튜디오 로그인 카드 */}
-                        <div className="relative z-10 px-4 -mt-8 max-w-md mx-auto w-full">
-                            <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-[0_18px_40px_-12px_rgba(15,23,42,0.16)] dark:shadow-[0_22px_50px_-12px_rgba(0,0,0,0.65)] p-5 space-y-4">
-                                {/* 카드 헤더: 보이스 웨이브 + LM 심볼 */}
+                            <div className="space-y-1.5">
+                                <h1 className="text-[25px] font-black tracking-tight leading-[1.26] text-white break-keep">
+                                    상담원은 통화만 하세요
+                                </h1>
+                                <p className="text-[13px] text-slate-300/90 leading-relaxed break-keep">
+                                    승인된 Google 계정으로 로그인하면 AI 통화 요약과 팀 워크스페이스가 즉시 연결됩니다.
+                                </p>
+                            </div>
+
+                            {/* 박스 없는 경량 3대 핵심 스펙 바 */}
+                            <div className="pt-1 flex items-center justify-between gap-2 text-[11px] font-semibold text-slate-200 border-t border-white/10">
+                                {MOBILE_CAPABILITIES.map(({ icon: Icon, label, colorClass }) => (
+                                    <div key={label} className="flex items-center gap-1.5 pt-2.5 whitespace-nowrap">
+                                        <Icon size={13} className={`${colorClass} shrink-0`} />
+                                        <span>{label}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* 중앙 포커스: 군더더기 없는 단일 로그인 카드 (my-auto로 하단 빈 공간 균형 해소) */}
+                    <main className="relative z-10 px-4 py-5 my-auto max-w-md mx-auto w-full space-y-4">
+                        <div className="bg-white dark:bg-[#111827]/95 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-[0_18px_40px_-14px_rgba(15,23,42,0.16)] dark:shadow-[0_24px_56px_-12px_rgba(0,0,0,0.65)] overflow-hidden">
+                            {/* 상단 블루-인디고 포인트 라인 */}
+                            <div className="h-[3px] w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400" />
+
+                            <div className="p-6 space-y-5">
+                                {/* 보이스 웨이브 + LM 심볼 */}
                                 <div className="flex flex-col items-center text-center space-y-2.5">
                                     <div className="flex items-center gap-2.5">
                                         <div className="flex items-center gap-[3px] h-5" aria-hidden="true">
-                                            <span className="w-[2.5px] h-2 rounded-full bg-blue-500/50" />
-                                            <span className="w-[2.5px] h-4 rounded-full bg-blue-600/80 dark:bg-blue-400/80" />
+                                            <span className="w-[2.5px] h-2 rounded-full bg-blue-500/45" />
+                                            <span className="w-[2.5px] h-4 rounded-full bg-blue-600 dark:bg-blue-400" />
                                             <span className="w-[2.5px] h-2.5 rounded-full bg-indigo-500/65" />
                                         </div>
-                                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-black text-sm tracking-tight flex items-center justify-center shadow-[0_8px_20px_rgba(37,99,235,0.3)]">
+                                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-black text-sm tracking-tight flex items-center justify-center shadow-[0_8px_20px_rgba(37,99,235,0.32)]">
                                             LM
                                         </div>
                                         <div className="flex items-center gap-[3px] h-5" aria-hidden="true">
                                             <span className="w-[2.5px] h-2.5 rounded-full bg-indigo-500/65" />
-                                            <span className="w-[2.5px] h-4 rounded-full bg-blue-600/80 dark:bg-blue-400/80" />
-                                            <span className="w-[2.5px] h-2 rounded-full bg-blue-500/50" />
+                                            <span className="w-[2.5px] h-4 rounded-full bg-blue-600 dark:bg-blue-400" />
+                                            <span className="w-[2.5px] h-2 rounded-full bg-blue-500/45" />
                                         </div>
                                     </div>
+
                                     <div>
-                                        <h2 className="text-[17px] font-extrabold text-slate-900 dark:text-white tracking-tight">
+                                        <h2 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">
                                             워크스페이스 로그인
                                         </h2>
-                                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                            사내에 등록된 승인 Google 계정으로 즉시 접속합니다
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                            초대받은 사내 Google 계정을 선택해 바로 시작하세요
                                         </p>
                                     </div>
                                 </div>
 
-                                {/* 1초 Google 로그인 버튼 */}
-                                <div className="pt-0.5">{renderGoogleButton('280')}</div>
+                                {/* 1초 Google 로그인 CTA */}
+                                {renderGoogleButton('292')}
 
-                                {/* 3칸 신뢰 칩 */}
-                                <div className="grid grid-cols-3 gap-2 pt-3.5 border-t border-slate-100 dark:border-slate-800">
-                                    {MOBILE_TRUST_ITEMS.map(({ icon: Icon, label, colorClass }) => (
-                                        <div
-                                            key={label}
-                                            className="rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-700/60 py-2.5 px-1.5 flex flex-col items-center justify-center gap-1 text-center"
-                                        >
-                                            <Icon size={14} className={colorClass} />
-                                            <span className="text-[10.5px] font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                                                {label}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* 신규 도입 및 요금 안내 */}
-                                <div className="relative flex items-center">
-                                    <div className="flex-grow border-t border-slate-100 dark:border-slate-800" />
-                                    <span className="shrink-0 mx-2.5 text-[10px] font-medium text-slate-400 dark:text-slate-500">
-                                        신규 도입 및 안내
-                                    </span>
-                                    <div className="flex-grow border-t border-slate-100 dark:border-slate-800" />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={openSignupModal}
-                                        className="py-2.5 px-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                                    >
-                                        <Building2 size={13} className="text-blue-600 dark:text-blue-400 shrink-0" />
-                                        <span>신규 회사 가입</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPricingModal(true)}
-                                        className="py-2.5 px-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                                    >
-                                        <CreditCard size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                        <span>요금 시뮬레이터</span>
-                                    </button>
-                                </div>
+                                <p className="text-[11px] text-center text-slate-400 dark:text-slate-500">
+                                    로그인 시 소속 팀 및 010 스마트 통화 세션이 자동 연결됩니다
+                                </p>
                             </div>
                         </div>
-                    </div>
+
+                        {/* 카드 외부 경량 보조 액션 (박스 중첩 제거) */}
+                        <div className="flex items-center justify-center gap-2">
+                            <button
+                                type="button"
+                                onClick={openSignupModal}
+                                className="flex-1 py-2.5 px-3 rounded-xl bg-white/80 hover:bg-white dark:bg-slate-900/70 dark:hover:bg-slate-800/90 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                                <Building2 size={13} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                                <span>신규 회사 가입</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowPricingModal(true)}
+                                className="flex-1 py-2.5 px-3 rounded-xl bg-white/80 hover:bg-white dark:bg-slate-900/70 dark:hover:bg-slate-800/90 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                                <CreditCard size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                <span>요금 시뮬레이터</span>
+                            </button>
+                        </div>
+                    </main>
 
                     {/* 모바일 하단 보안 안내 및 보조 링크 */}
-                    <footer className="px-5 pt-5 pb-6 max-w-md mx-auto w-full space-y-3 text-center">
+                    <footer className="relative z-10 px-5 pt-2 pb-6 max-w-md mx-auto w-full space-y-2.5 text-center">
                         {isAndroidDevice && !isAndroidApp && (
                             <div className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs text-[11px]">
                                 <Smartphone size={13} className="text-blue-600 dark:text-blue-400 shrink-0" />
@@ -245,7 +255,7 @@ export default function LoginPage() {
                             </div>
                         )}
 
-                        <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                        <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                             <ShieldCheck size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                             <span>TLS 암호화 &middot; 화면 캡처 방지 보안 적용</span>
                         </div>
