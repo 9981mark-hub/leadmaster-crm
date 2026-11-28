@@ -313,12 +313,12 @@ html, body {
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
 .animate-page-in {
-  animation: pageGlideIn 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: pageGlideIn 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes softPulseGlow {

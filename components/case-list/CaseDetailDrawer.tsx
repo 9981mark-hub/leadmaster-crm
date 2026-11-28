@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Phone, ExternalLink, ChevronUp, ChevronDown, User, Calendar, 
@@ -47,8 +48,15 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
   const visibilityPolicy = useVisibilityPolicy();
   const [newMemo, setNewMemo] = useState('');
   const [submittingMemo, setSubmittingMemo] = useState(false);
+  const scrollBodyRef = useRef<HTMLDivElement>(null);
 
-  if (!c || !isOpen) return null;
+  useEffect(() => {
+    if (scrollBodyRef.current) {
+      scrollBodyRef.current.scrollTop = 0;
+    }
+  }, [c?.caseId, isOpen]);
+
+  if (!c || !isOpen || typeof document === 'undefined') return null;
 
   const partner = partners.find(p => p.partnerId === c.partnerId);
 
@@ -75,7 +83,7 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
       ? `${cleanPhone.slice(0, 3)}-${cleanPhone.slice(3, 6)}-${cleanPhone.slice(6)}`
       : c.phone;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <div className="fixed inset-0 z-50 overflow-hidden">
         {/* 뒷배경 딤(Dim) 레이어 */}
@@ -197,7 +205,7 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
             </div>
 
             {/* 3. 본문 세부 정보 스크롤 영역 */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar bg-[#f6f7fb]/60 dark:bg-transparent">
+            <div ref={scrollBodyRef} className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar bg-[#f6f7fb]/60 dark:bg-transparent">
               
               {/* 기본 프로필 그리드 */}
               <div className="bg-white dark:bg-card rounded-[8px] p-4 border border-[#d0d4e4] dark:border-border space-y-2.5 shadow-2xs">
@@ -357,6 +365,7 @@ export const CaseDetailDrawer: React.FC<CaseDetailDrawerProps> = ({
           </motion.div>
         </div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
