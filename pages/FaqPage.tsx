@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   HelpCircle,
@@ -11,8 +11,13 @@ import {
   AlertTriangle,
   Sparkles,
   ExternalLink,
+  Plus,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext';
 import { StandardRoleKey } from '../services/org';
 import {
   FAQ_ITEMS,
@@ -20,6 +25,14 @@ import {
   FaqItem,
   resolveFaqRoleKey,
 } from '../data/faqData';
+import {
+  SaveFaqInput,
+  deleteFaqItem,
+  fetchFaqItems,
+  saveFaqItem,
+  subscribeToFaqChanges,
+} from '../services/faqService';
+import { FaqEditorModal } from '../components/faq/FaqEditorModal';
 
 const ROLE_SWITCH_OPTIONS: { key: StandardRoleKey; label: string }[] = [
   { key: 'owner', label: 'TM대표' },
@@ -31,27 +44,52 @@ const ROLE_SWITCH_OPTIONS: { key: StandardRoleKey; label: string }[] = [
 export default function FaqPage() {
   const navigate = useNavigate();
   const { org, isPlatformAdmin } = useAuth();
+  const { showToast } = useToast();
+  const { confirm } = useConfirmDialog();
 
   const myRoleKey = resolveFaqRoleKey(org?.role, org?.adminPermissions?.tier);
   const canPreviewOtherRoles = isPlatformAdmin || myRoleKey === 'owner';
 
+  const [allFaqs, setAllFaqs] = useState<FaqItem[]>(FAQ_ITEMS);
   const [selectedRole, setSelectedRole] = useState<StandardRoleKey>(myRoleKey);
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const [searchQuery, setSearchQuery] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
 
+  // 최고 서비스 관리자(isPlatformAdmin) 전용 등록·수정 모달 상태
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<FaqItem | null>(null);
+
+  const loadFaqs = useCallback(async () => {
+    const items = await fetchFaqItems();
+    setAllFaqs(items);
+  }, []);
+
+  useEffect(() => {
+    loadFaqs();
+    const unsub = subscribeToFaqChanges(() => {
+      loadFaqs();
+    });
+    return unsub;
+  }, [loadFaqs]);
+
   const activeRole: StandardRoleKey = canPreviewOtherRoles ? selectedRole : myRoleKey;
   const roleMeta = FAQ_ROLE_META[activeRole];
 
   const roleItems = useMemo(
-    () => FAQ_ITEMS.filter(item => item.roles.includes(activeRole)),
-    [activeRole]
+    () => allFaqs.filter(item => item.roles.includes(activeRole)),
+    [allFaqs, activeRole]
   );
 
   const categories = useMemo(() => {
     const unique = Array.from(new Set(roleItems.map(i => i.category)));
     return ['전체', ...unique];
   }, [roleItems]);
+
+  const allCategories = useMemo(
+    () => Array.from(new Set(allFaqs.map(i => i.category))),
+    [allFaqs]
+  );
 
   const filteredItems = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -86,6 +124,46 @@ export default function FaqPage() {
     });
   };
 
+  const handleOpenCreate = () => {
+    setEditingItem(null);
+    setIsEditorOpen(true);
+  };
+
+  const handleOpenEdit = (e: React.MouseEvent, item: FaqItem) => {
+    e.stopPropagation();
+    setEditingItem(item);
+    setIsEditorOpen(true);
+  };
+
+  const handleSaveFaq = async (input: SaveFaqInput) => {
+    await saveFaqItem(input);
+    await loadFaqs();
+    showToast(
+      input.id ? 'FAQ 항목이 수정되었습니다.' : '새 FAQ 항목이 등록되었습니다.',
+      'success'
+    );
+  };
+
+  const handleDeleteFaq = async (e: React.MouseEvent, item: FaqItem) => {
+    e.stopPropagation();
+    const ok = await confirm({
+      title: 'FAQ 항목 삭제',
+      message: `'${item.question}' 항목을 삭제할까요?\n삭제 즉시 모든 사용자 화면에서 숨겨집니다.`,
+      confirmLabel: '삭제',
+      cancelLabel: '취소',
+      tone: 'danger',
+    });
+    if (!ok) return;
+    try {
+      await deleteFaqItem(item);
+      await loadFaqs();
+      if (openId === item.id) setOpenId(null);
+      showToast('FAQ 항목을 삭제했습니다.', 'success');
+    } catch (err: any) {
+      showToast(err?.message || 'FAQ 삭제 중 오류가 발생했습니다.', 'error');
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-5 pb-14">
       {/* 상단 직급 맞춤 헤더 카드 */}
@@ -102,6 +180,11 @@ export default function FaqPage() {
                   타 직급 미리보기 중
                 </span>
               )}
+              {isPlatformAdmin && (
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-600 dark:text-purple-300 border border-purple-500/25">
+                  최고관리자 편집 가능
+                </span>
+              )}
             </div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2 break-keep">
               <HelpCircle size={22} className="text-primary shrink-0" />
@@ -112,14 +195,26 @@ export default function FaqPage() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => navigate('/inquiry')}
-            className="shrink-0 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer whitespace-nowrap"
-          >
-            <MessageSquarePlus size={16} />
-            <span>해결 안 될 땐 1:1 문의하기</span>
-          </button>
+          <div className="flex items-center gap-2 flex-wrap shrink-0">
+            {isPlatformAdmin && (
+              <button
+                type="button"
+                onClick={handleOpenCreate}
+                className="px-3.5 py-2.5 rounded-xl bg-foreground text-background hover:opacity-90 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer whitespace-nowrap"
+              >
+                <Plus size={16} />
+                <span>새 FAQ 등록</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => navigate('/inquiry')}
+              className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer whitespace-nowrap"
+            >
+              <MessageSquarePlus size={16} />
+              <span>해결 안 될 땐 1:1 문의하기</span>
+            </button>
+          </div>
         </div>
 
         {/* 대표/플랫폼 관리자 전용: 직급별 FAQ 미리보기 전환 */}
@@ -194,7 +289,9 @@ export default function FaqPage() {
       {filteredItems.length === 0 ? (
         <div className="bg-card rounded-2xl border border-dashed border-border p-8 text-center space-y-3">
           <p className="text-sm font-semibold text-foreground">
-            &ldquo;{searchQuery}&rdquo;에 대한 FAQ 검색 결과가 없습니다.
+            {searchQuery
+              ? `“${searchQuery}”에 대한 FAQ 검색 결과가 없습니다.`
+              : '등록된 FAQ 항목이 없습니다.'}
           </p>
           <p className="text-xs text-muted-foreground">
             다른 키워드로 검색하거나 서비스 총괄 관리자에게 1:1 문의를 남겨주세요.
@@ -225,16 +322,28 @@ export default function FaqPage() {
                     : 'border-border hover:border-primary/30'
                 }`}
               >
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setOpenId(isOpen ? null : item.id)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setOpenId(isOpen ? null : item.id);
+                    }
+                  }}
                   className="w-full px-4 sm:px-5 py-4 text-left flex items-start justify-between gap-3 cursor-pointer"
                 >
-                  <div className="space-y-1.5 min-w-0">
+                  <div className="space-y-1.5 min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/70">
                         {item.category}
                       </span>
+                      {isPlatformAdmin && (
+                        <span className="text-[10.5px] font-mono text-muted-foreground">
+                          대상: {item.roles.map(r => FAQ_ROLE_META[r]?.label.split(' ')[0]).join('·')}
+                        </span>
+                      )}
                     </div>
                     <h2 className="text-sm sm:text-[15px] font-bold text-foreground break-keep leading-snug">
                       Q. {item.question}
@@ -245,10 +354,33 @@ export default function FaqPage() {
                       </p>
                     )}
                   </div>
-                  <div className="p-1.5 rounded-lg bg-muted/60 text-muted-foreground shrink-0 mt-1">
-                    {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+
+                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                    {isPlatformAdmin && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={e => handleOpenEdit(e, item)}
+                          title="FAQ 수정"
+                          className="p-1.5 rounded-lg bg-muted/60 hover:bg-primary/15 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={e => handleDeleteFaq(e, item)}
+                          title="FAQ 삭제"
+                          className="p-1.5 rounded-lg bg-muted/60 hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </>
+                    )}
+                    <div className="p-1.5 rounded-lg bg-muted/60 text-muted-foreground">
+                      {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </div>
                   </div>
-                </button>
+                </div>
 
                 {isOpen && (
                   <div className="px-4 sm:px-5 pb-5 pt-1 border-t border-border/60 space-y-4 bg-muted/15">
@@ -357,6 +489,21 @@ export default function FaqPage() {
           <ArrowRight size={14} />
         </button>
       </div>
+
+      {/* 최고 서비스 관리자 전용 FAQ 등록/수정 모달 */}
+      {isPlatformAdmin && (
+        <FaqEditorModal
+          isOpen={isEditorOpen}
+          onClose={() => {
+            setIsEditorOpen(false);
+            setEditingItem(null);
+          }}
+          editingItem={editingItem}
+          defaultRole={activeRole}
+          existingCategories={allCategories}
+          onSave={handleSaveFaq}
+        />
+      )}
     </div>
   );
 }

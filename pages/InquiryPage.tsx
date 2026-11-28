@@ -25,7 +25,8 @@ import {
   submitSupportInquiry,
   subscribeToSupportAlerts,
 } from '../services/supportInquiryService';
-import { FAQ_ITEMS, FAQ_ROLE_META, resolveFaqRoleKey } from '../data/faqData';
+import { FAQ_ITEMS, FAQ_ROLE_META, FaqItem, resolveFaqRoleKey } from '../data/faqData';
+import { fetchFaqItems } from '../services/faqService';
 
 export default function InquiryPage() {
   const location = useLocation();
@@ -50,9 +51,14 @@ export default function InquiryPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const [myInquiries, setMyInquiries] = useState<SupportInquiry[]>([]);
+  const [faqLibrary, setFaqLibrary] = useState<FaqItem[]>(FAQ_ITEMS);
   const [loadingList, setLoadingList] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [expandedFaqId, setExpandedFaqId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchFaqItems().then(setFaqLibrary).catch(() => {});
+  }, []);
 
   const loadInquiries = useCallback(async () => {
     if (!org?.userId) return;
@@ -82,7 +88,7 @@ export default function InquiryPage() {
   // 문의 전 셀프 해결을 돕는 실시간 추천 FAQ 2건
   const suggestedFaqs = useMemo(() => {
     const q = `${subject} ${content}`.trim().toLowerCase();
-    const roleFaqs = FAQ_ITEMS.filter(f => f.roles.includes(myRoleKey));
+    const roleFaqs = faqLibrary.filter(f => f.roles.includes(myRoleKey));
     const matched = roleFaqs.filter(f => {
       if (q.length >= 2) {
         const text = `${f.question} ${f.summary} ${f.tags.join(' ')}`.toLowerCase();
@@ -92,7 +98,7 @@ export default function InquiryPage() {
       return f.inquiryCategory === category;
     });
     return matched.slice(0, 2);
-  }, [myRoleKey, category, subject, content]);
+  }, [faqLibrary, myRoleKey, category, subject, content]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
