@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Zap, Calculator, Grid3X3, 
   X, PhoneCall, Calendar, UserCog, Smartphone, Megaphone, 
-  GraduationCap, Building2, Settings, User, LogOut, ChevronRight, CreditCard
+  GraduationCap, Building2, Settings, User, LogOut, ChevronRight, CreditCard,
+  HelpCircle, MessageSquareHeart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -74,6 +75,13 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
           ? [{ to: '/settings', icon: Settings, label: '시스템 설정' }]
           : []),
         { to: '/mypage', icon: User, label: '마이페이지' },
+      ],
+    },
+    {
+      label: '지원 & 안내',
+      items: [
+        { to: '/faq', icon: HelpCircle, label: 'FAQ (사용 가이드)' },
+        { to: '/inquiry', icon: MessageSquareHeart, label: '1:1 문의하기' },
       ],
     },
   ];

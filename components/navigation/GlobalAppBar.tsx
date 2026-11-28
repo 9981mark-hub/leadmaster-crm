@@ -3,7 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Building2, Search, Bell, Moon, Sun, User, LogOut, 
   ChevronDown, ExternalLink, Shield, CheckCircle2, 
-  Menu, Sparkles, MessageSquare, AlertCircle, ArrowRight, Crown, LayoutDashboard, Archive
+  Menu, Sparkles, MessageSquare, AlertCircle, ArrowRight, Crown, LayoutDashboard, Archive,
+  MessageSquareHeart
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -13,6 +14,11 @@ import { AttendanceHeaderWidget } from '../hr/AttendanceHeaderWidget';
 import { fetchOrgApplications } from '../../services/orgApplicationService';
 import { fetchSeatExpansionRequests, subscribeToPlatformAlerts } from '../../services/seatExpansionService';
 import { fetchExpiringRecordings } from '../../services/recordings';
+import {
+  fetchAllInquiriesForPlatform,
+  fetchMyInquiries,
+  subscribeToSupportAlerts,
+} from '../../services/supportInquiryService';
 import RecordingBackupCenterModal from '../recordings/RecordingBackupCenterModal';
 
 interface GlobalAppBarProps {
@@ -37,6 +43,8 @@ const PAGE_TITLES: Record<string, { title: string; category: string }> = {
   '/platform': { title: '전체 회사 관리 (운영자)', category: '시스템 관리' },
   '/settings': { title: '시스템 설정', category: '시스템 관리' },
   '/mypage': { title: '마이페이지 & 근태', category: '시스템 관리' },
+  '/faq': { title: 'FAQ (사용 가이드)', category: '지원 / 안내' },
+  '/inquiry': { title: '1:1 문의하기', category: '지원 / 안내' },
 };
 
 export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
@@ -54,6 +62,8 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [platformPendingCount, setPlatformPendingCount] = useState(0);
+  const [platformInquiryCount, setPlatformInquiryCount] = useState(0);
+  const [myUnreadReplyCount, setMyUnreadReplyCount] = useState(0);
   const [expiringRecSummary, setExpiringRecSummary] = useState<{ total: number; grace: number }>({ total: 0, grace: 0 });
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
 
@@ -65,27 +75,72 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  // 플랫폼 관리자용 미처리 중요 요청(좌석 증설/가입 신청) 실시간 카운트
+  // 플랫폼 관리자용 미처리 중요 요청(좌석 증설/가입 신청/1:1 문의) 실시간 카운트
   useEffect(() => {
     if (!isPlatformAdmin) return;
     const checkPending = async () => {
       try {
-        const [apps, seats] = await Promise.all([
+        const [apps, seats, inquiries] = await Promise.all([
           fetchOrgApplications(),
           fetchSeatExpansionRequests(),
+          fetchAllInquiriesForPlatform(),
         ]);
         const pCount = (apps || []).filter(a => a.status === 'pending').length +
                        (seats || []).filter(s => s.status === 'pending').length;
-        setPlatformPendingCount(pCount);
+        const inqCount = (inquiries || []).filter(
+          i => i.status === 'open' || i.status === 'in_progress'
+        ).length;
+        setPlatformPendingCount(pCount + inqCount);
+        setPlatformInquiryCount(inqCount);
       } catch {}
     };
     checkPending();
 
-    const unsubscribe = subscribeToPlatformAlerts(() => {
+    const unsubscribePlatform = subscribeToPlatformAlerts(() => {
       checkPending();
     });
-    return unsubscribe;
-  }, [isPlatformAdmin]);
+    const unsubscribeSupport = subscribeToSupportAlerts(payload => {
+      checkPending();
+      if (payload?.type === 'new_inquiry') {
+        showToast(`💬 [새 1:1 문의] ${payload.orgName || '고객사'}: ${payload.subject || '새 문의 접수'}`, 'info');
+      }
+    });
+    return () => {
+      unsubscribePlatform();
+      unsubscribeSupport();
+    };
+  }, [isPlatformAdmin, showToast]);
+
+  // 전 사용자 공통: 본인 1:1 문의에 새 관리자 답변 도착 알림 실시간 카운트
+  useEffect(() => {
+    if (!org?.userId) return;
+    let alive = true;
+    const loadMyReplies = async () => {
+      try {
+        const list = await fetchMyInquiries(org.userId);
+        if (!alive) return;
+        const unread = list.filter(i => i.status === 'answered' && !i.userReadReply).length;
+        setMyUnreadReplyCount(unread);
+      } catch {}
+    };
+    loadMyReplies();
+
+    const unsub = subscribeToSupportAlerts(payload => {
+      if (!payload?.userId || payload.userId === org.userId) {
+        loadMyReplies();
+        if (payload?.type === 'inquiry_replied' && payload.userId === org.userId) {
+          showToast(`💬 문의하신 '${payload.subject || '1:1 문의'}'에 답변이 등록되었습니다.`, 'success');
+        }
+      }
+    });
+    const onRead = () => loadMyReplies();
+    window.addEventListener('lm-support-reply-read', onRead);
+    return () => {
+      alive = false;
+      unsub();
+      window.removeEventListener('lm-support-reply-read', onRead);
+    };
+  }, [org?.userId, showToast]);
 
   // TM대표·총괄관리자 전용: 5개월째(D-30)부터 만료/유예 통화 녹음 백업 알림 조회
   useEffect(() => {
@@ -223,7 +278,10 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
               title="알림 센터"
             >
               <Bell size={17} strokeWidth={1.75} />
-              {(pendingTgCount > 0 || (isRecordingBackupManager && expiringRecSummary.total > 0)) && (
+              {(pendingTgCount > 0 ||
+                (isRecordingBackupManager && expiringRecSummary.total > 0) ||
+                (isPlatformAdmin && platformInquiryCount > 0) ||
+                myUnreadReplyCount > 0) && (
                 <span className="absolute top-1 right-1 flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
@@ -252,6 +310,58 @@ export const GlobalAppBar: React.FC<GlobalAppBarProps> = ({
                 </div>
 
                 <div className="p-3 space-y-2 max-h-80 overflow-y-auto">
+                  {/* 플랫폼 총괄 관리자 전용: 미답변 1:1 문의 알림 */}
+                  {isPlatformAdmin && platformInquiryCount > 0 && (
+                    <div
+                      onClick={() => {
+                        setIsNotifOpen(false);
+                        navigate('/platform#inquiries');
+                      }}
+                      className="p-3 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/15 transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <MessageSquareHeart size={16} strokeWidth={1.75} className="text-primary shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-bold text-foreground">
+                              고객사 1:1 문의 답변 대기 ({platformInquiryCount}건)
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              클릭해 플랫폼 관제 페이지에서 확인 및 답변을 등록하세요.
+                            </p>
+                          </div>
+                        </div>
+                        <ArrowRight size={14} strokeWidth={1.75} className="text-primary group-hover:translate-x-0.5 transition-transform shrink-0" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 문의자 본인: 새 관리자 답변 도착 알림 */}
+                  {myUnreadReplyCount > 0 && (
+                    <div
+                      onClick={() => {
+                        setIsNotifOpen(false);
+                        navigate('/inquiry');
+                      }}
+                      className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/15 transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <MessageSquareHeart size={16} strokeWidth={1.75} className="text-emerald-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-bold text-foreground">
+                              1:1 문의 답변 도착 ({myUnreadReplyCount}건)
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              서비스 총괄 관리자가 답변을 남겼습니다. 클릭해 확인하세요.
+                            </p>
+                          </div>
+                        </div>
+                        <ArrowRight size={14} strokeWidth={1.75} className="text-emerald-500 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                      </div>
+                    </div>
+                  )}
+
                   {/* TM대표·총괄관리자 전용: 5개월차 통화 녹음 백업 알림 */}
                   {isRecordingBackupManager && expiringRecSummary.total > 0 && (
                     <div

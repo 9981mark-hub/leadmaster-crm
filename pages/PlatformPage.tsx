@@ -24,17 +24,24 @@ import { useCountUp } from '../utils/useCountUp';
 import { TenantPermissionModal } from '../components/platform/TenantPermissionModal';
 import { ApprovalEmailModal } from '../components/platform/ApprovalEmailModal';
 import { PlatformAlertPopupModal } from '../components/platform/PlatformAlertPopupModal';
+import { SupportInquiriesPanel } from '../components/platform/SupportInquiriesPanel';
+import {
+  fetchAllInquiriesForPlatform,
+  subscribeToSupportAlerts,
+  SupportInquiry,
+} from '../services/supportInquiryService';
 
 const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('ko-KR') : '-');
 
 /** HOST(플랫폼 관리자) 전용: 고객 회사 만들기·목록·실시간 과금 정산·사용 중지 관제 */
 export default function PlatformPage() {
-  const { org, isPlatformAdmin } = useAuth();
+  const { user, org, isPlatformAdmin } = useAuth();
   const { showToast } = useToast();
   const { confirm } = useConfirmDialog();
   const [orgs, setOrgs] = useState<PlatformOrg[]>([]);
   const [applications, setApplications] = useState<OrgApplication[]>([]);
   const [seatRequests, setSeatRequests] = useState<SeatExpansionRequest[]>([]);
+  const [inquiries, setInquiries] = useState<SupportInquiry[]>([]);
   const [permissionsMap, setPermissionsMap] = useState<Record<string, OrgFeaturePermissions>>({});
   const [selectedOrgForPerm, setSelectedOrgForPerm] = useState<PlatformOrg | null>(null);
 
@@ -57,14 +64,16 @@ export default function PlatformPage() {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const [fetchedOrgs, fetchedApps, fetchedSeatReqs] = await Promise.all([
+      const [fetchedOrgs, fetchedApps, fetchedSeatReqs, fetchedInquiries] = await Promise.all([
         fetchOrganizations(),
         fetchOrgApplications(),
         fetchSeatExpansionRequests(),
+        fetchAllInquiriesForPlatform(),
       ]);
       setOrgs(fetchedOrgs);
       setApplications(fetchedApps);
       setSeatRequests(fetchedSeatReqs);
+      setInquiries(fetchedInquiries);
 
       // 테넌트 권한 일괄 로드
       const orgIds = fetchedOrgs.map(o => o.id);
@@ -92,8 +101,25 @@ export default function PlatformPage() {
         reload();
       }
     });
-    return unsubscribe;
+    const unsubSupport = subscribeToSupportAlerts(payload => {
+      if (payload?.type === 'new_inquiry') {
+        showToast(`💬 [새 1:1 문의] ${payload.orgName || '고객사'}: ${payload.subject || ''}`, 'info');
+      }
+      reload();
+    });
+    return () => {
+      unsubscribe();
+      unsubSupport();
+    };
   }, [reload, showToast]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.hash === '#inquiries') {
+      const el = document.getElementById('platform-inquiries-section');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [loading]);
 
   // 첫 진입 시 미처리 중요 요청(좌석 증설 / 가입 신청)이 존재하면 팝업 모달 자동 오픈
   useEffect(() => {
@@ -682,6 +708,18 @@ export default function PlatformPage() {
           </div>
         )}
       </section>
+
+      {/* 💬 3. 전 직급 고객사 1:1 문의 실시간 관제 및 답변 */}
+      <SupportInquiriesPanel
+        inquiries={inquiries}
+        adminEmail={user?.email || 'platform-admin'}
+        loading={loading}
+        onRefresh={reload}
+        onUpdated={(updated) =>
+          setInquiries(prev => prev.map(it => (it.id === updated.id ? updated : it)))
+        }
+        showToast={showToast}
+      />
 
       {/* 새 고객 회사 등록 폼 (TM 표준 프리셋 원클릭 지원) */}
       <section className="bg-card rounded-xl border border-border p-4 space-y-4 shadow-xs">

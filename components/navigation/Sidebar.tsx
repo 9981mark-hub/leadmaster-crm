@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Zap, Calendar, PhoneCall, 
   Calculator, UserCog, Smartphone, Megaphone, GraduationCap, 
-  Building2, Settings, User, ChevronsLeft, ChevronsRight, Shield, Crown, CreditCard
+  Building2, Settings, User, ChevronsLeft, ChevronsRight, Shield, Crown, CreditCard,
+  HelpCircle, MessageSquareHeart
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../contexts/ToastContext';
 import { ROLE_LABEL, getStandardRoleInfo } from '../../services/org';
 import { CompanyProfileModal } from './CompanyProfileModal';
+import { fetchMyInquiries, subscribeToSupportAlerts } from '../../services/supportInquiryService';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -51,6 +53,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // TM대표 전용 회사 프로필/로고 설정 모달 상태
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
+  const [unreadReplyCount, setUnreadReplyCount] = useState(0);
+
+  useEffect(() => {
+    if (!org?.userId) return;
+    let alive = true;
+    const loadUnread = async () => {
+      try {
+        const list = await fetchMyInquiries(org.userId);
+        if (!alive) return;
+        setUnreadReplyCount(
+          list.filter(i => i.status === 'answered' && !i.userReadReply).length
+        );
+      } catch { /* ignore */ }
+    };
+    loadUnread();
+    const unsub = subscribeToSupportAlerts(payload => {
+      if (!payload?.userId || payload.userId === org.userId) loadUnread();
+    });
+    const onRead = () => loadUnread();
+    window.addEventListener('lm-support-reply-read', onRead);
+    return () => {
+      alive = false;
+      unsub();
+      window.removeEventListener('lm-support-reply-read', onRead);
+    };
+  }, [org?.userId]);
 
   const handleSaveCompanyProfile = async (updates: { orgName: string; orgLogo: string | null }) => {
     try {
@@ -104,6 +132,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { to: '/platform', icon: Crown, label: '👑 플랫폼 운영자 관리', platformAdminOnly: true },
         { to: '/settings', icon: Settings, label: '시스템 설정', adminOnly: true },
         { to: '/mypage', icon: User, label: '마이페이지' },
+      ],
+    },
+    {
+      id: 'support',
+      label: '지원 / 안내',
+      items: [
+        { to: '/faq', icon: HelpCircle, label: 'FAQ (사용 가이드)' },
+        {
+          to: '/inquiry',
+          icon: MessageSquareHeart,
+          label: '1:1 문의하기',
+          badge: unreadReplyCount > 0 ? unreadReplyCount : undefined,
+        },
       ],
     },
   ];
@@ -267,7 +308,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }
             }
             if (isLiteOnly) {
-              const allowedInLite = ['/lite', '/training', '/notices', '/schedule', '/mypage'];
+              const allowedInLite = ['/lite', '/training', '/notices', '/schedule', '/mypage', '/faq', '/inquiry'];
               return allowedInLite.includes(item.to);
             }
             return true;

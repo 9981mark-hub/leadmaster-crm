@@ -24,6 +24,8 @@ const NoticePage = lazyWithRetry(() => import('./pages/NoticePage'));
 const TrainingCenterPage = lazyWithRetry(() => import('./pages/TrainingCenterPage'));
 const PricingPage = lazyWithRetry(() => import('./pages/PricingPage'));
 const BillingPage = lazyWithRetry(() => import('./pages/BillingPage'));
+const FaqPage = lazyWithRetry(() => import('./pages/FaqPage'));
+const InquiryPage = lazyWithRetry(() => import('./pages/InquiryPage'));
 
 // Navigation & Layout Components
 import { GlobalAppBar } from './components/navigation/GlobalAppBar';
@@ -342,6 +344,8 @@ const ProtectedRoutes = () => {
             <Route path="/team" element={<AdminOnly><TeamPage /></AdminOnly>} />
             <Route path="/platform" element={<PlatformAdminOnly><PlatformPage /></PlatformAdminOnly>} />
             <Route path="/mypage" element={<MyPage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/inquiry" element={<InquiryPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ErrorBoundary>
