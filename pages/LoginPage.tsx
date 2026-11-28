@@ -556,7 +556,7 @@ export default function LoginPage() {
                                     <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                                         <span className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300">
                                             <Smartphone size={14} className="text-blue-600 dark:text-blue-400" />
-                                            <span>모바일 앱 <span className="text-slate-400 font-mono text-[11px]">v1.8.5</span></span>
+                                            <span>모바일 앱 <span className="text-slate-400 font-mono text-[11px]">v1.8.6</span></span>
                                         </span>
                                         <div className="flex items-center gap-2.5">
                                             <a

@@ -1,6 +1,6 @@
 {
-  "versionCode": 37,
-  "versionName": "1.8.5",
+  "versionCode": 38,
+  "versionName": "1.8.6",
   "releaseDate": "2026-11-28",
-  "notes": "1.8.5: 로그인 화면에서 불필요한 네이티브 상단바(LeadMaster·간편콜)를 숨겨 모바일 로그인 화면을 깔끔하게 개선."
+  "notes": "1.8.6: 모바일 Google 계정 선택 팝업을 화면 중앙 라운드 모달 카드 UI로 업그레이드."
 }
