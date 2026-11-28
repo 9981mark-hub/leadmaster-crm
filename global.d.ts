@@ -5,6 +5,7 @@ declare global {
         AndroidBridge?: {
             // Core
             isAndroidApp: () => boolean;
+            setTopBarVisible?: (visible: boolean) => void;
 
             // Popup Settings
             getPopupSettings: () => string;

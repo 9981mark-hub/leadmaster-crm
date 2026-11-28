@@ -52,8 +52,19 @@ export default function LoginPage() {
 
     const isAndroidApp =
         typeof window !== 'undefined' && Boolean(window.AndroidBridge?.isAndroidApp?.());
+    const hidesNativeTopBar =
+        typeof window !== 'undefined' && typeof window.AndroidBridge?.setTopBarVisible === 'function';
     const isAndroidDevice =
         typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+
+    useEffect(() => {
+        const bridge = window.AndroidBridge;
+        if (!bridge?.setTopBarVisible) return;
+        bridge.setTopBarVisible(false);
+        return () => {
+            bridge.setTopBarVisible?.(true);
+        };
+    }, []);
 
     const openSignupModal = () => {
         setSignupInitialEmail('');
@@ -125,8 +136,8 @@ export default function LoginPage() {
                         />
 
                         <div className="relative z-10 max-w-md mx-auto space-y-4">
-                            {/* 일반 모바일 웹에서만 단일 브랜드 로고 노출 (앱 내부에서는 네이티브 상단바와 중복 방지) */}
-                            {!isAndroidApp ? (
+                            {/* 웹 브라우저 또는 네이티브 상단바가 숨겨진 최신 앱(v1.8.5+)에서는 단일 브랜드 로고 노출 */}
+                            {!isAndroidApp || hidesNativeTopBar ? (
                                 <div className="flex items-center justify-between">
                                     <img
                                         src={`${import.meta.env.BASE_URL}leadmaster_logo_horizontal_dark.png`}
@@ -545,7 +556,7 @@ export default function LoginPage() {
                                     <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                                         <span className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300">
                                             <Smartphone size={14} className="text-blue-600 dark:text-blue-400" />
-                                            <span>모바일 앱 <span className="text-slate-400 font-mono text-[11px]">v1.8.4</span></span>
+                                            <span>모바일 앱 <span className="text-slate-400 font-mono text-[11px]">v1.8.5</span></span>
                                         </span>
                                         <div className="flex items-center gap-2.5">
                                             <a

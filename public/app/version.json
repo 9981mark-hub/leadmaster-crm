@@ -1,6 +1,6 @@
 {
-  "versionCode": 36,
-  "versionName": "1.8.4",
-  "releaseDate": "2026-11-19",
-  "notes": "1.8.4: 통화 녹음 m4a AAC 32kbps H/W 가속 압축 인코딩 탑재(녹음 용량 1/10 감소) 및 Supabase Storage 직접 업로드 연동."
+  "versionCode": 37,
+  "versionName": "1.8.5",
+  "releaseDate": "2026-11-28",
+  "notes": "1.8.5: 로그인 화면에서 불필요한 네이티브 상단바(LeadMaster·간편콜)를 숨겨 모바일 로그인 화면을 깔끔하게 개선."
 }
