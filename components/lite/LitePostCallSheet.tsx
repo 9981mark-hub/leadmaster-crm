@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Send, CheckCircle2, Phone, X, Sparkles, Building2, AlertTriangle, ArrowRight, Loader2, RotateCcw, Calendar, MessageSquare, Smartphone } from 'lucide-react';
-import { LiteQuickSmsModal } from './LiteQuickSmsModal';
+import { Send, CheckCircle2, Phone, X, Sparkles, Building2, AlertTriangle, ArrowRight, Loader2, RotateCcw, Calendar } from 'lucide-react';
 import { Case, CaseStatus, Partner, ReminderItem } from '../../types';
 import { generateSummary, parseAiTranscript } from '../../utils';
 import { deliverCaseToTelegram, fetchKnownTelegramChats, KnownTelegramChat, DeliveryError } from '../../services/telegramDelivery';
@@ -89,8 +88,7 @@ export const LitePostCallSheet: React.FC<Props> = ({
   const [aiPolling, setAiPolling] = useState(false);
   const [missingItems, setMissingItems] = useState<string[]>([]);
 
-  // 1-Click SMS 모달 및 AI 스마트 일정 감지
-  const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
+  // AI 스마트 일정 감지
   const [addedSchedule, setAddedSchedule] = useState(false);
   const detectedSchedule = useMemo(() => detectScheduleFromText(summaryText), [summaryText]);
 
@@ -305,31 +303,6 @@ export const LitePostCallSheet: React.FC<Props> = ({
               </button>
             </div>
           )}
-
-          {/* [NEW] 1-Click 안내 문자 / 알림톡 발송 바 */}
-          <div className="flex items-center justify-between bg-indigo-50/70 dark:bg-indigo-950/40 p-3 rounded-2xl border border-indigo-100 dark:border-indigo-900/50">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
-                <MessageSquare size={14} />
-              </div>
-              <div>
-                <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block">
-                  1-Click 안내 문자 발송
-                </span>
-                <span className="text-xs text-gray-500">
-                  부재중 1/2차 콜백 요청 · 사무장 배정 안내
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsSmsModalOpen(true)}
-              className="flex items-center gap-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl shadow-xs active:scale-95 transition-all"
-            >
-              <Smartphone size={13} />
-              <span>문자 발송</span>
-            </button>
-          </div>
 
           {/* 1. 상태 원터치 선택 그리드 */}
           <div>
